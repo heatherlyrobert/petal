@@ -1,0 +1,86 @@
+#====== | ===========================(purpose)============================= |
+PREP    | include the prototype headers                                     |
+  incl  | include petal header                  | petal.h                   |
+  incl  | include x11/glx header                | petal_glx.h               |
+
+
+
+
+
+#====== | ===========================(purpose)============================= | =========(method)========= |
+SCRP    | startup                                                           | prog_begin                 |
+  exec  | setup the program                     | prog_begin                |                                                         | i_equal   | 0                                                       |
+
+
+
+
+#====== | ===========================(purpose)============================= | =========(method)========= |
+SCRP    | dot tracing capability                                            | dot_beg, _continue, _end |
+
+COND    | verify that program starts empty                                  |
+  get   | review the dot                        | unit_accessor             | "dot",           0                                      | u_round   | Dot Trace (   0) : there are no dots                    |
+
+COND    | put a dot at the origin                                           |
+  exec  | create the first dot                  | dot_beg                   |    0,    0,    0                                        | i_equal   | 0                                                       |
+  get   | review the dot                        | unit_accessor             | "dot",           0                                      | u_round   | Dot Trace (   0) :    0x,    0y,    1c                  |
+
+COND    | verify that program handles range errors                          |
+  get   | review the dot                        | unit_accessor             | "dot",           2                                      | u_round   | Dot Trace (   2) : out of range   0 to   0              |
+  get   | review the dot                        | unit_accessor             | "dot",          54                                      | u_round   | Dot Trace (  54) : out of range   0 to   0              |
+  get   | review the dot                        | unit_accessor             | "dot",          -1                                      | u_round   | Dot Trace (  -1) : can not be negative                  |
+
+COND    | continue the dot trace                                            |
+  exec  | add a dot                             | dot_add                   |    5,    0,    5                                        | i_equal   | 0                                                       |
+  get   | review the dot                        | unit_accessor             | "dot",           1                                      | u_round   | Dot Trace (   1) :    5x,    0y,    2c                  |
+
+COND    | attempt a dot too close                                           |
+  exec  | add a dot                             | dot_add                   |    6,    0,    6                                        | i_equal   | -2                                                      |
+  get   | review the dot                        | unit_accessor             | "dot",           2                                      | u_round   | Dot Trace (   2) : out of range   0 to   1              |
+
+COND    | further, but still too close                                      |
+  exec  | add a dot                             | dot_add                   |    7,    0,    7                                        | i_equal   | -2                                                      |
+  get   | review the dot                        | unit_accessor             | "dot",           2                                      | u_round   | Dot Trace (   2) : out of range   0 to   1              |
+
+COND    | another just far enough to trigger                                |
+  exec  | add a dot                             | dot_add                   |    8,    0,    8                                        | i_equal   | 0                                                       |
+  get   | review the dot                        | unit_accessor             | "dot",           2                                      | u_round   | Dot Trace (   2) :    8x,    0y,    3c                  |
+
+COND    | attempt to add a duplicate end                                    |
+  exec  | add a dot                             | dot_end                   |    8,    0,    8                                        | i_equal   | -1                                                      |
+  get   | review the dot                        | unit_accessor             | "dot",           3                                      | u_round   | Dot Trace (   3) : out of range   0 to   2              |
+
+COND    | add an end that is slightly different                             |
+  exec  | add a dot                             | dot_end                   |    9,    0,    9                                        | i_equal   | 0                                                       |
+  get   | review the dot                        | unit_accessor             | "dot",           3                                      | u_round   | Dot Trace (   3) :    9x,    0y,    4c                  |
+
+
+
+
+#====== | ===========================(purpose)============================= | =========(method)========= |
+SCRP    | letter interpretation capability                                  | letter_init                |
+
+COND    | verify that program starts empty                                  |
+  exec  | start a new letter                    | letter_init               |                                                         | i_equal   | 0                                                       |
+  get   | get the current stroke                | unit_accessor             | "current",       0                                      | u_round   | Current   (fore) : 0=-1, 1=-1, 2=-1, 3=-1, m=-1         |
+  get   | get the letter status                 | unit_accessor             | "status",        0                                      | u_round   | Letter Status    : done=0, accept=0, reject=0           |
+
+
+
+
+#====== | ===========================(purpose)============================= | =========(method)========= |
+SCRP    | common point analysis                                             | stroke_next                |
+
+COND    | initialize a new word                                             |
+  exec  | start a new letter                    | letter_init               |                                                         | i_equal   | 0                                                       |
+  exec  | enter a point                         | stroke_begin              |    0,    0,    0                                        | i_equal   | 0                                                       |
+  get   | get the current stroke                | unit_accessor             | "current",       0                                      | u_round   | Current   (fore) : 0=-1, 1=-1, 2=-1, 3=-1, m=-1         |
+  get   | get the letter status                 | unit_accessor             | "status",        0                                      | u_round   | Letter Status    : done=0, accept=0, reject=0           |
+
+COND    | register the new word                                             |
+  exec  | start a new letter                    | letter_init               |                                                         | i_equal   | 0                                                       |
+  exec  | enter a point                         | stroke_begin              |    0,    0,    0                                        | i_equal   | 0                                                       |
+  get   | get the current stroke                | unit_accessor             | "current",       0                                      | u_round   | Current   (fore) : 0=-1, 1=-1, 2=-1, 3=-1, m=-1         |
+  get   | get the letter status                 | unit_accessor             | "status",        0                                      | u_round   | Letter Status    : done=0, accept=0, reject=0           |
+
+
+
