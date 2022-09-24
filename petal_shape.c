@@ -29,6 +29,7 @@ char       displist_touch2     (void);
 char       displist_back       (void);
 
 
+char       displist_inner_MOD   (void);
 
 /*============================--------------------============================*/
 /*===----                        general sizing                        ----===*/
@@ -49,7 +50,7 @@ SHAPE_base         (float a_ratio)
    shape.sz_width      =  (shape.sz_centerx * 2);
    /*---(image sizes)--------------------*/
    shape.r_center      =  25.0 * a_ratio;
-   shape.r_ring        =  32.0 * a_ratio;
+   shape.r_ring        =  28.0 * a_ratio;
    shape.r_inner       =  50.0 * a_ratio;
    shape.r_buffer      =  57.0 * a_ratio;
    shape.r_outer       =  75.0 * a_ratio;
@@ -85,12 +86,14 @@ char SHAPE_tiny          (void) { stroke.small = TNY; SHAPE_base (0.60); return 
 char
 displist_init(void)
 {
-   DEBUG_GRAF    printf("displist_init() -- drive loading\n");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    shape.r_button = (shape.sz_bar / 2.5);
    /*--(petals)---------------------------*/
    displist_center     ();
    SHAPE_ring          ();
    displist_inner      ();
+   /*> displist_inner_MOD  ();                                                        <*/
    SHAPE_buffer        ();
    displist_outer      ();
    displist_edge       ();
@@ -107,15 +110,16 @@ displist_init(void)
    displist_arrow      ();
    displist_belly      ();
    displist_orient     ();
-   /*--(complete)-------------------------*/
-   DEBUG_GRAF    printf("   - done\n\n");
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_free (void)
 {
-   DEBUG_GRAF    printf("displist_free()\n");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    glDeleteLists (shape.dl_center,  1);
    glDeleteLists (shape.dl_ring ,   1);
    glDeleteLists (shape.dl_inner,   1);
@@ -133,15 +137,16 @@ displist_free (void)
    glDeleteLists (shape.dl_arrow,   1);
    glDeleteLists (shape.dl_belly,   1);
    glDeleteLists (shape.dl_orient,  1);
-   DEBUG_GRAF    printf("   - done\n\n");
-   /*---(complete)-------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_curr(void)
 {
-   DEBUG_PROG    printf("   - displist_curr() . . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_curr = glGenLists(1);
    glNewList(shape.dl_curr, GL_COMPILE);
@@ -174,8 +179,8 @@ displist_curr(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
@@ -188,7 +193,8 @@ static void      o___PETALS__________________o (void) {;}
 char
 displist_center(void)
 {
-   DEBUG_PROG    printf("   - displist_center() . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_center = glGenLists(1);
    glNewList(shape.dl_center, GL_COMPILE);
@@ -197,7 +203,7 @@ displist_center(void)
    float   rad;
    float   x, y;
    float   r  = shape.r_center;
-   float   z  = -5.00;
+   float   z  =  20.00;
    /*---(interior)--------------------------*/
    glBegin(GL_POLYGON);
    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -208,6 +214,27 @@ displist_center(void)
       glVertex3f( x, y, z);
    }
    glEnd();
+   /*---(center)----------------------------*/
+   /*> glBegin(GL_POLYGON);                                                           <* 
+    *> glColor4f(1.0f, 1.0f, 0.0f, 0.5f);                                             <* 
+    *> for (d = 0; d <= 360; d += 10) {                                               <* 
+    *>    rad = d * DEG2RAD;                                                          <* 
+    *>    x   = r * cos(rad) * 0.5;                                                   <* 
+    *>    y   = r * sin(rad) * 0.5;                                                   <* 
+    *>    glVertex3f( x, y, z + 1);                                                   <* 
+    *> }                                                                              <* 
+    *> glEnd();                                                                       <*/
+   /*---(inside line)-----------------------*/
+   glBegin(GL_LINE_STRIP);
+   glLineWidth(shape.r_lines);
+   glColor4f(0.3f, 0.3f, 0.3f, 1.0f);
+   for (d = 0; d <= 360; d += 15) {
+      rad = d * DEG2RAD;
+      x   = r * cos(rad) * (((((int) d) % 45) == 0) ? 0.6f : 0.4f);
+      y   = r * sin(rad) * (((((int) d) % 45) == 0) ? 0.6f : 0.4f);
+      glVertex3f( x, y, z + 2);
+   }
+   glEnd();
    /*---(outline)---------------------------*/
    glBegin(GL_LINE_STRIP);
    glLineWidth(shape.r_lines);
@@ -216,61 +243,21 @@ displist_center(void)
       rad = d * DEG2RAD;
       x   = r * cos(rad);
       y   = r * sin(rad);
-      glVertex3f( x, y, z + 1);
+      glVertex3f( x, y, z + 2);
    }
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
-   return 0;
-}
-
-char
-displist_center_MOD    (void)
-{
-   DEBUG_PROG    printf("   - displist_center() . . . . . . . . . . ");
-   /*---(begin)-----------------------------*/
-   shape.dl_center = glGenLists(1);
-   glNewList(shape.dl_center, GL_COMPILE);
-   /*---(locals)----------------------------*/
-   float   d;
-   float   rad;
-   float   x, y;
-   float   r  = shape.r_center * 0.80;
-   float   z  = -5.00;
-   /*---(interior)--------------------------*/
-   glBegin(GL_POLYGON);
-   /*> glColor4f(1.0f, 1.0f, 1.0f, 1.0f);                                             <*/
-   for (d = 0; d <= 360; d += 10) {
-      rad = d * DEG2RAD;
-      x   = r * cos(rad);
-      y   = r * sin(rad);
-      glVertex3f( x, y, z);
-   }
-   glEnd();
-   /*---(outline)---------------------------*/
-   /*> glBegin(GL_LINE_STRIP);                                                        <* 
-    *> glLineWidth(shape.r_lines);                                                     <* 
-    *> glColor4f(0.3f, 0.3f, 0.3f, 1.0f);                                             <* 
-    *> for (d = 0; d < 360; d += 2) {                                                 <* 
-    *>    rad = d * DEG2RAD;                                                          <* 
-    *>    x   = r * cos(rad);                                                         <* 
-    *>    y   = r * sin(rad);                                                         <* 
-    *>    glVertex3f( x, y, z + 1);                                                   <* 
-    *> }                                                                              <* 
-    *> glEnd();                                                                       <*/
-   /*---(end)-------------------------------*/
-   glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_inner     (void)
 {
-   DEBUG_PROG    printf("   - displist_inner()  . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_inner = glGenLists(1);
    glNewList(shape.dl_inner, GL_COMPILE);
@@ -281,41 +268,42 @@ displist_inner     (void)
    float   r  = shape.r_inner;
    float   z  = -15.00;
    /*---(interior)--------------------------*/
-   glBegin(GL_POLYGON);
-   glColor4f(1.0f, 1.0f, 0.0f, 0.2f);
-   glVertex3f( 0.0, 0.0, z);
-   for (d = -22; d < 22; d+=6) {
-      rad = d * DEG2RAD;
-      x   = r * cos(rad);
-      y   = r * sin(rad);
-      glVertex3f( x, y, z);
-   }
-   glVertex3f( 0.0, 0.0, z);
-   glEnd();
+   glBegin(GL_POLYGON); {
+      glColor4f(1.0f, 1.0f, 0.0f, 0.2f);
+      glVertex3f( 0.0, 0.0, z);
+      for (d = -22; d < 22; d+=6) {
+         rad = d * DEG2RAD;
+         x   = r * cos(rad);
+         y   = r * sin(rad);
+         glVertex3f( x, y, z);
+      }
+      glVertex3f( 0.0, 0.0, z);
+   } glEnd();
    /*---(outline)---------------------------*/
-   glBegin(GL_LINE_STRIP);
-   glLineWidth(shape.r_lines);
-   glColor4f(0.3f, 0.3f, 0.3f, 1.0f);
-   glVertex3f( 0.0, 0.0, z + 1);
-   for (d = -22; d < 22; d+=6) {
-      rad = d * DEG2RAD;
-      x   = r * cos(rad);
-      y   = r * sin(rad);
-      glVertex3f( x, y, z + 1);
-   }
-   glVertex3f( 0.0, 0.0, z + 1);
-   glEnd();
+   glBegin     (GL_LINE_STRIP); {
+      glLineWidth (20);
+      glColor4f   (0.4f, 0.4f, 0.4f, 0.5f);
+      glVertex3f( 0.0, 0.0, z + 5);
+      for (d = -22; d < 22; d+=6) {
+         rad = d * DEG2RAD;
+         x   = r * cos(rad);
+         y   = r * sin(rad);
+         glVertex3f ( x, y, z + 5);
+      }
+      glVertex3f( 0.0, 0.0, z + 5);
+   } glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_inner_MOD   (void)
 {
-   DEBUG_PROG    printf("   - displist_inner()  . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_inner = glGenLists(1);
    glNewList(shape.dl_inner, GL_COMPILE);
@@ -363,15 +351,16 @@ displist_inner_MOD   (void)
    } glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_outer(void)
 {
-   DEBUG_PROG    printf("   - displist_outer()  . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_outer = glGenLists(1);
    glNewList(shape.dl_outer, GL_COMPILE);
@@ -395,7 +384,7 @@ displist_outer(void)
    /*---(begin)-----------------------------*/
    glBegin(GL_LINE_STRIP);
    glLineWidth(shape.r_lines);
-   glColor4f(0.3f, 0.3f, 0.3f, 1.0f);
+   glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
    glVertex3f( 0.0, 0.0, z + 1);
    for (d = 1; d <  44; d+=6) {
       rad = d * DEG2RAD;
@@ -407,7 +396,8 @@ displist_outer(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    /*---(complete)--------------------------*/
    return 0;
 }
@@ -415,7 +405,8 @@ displist_outer(void)
 char
 displist_edge(void)
 {
-   DEBUG_PROG    printf("   - displist_edge() . . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_edge = glGenLists(1);
    glNewList(shape.dl_edge, GL_COMPILE);
@@ -430,7 +421,7 @@ displist_edge(void)
    /*---(start line)------------------------*/
    glBegin(GL_LINE_STRIP);
    glLineWidth(shape.r_lines);
-   glColor4f(0.3f, 0.3f, 0.3f, 0.5f);
+   glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
    d   = 12.0;
    rad = d  * DEG2RAD;
    x   = r1 * cos(rad);
@@ -457,8 +448,8 @@ displist_edge(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
@@ -470,8 +461,8 @@ SHAPE_ring         (void)
    float       rad;
    float       x, y;
    float       z           = -33.00;
-   /*---(header)----------------------------*/
-   DEBUG_PROG    printf("   - SHAPE_ring   () . . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(prepare)---------------------------*/
    shape.dl_ring = glGenLists(1);
    glNewList (shape.dl_ring, GL_COMPILE);
@@ -487,8 +478,8 @@ SHAPE_ring         (void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
@@ -502,7 +493,8 @@ SHAPE_buffer       (void)
    float   r1 = shape.r_buffer;
    float   r2 = (shape.r_inner * 0.25) + (shape.r_buffer * 0.75);
    float   z  = -30.00;
-   DEBUG_PROG    printf("   - SHAPE_buffer() . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_buffer = glGenLists(1);
    glNewList (shape.dl_buffer, GL_COMPILE);
@@ -510,27 +502,49 @@ SHAPE_buffer       (void)
    glBegin(GL_LINE_STRIP);
    glLineWidth(shape.r_lines);
    glColor4f(0.4f, 0.4f, 0.4f, 0.4f);
-   for (d = 0; d <= 360; d += 15) {
+   for (d = 0; d <= 360; d +=  5) {
       rad = d * DEG2RAD;
-      x   = r1 * cos(rad);
-      y   = r1 * sin(rad);
+      if ((int) d % 45 == 0) {
+         x   = r1 * cos (rad) * 1.05;
+         y   = r1 * sin (rad) * 1.05;
+      } else {
+         x   = r1 * cos(rad);
+         y   = r1 * sin(rad);
+      }
       glVertex3f( x, y, z);
-      x   = r2 * cos(rad);
-      y   = r2 * sin(rad);
+   }
+   glEnd();
+   /*---(exterior)--------------------------*/
+   glBegin(GL_LINE_STRIP);
+   glLineWidth(shape.r_lines);
+   glColor4f(0.4f, 0.4f, 0.4f, 0.4f);
+   for (d = 0; d <= 360; d +=  5) {
+      rad = d * DEG2RAD;
+      if ((int) d % 45 == 0) {
+         x   = r1 * cos(rad) * 1.07;
+         y   = r1 * sin(rad) * 1.07;
+      } else {
+         x   = r1 * cos(rad) * 1.02;
+         y   = r1 * sin(rad) * 1.02;
+      }
       glVertex3f( x, y, z);
+      /*> x   = r2 * cos(rad);                                                        <* 
+       *> y   = r2 * sin(rad);                                                        <* 
+       *> glVertex3f( x, y, z);                                                       <*/
    }
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_leaf(void)
 {
-   DEBUG_PROG    printf("   - displist_leaf() . . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_leaf   = glGenLists(1);
    glNewList(shape.dl_leaf, GL_COMPILE);
@@ -557,7 +571,7 @@ displist_leaf(void)
    /*---(outline)---------------------------*/
    glBegin(GL_LINE_STRIP);
    glLineWidth(shape.r_lines);
-   glColor4f(0.3f, 0.3f, 0.3f, 1.0f);
+   glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
    glVertex3f( r1, r1, z);
    glVertex3f( r2, r3, z);
    glVertex3f( r1, r5, z);
@@ -570,15 +584,16 @@ displist_leaf(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_box(void)
 {
-   DEBUG_PROG    printf("   - displist_box()  . . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_box = glGenLists(1);
    glNewList(shape.dl_box, GL_COMPILE);
@@ -595,15 +610,16 @@ displist_box(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_triangle(void)
 {
-   DEBUG_PROG    printf("   - displist_triangle() . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_triangle = glGenLists(1);
    glNewList(shape.dl_triangle, GL_COMPILE);
@@ -621,39 +637,41 @@ displist_triangle(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
-displist_arrow(void)
+displist_arrow          (void)
 {
-   DEBUG_PROG    printf("   - displist_arrow()  . . . . . . . . . . ");
+   /*---(locals)-----------+-----------+--+-*/
+   float       r1          = shape.r_button;
+   float       z           = -5.00;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_arrow = glGenLists(1);
    glNewList(shape.dl_arrow, GL_COMPILE);
-   /*---(locals)----------------------------*/
-   float   r1 =  shape.r_button;
-   float   z  =  -5.00;
    /*---(interior)--------------------------*/
-   glBegin(GL_POLYGON);
-   glVertex3f( -r1, -r1, z);
-   glVertex3f( 0.0,  r1, z);
-   glVertex3f(  r1, -r1, z);
-   glVertex3f( -r1, -r1, z);
-   glEnd();
+   glBegin(GL_POLYGON); {
+      glVertex3f ( -r1, -r1, z);
+      glVertex3f ( 0.0,  r1, z);
+      glVertex3f (  r1, -r1, z);
+      glVertex3f ( -r1, -r1, z);
+   } glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_touch2(void)
 {
-   DEBUG_PROG    printf("   - displist_touch()  . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_touch2 = glGenLists(1);
    glNewList(shape.dl_touch2, GL_COMPILE);
@@ -674,16 +692,16 @@ displist_touch2(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_back (void)
 {
-   DEBUG_PROG    printf("   - displist_touch()  . . . . . . . . . . ");
-   DEBUG_GRAF    printf("   - DRAW_image()        ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_back   = glGenLists(1);
    glNewList(shape.dl_back, GL_COMPILE);
@@ -777,15 +795,16 @@ displist_back (void)
     *> glEnd();                                                                       <*/
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)-------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_touch(void)
 {
-   DEBUG_PROG    printf("   - displist_touch()  . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_touch = glGenLists(1);
    glNewList(shape.dl_touch, GL_COMPILE);
@@ -806,15 +825,16 @@ displist_touch(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_balls(void)
 {
-   DEBUG_PROG    printf("   - displist_balls()  . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_balls = glGenLists(1);
    glNewList(shape.dl_balls, GL_COMPILE);
@@ -825,7 +845,7 @@ displist_balls(void)
    float   r  =  shape.r_center / 5.0;
    float   z  =  -5.00;
    /*---(interior)--------------------------*/
-   glBegin(GL_LINE_STRIP);
+   glBegin(GL_POLYGON);
    for (d = 0; d <= 360; d += 10) {
       rad = d * DEG2RAD;
       x   =  r * cos(rad);
@@ -833,17 +853,27 @@ displist_balls(void)
       glVertex3f( x, y, z);
    }
    glEnd();
+   glColor4f(0.6f, 0.6f, 0.6f, 1.0f);
+   glBegin(GL_LINE_STRIP);
+   for (d = 0; d <= 360; d += 10) {
+      rad = d * DEG2RAD;
+      x   =  r * cos(rad);
+      y   =  r * sin(rad);
+      glVertex3f( x, y, z + 5);
+   }
+   glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_belly(void)
 {
-   DEBUG_PROG    printf("   - displist_belly()  . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_belly = glGenLists(1);
    glNewList(shape.dl_belly, GL_COMPILE);
@@ -875,15 +905,16 @@ displist_belly(void)
    glEnd();
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 displist_orient(void)
 {
-   DEBUG_PROG    printf("   - displist_orient() . . . . . . . . . . ");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(begin)-----------------------------*/
    shape.dl_orient = glGenLists(1);
    glNewList(shape.dl_orient, GL_COMPILE);
@@ -929,8 +960,8 @@ displist_orient(void)
     *> glEnd();                                                                       <*/
    /*---(end)-------------------------------*/
    glEndList();
-   DEBUG_PROG    printf("success\n");
-   /*---(complete)--------------------------*/
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
