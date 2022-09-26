@@ -34,14 +34,22 @@
 
 #define     P_VERMAJOR  ""
 #define     P_VERMINOR  ""
-#define     P_VERNUM    "2.2a"
-#define     P_VERTXT    "switched to new vikeys and draw working again"
+#define     P_VERNUM    "2.2b"
+#define     P_VERTXT    "sweet demo version, but needs intactive use patched up"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
 #define     P_REMINDER  "there are many better options, but i *own* every byte of this one"
 
 /*===[[ END_HEADER ]]=========================================================*/
+
+#define     P_DEFINE    \
+   "petal is a fast on-screen text input system meant to greatly improve upon¦" \
+   "other pen-based methods in speed, sustainability, and elegance by fronting¦" \
+   "an entire set of short-cuts to the most common words in english.¦"
+
+
+
 /*===[[ HEADER ]]=============================================================#
 
  *   focus         : (UI) user input
@@ -358,6 +366,17 @@ struct cSHAPES {
    float       r_lines;           /* normal shape borders                */
    float       r_dots;            /* dot line width                      */
    float       r_curr;            /* circle radius for marking current   */
+   char        r_seq  [LEN_RECD]; /* letter or series of letters         */
+   short       r_len;             /* count of letters in seq             */
+   char        r_pos;             /* current position in seq             */
+   char        r_mode;            /* loop, cum, all same time, etc.      */
+   char        r_letter;          /* current letter for drawing          */
+   char        r_state;           /* current letter state                */
+   char        r_done [LEN_RECD]; /* letters as entered                  */
+   char        r_done_show;       /* show letter display or not          */
+   float       r_trace;           /* current stroke width                */
+   float       r_prog;            /* progress in current stroke          */
+   float       r_inc;             /* progress increment on stroke        */
    float       r_button;
 };
 extern    tSHAPES       shape;
@@ -365,7 +384,7 @@ extern    tSHAPES       shape;
 extern ulong  g_focus;
 
 uint   states[10];
-uint   locks[10];
+uint   locks [10];
 
 
 
@@ -414,44 +433,44 @@ int       stroke_count;
 /*===[[ DEBUGGING SETUP ]]====================================================*/
 /* this is my latest standard format, vars, and urgents                       */
 /* v3.0b : added signal handling                                (2014-feb-01) */
-struct cDEBUG
-{
-   /*---(handle)-------------------------*/
-   int         logger;                 /* log file so that we don't close it  */
-   /*---(overall)------------------------*/  /* abcdefghi_kl__opq_stu__x__    */
-   /* f = full urgents turns on all standard urgents                          */
-   /* k = kitchen sink and turns everything, i mean everything on             */
-   /* q = quiet turns all urgents off including the log itself                */
-   char        tops;                   /* t) broad structure and context      */
-   char        summ;                   /* s) statistics and analytical output */
-   /*---(startup/shutdown)---------------*/
-   char        args;                   /* a) command line args and urgents    */
-   char        conf;                   /* c) configuration handling           */
-   char        prog;                   /* p) program setup and teardown       */
-   /*---(file processing)----------------*/
-   char        inpt;                   /* i) text/data file input             */
-   char        inpt_mas;               /* I) text/data file input   (mas/more)*/
-   char        outp;                   /* o) text/data file output            */
-   char        outp_mas;               /* O) text/data file output  (mas/more)*/
-   /*---(event handling)-----------------*/
-   char        loop;                   /* l) main program event loop          */
-   char        loop_mas;               /* L) main program event loop (mas/more*/
-   char        user;                   /* u) user input and handling          */
-   char        apis;                   /* z) interprocess communication       */
-   char        sign;                   /* x) os signal handling               */
-   char        scrp;                   /* b) scripts and batch operations     */
-   char        hist;                   /* h) history, undo, redo              */
-   /*---(program)------------------------*/
-   char        graf;                   /* g) grahpics, drawing, and display   */
-   char        data;                   /* d) complex data structure handling  */
-   char        envi;                   /* e) environment/filesystem           */
-   char        envi_mas;               /* E) environment/filesystem (mas/more)*/
-   /*---(specific)-----------------------*/
-   char        touch;                  /*    raw touch input                  */
-   char        recog;                  /*    stroke recognition               */
-};
-typedef     struct      cDEBUG      tDEBUG;
-extern      tDEBUG      debug;
+/*> struct cDEBUG                                                                      <* 
+ *> {                                                                                  <* 
+ *>    /+---(handle)-------------------------+/                                        <* 
+ *>    int         logger;                 /+ log file so that we don't close it  +/   <* 
+ *>    /+---(overall)------------------------+/  /+ abcdefghi_kl__opq_stu__x__    +/   <* 
+ *>    /+ f = full urgents turns on all standard urgents                          +/   <* 
+ *>    /+ k = kitchen sink and turns everything, i mean everything on             +/   <* 
+ *>    /+ q = quiet turns all urgents off including the log itself                +/   <* 
+ *>    char        tops;                   /+ t) broad structure and context      +/   <* 
+ *>    char        summ;                   /+ s) statistics and analytical output +/   <* 
+ *>    /+---(startup/shutdown)---------------+/                                        <* 
+ *>    char        args;                   /+ a) command line args and urgents    +/   <* 
+ *>    char        conf;                   /+ c) configuration handling           +/   <* 
+ *>    char        prog;                   /+ p) program setup and teardown       +/   <* 
+ *>    /+---(file processing)----------------+/                                        <* 
+ *>    char        inpt;                   /+ i) text/data file input             +/   <* 
+ *>    char        inpt_mas;               /+ I) text/data file input   (mas/more)+/   <* 
+ *>    char        outp;                   /+ o) text/data file output            +/   <* 
+ *>    char        outp_mas;               /+ O) text/data file output  (mas/more)+/   <* 
+ *>    /+---(event handling)-----------------+/                                        <* 
+ *>    char        loop;                   /+ l) main program event loop          +/   <* 
+ *>    char        loop_mas;               /+ L) main program event loop (mas/more+/   <* 
+ *>    char        user;                   /+ u) user input and handling          +/   <* 
+ *>    char        apis;                   /+ z) interprocess communication       +/   <* 
+ *>    char        sign;                   /+ x) os signal handling               +/   <* 
+ *>    char        scrp;                   /+ b) scripts and batch operations     +/   <* 
+ *>    char        hist;                   /+ h) history, undo, redo              +/   <* 
+ *>    /+---(program)------------------------+/                                        <* 
+ *>    char        graf;                   /+ g) grahpics, drawing, and display   +/   <* 
+ *>    char        data;                   /+ d) complex data structure handling  +/   <* 
+ *>    char        envi;                   /+ e) environment/filesystem           +/   <* 
+ *>    char        envi_mas;               /+ E) environment/filesystem (mas/more)+/   <* 
+ *>    /+---(specific)-----------------------+/                                        <* 
+ *>    char        touch;                  /+    raw touch input                  +/   <* 
+ *>    char        recog;                  /+    stroke recognition               +/   <* 
+ *> };                                                                                 <* 
+ *> typedef     struct      cDEBUG      tDEBUG;                                        <* 
+ *> extern      tDEBUG      debug;                                                     <*/
 
 /*> #define     DEBUG_TOPS          if (debug.tops      == 'y')                       <* 
  *> #define     DEBUG_SUMM          if (debug.summ      == 'y')                       <* 
@@ -474,8 +493,8 @@ extern      tDEBUG      debug;
  *> #define     DEBUG_ENVI          if (debug.envi      == 'y')                       <* 
  *> #define     DEBUG_ENVIM         if (debug.envi_mas  == 'y')                       <*/
 
-#define     DEBUG_TOUCH         if (debug.touch     == 'y')
-#define     DEBUG_RECOG         if (debug.recog     == 'y')
+/*> #define     DEBUG_TOUCH         if (debug.touch     == 'y')                       <*/
+/*> #define     DEBUG_RECOG         if (debug.recog     == 'y')                       <*/
 
 
 
@@ -500,9 +519,8 @@ extern enum tSTATES {SHIFT = 0, MODE, CONTROL, ALT, HYPER, SUPER, HUBLIN, MYHUBL
 /*===----                           prototypes                         ----===*/
 /*============================--------------------============================*/
 
-/*===[[ MAIN ]]===============================================================*/
-/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
-char        main                    (int a_argc, char *a_argv []);
+
+
 
 /*===[[ PROG ]]===============================================================*/
 /*---(program)--------------*/
@@ -523,14 +541,20 @@ char        PROG__end               (void);
 char        PROG_shutdown           (void);
 /*---(unittest)------------*/
 char        PROG_testfiles          (void);
-char        PROG_testquiet          (void);
-char        PROG_testloud           (void);
-char        PROG_testend            (void);
+char        PROG_unit_quiet         (void);
+char        PROG_unit_loud          (void);
+char        PROG_unit_end           (void);
 /*---(done)----------------*/
 
 char        PROG_event              (void);
 
 
+char       DRAW_done_show           (char *a_flag);
+char       DRAW_help                (char *a_help);
+char       DRAW_color               (char *a_help);
+char       DRAW_speed               (char *a_speed);
+char       DRAW_press               (char *a_state);
+char       DRAW_seq                 (char a_mode, char *a_seq);
 char       DRAW_main         (void);
 char       draw_delete       (void);
 char       DRAW_back          (void);
@@ -562,6 +586,7 @@ char        SHAPE_normal       (void);
 char        SHAPE_large        (void);
 char        SHAPE_huge         (void);
 char        SHAPE_giant        (void);
+char        SHAPE_size              (char *a_size);
 
 /*===[[ petal_touch.c ]]============================================================*/ 
 /*---rc---- ---name----------- ---args----------------------------------------*/
@@ -612,6 +637,13 @@ char        api_ymap_entry          (char a_axis, ushort a_pos, short *r_ref, uc
 char        api_ymap_placer         (char a_axis, ushort b, ushort c, ushort e);
 char        api_ymap_done           (void);
 /*---(done)-----------------*/
+
+
+
+char        LETTER_by_index         (char n);
+char        LETTER_by_stroke        (char i, char o, char e);
+char        LETTER_to_stroke        (char c, char *m, char *i, char *o, char *e);
+char        LETTER_by_mode          (char n);
 
 
 

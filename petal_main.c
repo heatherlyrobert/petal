@@ -23,7 +23,7 @@ main                    (int a_argc, char *a_argv [])
    DEBUG_PROG   yLOG_value    ("dawn"      , rc);
    if (rc <  0) { PROG_shutdown (); return --rce; }
    /*---(main-loop)----------------------*/
-   rc = yVIOPENGL_main  ("10ms", "100ms", NULL);
+   rc = yVIOPENGL_main  ("10ms", "10ms", NULL);
    DEBUG_PROG   yLOG_value    ("main"      , rc);
    /*---(visual shutdown)----------------*/
    rc = PROG_dusk     ();

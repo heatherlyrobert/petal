@@ -1,0 +1,21 @@
+#! /bin/gyges
+##
+## yVIKEYS script to automate hello world demo
+##
+
+## slow down the execution speed
+ºµre5»
+
+## put the floating command line at the bottom
+ºµcF8»
+
+º:speed 7¦»
+º:label !¦»
+º:seq¦»
+
+«
+
+º:seq   3 hw¦»
+
+
+

@@ -60,9 +60,10 @@ SHAPE_base         (float a_ratio)
    shape.r_lines       =   0.8 * a_ratio;
    shape.r_dots        =   5.0 * a_ratio;
    shape.r_curr        =   7.0 * a_ratio;
+   shape.r_trace       =   2.5 * a_ratio;
    /*---(fonts)--------------------------*/
    my.size_big         =  32.0 * a_ratio;
-   my.size_norm        =  10.0 * a_ratio;
+   my.size_norm        =   8.0 * a_ratio;   /* was 10 for courier */
    /*---(display lists)------------------*/
    displist_free();
    displist_init();
@@ -77,6 +78,24 @@ char SHAPE_normal        (void) { stroke.small = NOR; SHAPE_base (1.00); return 
 char SHAPE_medium        (void) { stroke.small = MED; SHAPE_base (0.85); return 0; }
 char SHAPE_small         (void) { stroke.small = SML; SHAPE_base (0.70); return 0; }
 char SHAPE_tiny          (void) { stroke.small = TNY; SHAPE_base (0.60); return 0; }
+
+char
+SHAPE_size              (char *a_size)
+{
+   switch (a_size [0]) {
+   case 'g' :  SHAPE_giant  ();    break;
+   case 'h' :  SHAPE_huge   ();    break;
+   case 'l' :  SHAPE_large  ();    break;
+   case 'n' :  SHAPE_normal ();    break;
+   case 'm' :  SHAPE_medium ();    break;
+   case 's' :  SHAPE_small  ();    break;
+   case 't' :  SHAPE_tiny   ();    break;
+   default  :  SHAPE_normal ();    break;
+   }
+   yVIEW_resize (shape.sz_width, shape.sz_height, 0);
+   return 0;
+}
+
 
 
 /*============================--------------------============================*/

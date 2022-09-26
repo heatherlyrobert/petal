@@ -3,7 +3,6 @@
 
 
 tACCESSOR   my;
-tDEBUG      debug;
 char        unit_answer [LEN_UNIT];
 
 
@@ -341,28 +340,39 @@ PROG__init              (int argc, char *argv[])
    /*---(header)-------------------------*/
    DEBUG_TOPS   yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
-   stroke.help     = -1;
-   stroke.color    = -1;
-   stroke.max      = -1;
-   stroke.zth      = -1;
-   stroke.fst      = -1;
-   stroke.snd      = -1;
-   stroke.trd      = -1;
-   stroke.fth      = -1;
-   ndot            =   0;
-   stroke.small    = NOR;
+   stroke.help       = -1;
+   stroke.color      = -1;
+   stroke.max        = -1;
+   stroke.zth        = -1;
+   stroke.fst        = -1;
+   stroke.snd        = -1;
+   stroke.trd        = -1;
+   stroke.fth        = -1;
+   ndot              =   0;
+   stroke.small      = NOR;
    strlcpy (my.win_title, "petal_writing", LEN_STR);
    strlcpy (my.face_bg  , "coolvetica"   , LEN_STR);
-   strlcpy (my.face_sm  , "courier"      , LEN_STR);
+   strlcpy (my.face_sm  , "shrike"       , LEN_STR);
+   /*> strlcpy (my.face_sm  , "courier"      , LEN_STR);                              <*/
    /*---(flags)--------------------------*/
-   my.rptg_events  = '-';
-   my.rptg_dots    = '-';
-   my.rptg_recog   = '-';
-   my.loop_msec    =   1;
+   my.rptg_events    = '-';
+   my.rptg_dots      = '-';
+   my.rptg_recog     = '-';
+   my.loop_msec      =   1;
+   strlcpy (shape.r_seq , "", LEN_RECD);
+   shape.r_len       =   0;
+   shape.r_pos       =   0;
+   strlcpy (shape.r_done, "", LEN_RECD);
+   shape.r_done_show = 'y';
+   shape.r_mode      = '-';
+   shape.r_letter    = '\0';
+   shape.r_state     = -1;
+   shape.r_prog      = 0.0;
+   shape.r_inc       = 0.0;
    /*---(file names)---------------------*/
    DEBUG_PROG   yLOG_note    ("file names");
    snprintf (my.name_event  , LEN_STR, "%s%s", DIR_INPUT, FILE_EVENT );
-   my.file_event   = NULL;
+   my.file_event     = NULL;
    /*---(complete)-----------------------*/
    DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -412,9 +422,14 @@ PROG__args              (int argc, char *argv[])
 char
 PROG__begin             (void)
 {
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
-   strcpy(stroke.text, " ");
+   /*---(prepare)------------------------*/
+   strcpy (stroke.text, " ");
+   /*---(set size)-----------------------*/
    if      (stroke.small == TNY) SHAPE_tiny   ();
    else if (stroke.small == SML) SHAPE_small  ();
    else if (stroke.small == MED) SHAPE_medium ();
@@ -423,6 +438,7 @@ PROG__begin             (void)
    else if (stroke.small == HUG) SHAPE_huge   ();
    else                          SHAPE_giant  ();
    /*> yX11_start (my.win_title, shape.sz_width, shape.sz_height, 'n', debug.prog, 'n');   <*/
+   /*---(initialize)---------------------*/
    TOUCH_open    ();
    mouse_init    ();
    /*---(complete)-----------------------*/
@@ -503,6 +519,21 @@ PROG_dawn          (void)
    yCMD_direct (":layout min");
    displist_init ();
    font_load     ();
+   /*---(commands)-----------------------*/
+   rc = yCMD_add (YCMD_M_CONFIG, "label"       , ""    , "s"    , DRAW_help            , "configure the help labels"                                   );
+   DEBUG_PROG   yLOG_value   ("label"     , rc);
+   rc = yCMD_add (YCMD_M_CONFIG, "pad"         , ""    , "s"    , DRAW_color           , "configure the help colors"                                   );
+   DEBUG_PROG   yLOG_value   ("pad"       , rc);
+   rc = yCMD_add (YCMD_M_CONFIG, "speed"       , ""    , "s"    , DRAW_speed           , "configure the help colors"                                   );
+   DEBUG_PROG   yLOG_value   ("speed"     , rc);
+   rc = yCMD_add (YCMD_M_CONFIG, "seq"         , ""    , "cs"   , DRAW_seq             , "configure the help colors"                                   );
+   DEBUG_PROG   yLOG_value   ("seq"       , rc);
+   rc = yCMD_add (YCMD_M_CONFIG, "size"        , ""    , "s"    , SHAPE_size           , "configure the help colors"                                   );
+   DEBUG_PROG   yLOG_value   ("size"      , rc);
+   rc = yCMD_add (YCMD_M_CONFIG, "done"        , ""    , "s"    , DRAW_done_show       , "configure showing completed text"                            );
+   DEBUG_PROG   yLOG_value   ("done"      , rc);
+   rc = yCMD_add (YCMD_M_CONFIG, "press"       , ""    , "s"    , DRAW_press           , "configure showing completed text"                            );
+   DEBUG_PROG   yLOG_value   ("press"     , rc);
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -570,7 +601,7 @@ PROG_testfiles     (void)
 }
 
 char       /*----: set up program urgents/debugging --------------------------*/
-PROG_testquiet     (void)
+PROG_unit_quiet    (void)
 {
    char        x_carg      = 1;
    char       *x_args [1]  = { "petal" };
@@ -580,7 +611,7 @@ PROG_testquiet     (void)
 }
 
 char       /*----: set up program urgents/debugging --------------------------*/
-PROG_testloud      (void)
+PROG_unit_loud     (void)
 {
    char        x_carg      = 2;
    char       *x_args [2]  = { "petal_unit", "@@kitchen"    };
@@ -590,7 +621,7 @@ PROG_testloud      (void)
 }
 
 char       /*----: set up program urgents/debugging --------------------------*/
-PROG_testend       (void)
+PROG_unit_end      (void)
 {
    PROG_shutdown ();
    return 0;
