@@ -64,10 +64,10 @@ int  g_akeysyms_punct[40] = {
  *>    XK_slash     , XK_backslash   , XK_4          , XK_colon       , XK_at         ,   <* 
  *> };                                                                                    <*/
 
-char g_special[10]          = { 'S', 'C', 'T', 'H', 'N', 'A', 'E', 'M', };
+char g_special[10]          = { 'S', 'M', 'T', 'H', 'N', 'A', 'E', 'C', };
 int  g_akeysyms_special[10] = {
-   XK_Shift_L  , XK_Control_L, XK_Tab      , 1000000       ,
-   XK_Return   , XK_Alt_L    , XK_Escape   , XK_Mode_switch,
+   XK_Shift_L  , XK_Mode_switch, XK_Tab      , 1000000       ,
+   XK_Return   , XK_Alt_L      , XK_Escape   , XK_Control_L  ,
 };
 
 char s_next[40];
@@ -261,7 +261,7 @@ LETTER_by_stroke        (char i, char o, char e)
 }
 
 char
-LETTER_to_stroke        (char c, char *m, char *i, char *o, char *e)
+LETTER_to_stroke        (char a_all, char c, char *m, char *i, char *o, char *e)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -279,19 +279,7 @@ LETTER_to_stroke        (char c, char *m, char *i, char *o, char *e)
    if (o != NULL)  *o = -1;
    if (e != NULL)  *e = -1;
    /*---(special)------------------------*/
-   /*> if (c == '²') {                                                                <* 
-    *>    if (i != NULL)  *i = 2;                                                     <* 
-    *>    DEBUG_INPT   yLOG_sexit   (__FUNCTION__);                                   <* 
-    *>    return 10;                                                                  <* 
-    *> }                                                                              <*/
-   if (c == '¿') {
-      if (i != NULL)  *i = 6;
-      DEBUG_INPT   yLOG_sexit   (__FUNCTION__);
-      return 30;
-   }
-   if (c == '¶') {
-      c = '"';
-   }
+   if (c == '¶')    c = '"';
    /*---(find in letters)----------------*/
    for (j = 0; j < 40; ++j) {
       if (g_letters [j] == c) {
@@ -300,16 +288,22 @@ LETTER_to_stroke        (char c, char *m, char *i, char *o, char *e)
          if (m != NULL)  *m = -1;
          break;
       }
-      if (g_upper   [j] == c) {
+      if (a_all == 'y' && g_upper   [j] == c) {
          DEBUG_GRAF   yLOG_snote   ("shift");
          n  = j;
          if (m != NULL)  *m = SHIFT;
          break;
       }
-      if (g_punct   [j] == c) {
+      if (a_all == 'y' && g_punct   [j] == c) {
          DEBUG_GRAF   yLOG_snote   ("mode");
          n  = j;
          if (m != NULL)  *m = MODE;
+         break;
+      }
+      if (a_all == '-' && j < 10 && g_special [j] == c) {
+         DEBUG_GRAF   yLOG_snote   ("special");
+         n  = j;
+         if (m != NULL)  *m = 20;
          break;
       }
    }
@@ -317,6 +311,13 @@ LETTER_to_stroke        (char c, char *m, char *i, char *o, char *e)
    --rce;  if (n < 0) {
       DEBUG_INPT   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
+   }
+   /*---(specials)-----------------------*/
+   if (*m == 20) {
+      if (i != NULL)  *i = n;
+      if (e != NULL)  *i = n;
+      DEBUG_INPT   yLOG_sexit   (__FUNCTION__);
+      return n;
    }
    /*---(set inner)----------------------*/
    xn  = n;
@@ -353,6 +354,7 @@ LETTER_to_stroke        (char c, char *m, char *i, char *o, char *e)
    }
    DEBUG_GRAF   yLOG_svalue  ("e", xe);
    /*---(save back)----------------------*/
+   shape.r_loc = n;
    if (i != NULL)  *i = xi;
    if (o != NULL)  *o = xo;
    if (e != NULL)  *e = xe;

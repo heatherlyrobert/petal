@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  ""
 #define     P_VERMINOR  ""
-#define     P_VERNUM    "2.2b"
-#define     P_VERTXT    "sweet demo version, but needs intactive use patched up"
+#define     P_VERNUM    "2.2c"
+#define     P_VERTXT    "fixed pausing and many little display bothers"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -289,8 +289,8 @@ struct cSTROKE {
    int             fail;
    int             pass;
    int             done;
-   int             help;
-   int             color;
+   char            help;
+   char            help_txt  [LEN_LABEL];
    char            feedback[MAXWORD];
    int             backwards;
    char           *focus_name;
@@ -366,17 +366,24 @@ struct cSHAPES {
    float       r_lines;           /* normal shape borders                */
    float       r_dots;            /* dot line width                      */
    float       r_curr;            /* circle radius for marking current   */
+   char        r_eng  [LEN_RECD]; /* requested text to recreate          */
    char        r_seq  [LEN_RECD]; /* letter or series of letters         */
    short       r_len;             /* count of letters in seq             */
-   char        r_pos;             /* current position in seq             */
+   short       r_pos;             /* current position in seq             */
    char        r_mode;            /* loop, cum, all same time, etc.      */
    char        r_letter;          /* current letter for drawing          */
+   short       r_exec;            /* current letter position             */
+   char        r_loc;             /* current letter index                */
    char        r_state;           /* current letter state                */
    char        r_done [LEN_RECD]; /* letters as entered                  */
    char        r_done_show;       /* show letter display or not          */
+   char        r_debug;           /* show internal debugging info        */
    float       r_trace;           /* current stroke width                */
    float       r_prog;            /* progress in current stroke          */
+   char        r_color; 
+   char        r_color_txt;
    float       r_inc;             /* progress increment on stroke        */
+   char        r_inc_txt;         /* progress increment on stroke        */
    float       r_button;
 };
 extern    tSHAPES       shape;
@@ -550,11 +557,13 @@ char        PROG_event              (void);
 
 
 char       DRAW_done_show           (char *a_flag);
+char       DRAW_debug_set           (char *a_flag);
 char       DRAW_help                (char *a_help);
 char       DRAW_color               (char *a_help);
 char       DRAW_speed               (char *a_speed);
 char       DRAW_press               (char *a_state);
 char       DRAW_seq                 (char a_mode, char *a_seq);
+char       DRAW_debug               (void);
 char       DRAW_main         (void);
 char       draw_delete       (void);
 char       DRAW_back          (void);
@@ -642,7 +651,7 @@ char        api_ymap_done           (void);
 
 char        LETTER_by_index         (char n);
 char        LETTER_by_stroke        (char i, char o, char e);
-char        LETTER_to_stroke        (char c, char *m, char *i, char *o, char *e);
+char        LETTER_to_stroke        (char a_all, char c, char *m, char *i, char *o, char *e);
 char        LETTER_by_mode          (char n);
 
 

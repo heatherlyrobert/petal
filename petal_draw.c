@@ -6,6 +6,9 @@
 #define  HELP_ONLY    if (stroke.help > 0 && stroke.help < 10 && stroke.help != i + 1)   continue
 
 #define  YSTR_PETAL   "tm[c¶nf_rx·u.p,ilqdbeh's]ogzw)¿j;k:ay(v-"
+#define  YSTR_INNER   "tn·ieo¿a"
+#define  YSTR_OUTER   "cfrupldhsgwjkyvm"
+#define  YSTR_EDGE    "_¶.xq,'bz];)(:[-"
 
 
 
@@ -25,11 +28,30 @@ DRAW_done_show     (char *a_flag)
 }
 
 char
+DRAW_debug_set     (char *a_flag)
+{
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   switch (a_flag [0]) {
+   case 'y'  : shape.r_debug = 'y';        break;
+   default   : shape.r_debug = '-';        break;
+   }
+   DEBUG_GRAF   yLOG_value   ("debug"     , shape.r_debug);
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
 DRAW_press         (char *a_state)
 {
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    switch (a_state [0]) {
+   case '-'  :
+      locks  [SHIFT] = 0; states [SHIFT] = 0;
+      locks  [MODE ] = 0; states [MODE ] = 0;
+      break;
    case 's'  :
       locks  [SHIFT] = 0;
       states [SHIFT] = 0;
@@ -41,6 +63,7 @@ DRAW_press         (char *a_state)
       if (states [SHIFT] == 1)   locks  [SHIFT] = 1;
       /*---(press)----------*/
       states [SHIFT] = 1;
+      locks  [MODE ] = 0; states [MODE ] = 0;
       break;
    case 'm'  :
       locks  [MODE ] = 0;
@@ -53,6 +76,7 @@ DRAW_press         (char *a_state)
       if (states [MODE ] == 1)   locks  [MODE ] = 1;
       /*---(press)----------*/
       states [MODE ] = 1;
+      locks  [SHIFT] = 0; states [SHIFT] = 0;
       break;
    }
    return 0;
@@ -63,6 +87,16 @@ DRAW_help          (char *a_help)
 {
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   /*---(defaults)-----------------------*/
+   stroke.help = -1;
+   strlcpy (stroke.help_txt, "", LEN_LABEL);
+   /*---(defense)------------------------*/
+   if (a_help == NULL) {
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   /*---(set)----------------------------*/
+   strlcpy (stroke.help_txt, a_help, LEN_LABEL);
    switch (a_help [0]) {
    case '-'  : stroke.help = -1;        break;
    case 'a'  : stroke.help =  0;        break;
@@ -95,21 +129,23 @@ DRAW_help          (char *a_help)
 }
 
 char
-DRAW_color         (char *a_help)
+DRAW_color         (char *a_color)
 {
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
-   switch (a_help [0]) {
-   case 'c'  : stroke.color =  0;        break;
-   case 'a'  : stroke.color =  1;        break;
-   case 'i'  : stroke.color =  2;        break;
-   case 'o'  : stroke.color =  3;        break;
-   case 'e'  : stroke.color =  4;        break;
-   case 'm'  : stroke.color =  4;        break;
-   case 't'  : stroke.color =  5;        break;
-   default   : stroke.color = -1;        break;
+   shape.r_color_txt = a_color [0];
+   switch (a_color [0]) {
+   case '-'  : shape.r_color = -1;        break;
+   case 'c'  : shape.r_color =  0;        break;
+   case 'a'  : shape.r_color =  1;        break;
+   case 'i'  : shape.r_color =  2;        break;
+   case 'o'  : shape.r_color =  3;        break;
+   case 'e'  : shape.r_color =  4;        break;
+   case 'm'  : shape.r_color =  4;        break;
+   case 't'  : shape.r_color =  5;        break;
+   default   : shape.r_color = -1;  shape.r_color_txt = '¢';        break;
    }
-   DEBUG_GRAF   yLOG_value   ("help"      , stroke.color);
+   DEBUG_GRAF   yLOG_value   ("help"      , shape.r_color);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -121,7 +157,9 @@ DRAW_speed         (char *a_speed)
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(short-cut)----------------------*/
+   shape.r_inc_txt = a_speed [0];
    switch (a_speed [0]) {
+   case '-' :
    case '0' :   shape.r_inc   = 0.000;  break;
    case '1' :   shape.r_inc   = 0.200;  break;
    case '2' :   shape.r_inc   = 0.150;  break;
@@ -132,7 +170,7 @@ DRAW_speed         (char *a_speed)
    case '7' :   shape.r_inc   = 0.025;  break;
    case '8' :   shape.r_inc   = 0.020;  break;
    case '9' :   shape.r_inc   = 0.010;  break;
-   default  :   shape.r_inc   = 0.000;  break;
+   default  :   shape.r_inc   = 0.000;  shape.r_inc_txt = '¢';  break;
    }
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
@@ -140,32 +178,81 @@ DRAW_speed         (char *a_speed)
 }
 
 char
-DRAW_seq           (char a_mode, char *a_seq)
+DRAW_seq           (char a_mode, char *a_text)
 {
+   /*---(locals)-----------+-----+-----+-*/
+   char        rc          =    0;
+   int         l           =    0;
+   int         i           =    0;
+   char        c, m;
+   char        t           [LEN_TERSE] = "";
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(mode)---------------------------*/
    switch (a_mode) {
    case '-'  : shape.r_mode = '-';  break;  /* one-at-a-time      */
-   case 'L'  : shape.r_mode = 'L';  break;  /* continuous loop              */
    case '2'  : shape.r_mode = '2';  break;  /* show last two, shadowed      */
    case '3'  : shape.r_mode = '3';  break;  /* show last three, shadowed    */
-   case 'C'  : shape.r_mode = 'C';  break;  /* show all cum, one color      */
+   case 'c'  : shape.r_mode = 'c';  break;  /* show all cum, one color      */
+   case 'r'  : shape.r_mode = 'r';  break;  /* show all cum, rainbow        */
    case '*'  : shape.r_mode = '*';  break;  /* show all cum, shadowed       */
    case '!'  : shape.r_mode = '!';  break;  /* show all at once, one color  */
    default   : shape.r_mode = '-';  break;
    }
    /*---(sequence)-----------------------*/
-   if (a_seq == NULL) {
+   if (a_text == NULL || a_text [0] == '\0') {
+      strlcpy (shape.r_eng, "", LEN_RECD);
       strlcpy (shape.r_seq, "", LEN_RECD);
+      shape.r_len    =     0;
+      shape.r_pos    =    -1;
+      shape.r_exec   =    -1;
+      shape.r_letter =  '\0';
+      shape.r_prog   = -1.00;
+      strlcpy (shape.r_done, "", LEN_RECD);
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
    } else {
-      if      (strcmp (a_seq, "!!") == 0)  strlcpy (shape.r_seq, YSTR_LOWER   , LEN_RECD);
-      else if (strcmp (a_seq, "**") == 0)  strlcpy (shape.r_seq, YSTR_PETAL   , LEN_RECD);
-      else if (strcmp (a_seq, "hw") == 0)  strlcpy (shape.r_seq, "hello·world", LEN_RECD);
-      else                                 strlcpy (shape.r_seq, a_seq        , LEN_RECD);
+      if      (strcmp (a_text, "!!")    == 0)  strlcpy (shape.r_eng, YSTR_LOWER   , LEN_RECD);
+      else if (strcmp (a_text, "**")    == 0)  strlcpy (shape.r_eng, YSTR_PETAL   , LEN_RECD);
+      else if (strcmp (a_text, "hw")    == 0)  strlcpy (shape.r_eng, "hello·world", LEN_RECD);
+      else if (strcmp (a_text, "inner") == 0)  strlcpy (shape.r_eng, YSTR_INNER   , LEN_RECD);
+      else if (strcmp (a_text, "outer") == 0)  strlcpy (shape.r_eng, YSTR_OUTER   , LEN_RECD);
+      else if (strcmp (a_text, "edge" ) == 0)  strlcpy (shape.r_eng, YSTR_EDGE    , LEN_RECD);
+      else                                  strlcpy (shape.r_eng, a_text       , LEN_RECD);
    }
+   /*---(translate)----------------------*/
+   l = strlen (shape.r_eng);
+   strlcpy (shape.r_seq , "", LEN_RECD);
+   for (i = 0; i < l; ++i) {
+      /*---(gather english)--------------*/
+      c  = shape.r_eng [i];
+      /*---(find states)-----------------*/
+      switch (c) {
+      case '¥'    :  strlcat (shape.r_seq, "E", LEN_RECD);  continue;  break;
+      case '¦'    :  strlcat (shape.r_seq, "N", LEN_RECD);  continue;  break;
+      case '¾'    :  strlcat (shape.r_seq, "T", LEN_RECD);  continue;  break;
+      case 'Ô'    :  strlcat (shape.r_seq, "A", LEN_RECD);  continue;  break;
+      case 'Õ'    :  strlcat (shape.r_seq, "C", LEN_RECD);  continue;  break;
+      case 'Û'    :  strlcat (shape.r_seq, "H", LEN_RECD);  continue;  break;
+      }
+      /*---(get letter)------------------*/
+      rc = LETTER_to_stroke ('y', c, &m, NULL, NULL, NULL);
+      DEBUG_GRAF   yLOG_complex ("to_stroke" , "%c/%3dc, %4drc, %dm", c, rc, m);
+      if (rc < 0)  c = '¢';
+      /*---(handle modes)----------------*/
+      switch (m) {
+      case SHIFT  :  strlcat (shape.r_seq, "S", LEN_RECD);  break;
+      case MODE   :  strlcat (shape.r_seq, "M", LEN_RECD);  break;
+      }
+      /*---(add letter)------------------*/
+      sprintf (t, "%c", g_letters [rc]);
+      strlcat (shape.r_seq, t, LEN_RECD);
+      /*---(done)------------------------*/
+   }
+   /*---(fill-in)------------------------*/
    shape.r_len    = strlen (shape.r_seq);
    shape.r_pos    = 0;
+   shape.r_exec   = 0;
    shape.r_letter = shape.r_seq [0];
    shape.r_prog   = 0.00;
    strlcpy (shape.r_done, "", LEN_RECD);
@@ -195,19 +282,25 @@ DRAW_stroke        (char a_type, char a_letter)
    float       r           =  0.0;
    float       x_seg       =  0.0;
    char        c           =    0;
+   float       x_end       =  0.0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(short-cut)----------------------*/
+   DEBUG_GRAF   yLOG_double  ("r_prog"    , shape.r_prog);
    if (shape.r_prog < 0) {
+      DEBUG_GRAF   yLOG_note    ("r_prog less than zero, draw nothing");
       DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
       return 0;
    }
-   if (shape.r_letter == '\0') {
+   DEBUG_GRAF   yLOG_char    ("a_letter"  , a_letter);
+   if (a_letter == '\0') {
+      DEBUG_GRAF   yLOG_note    ("a_letter is null, draw nothing");
       DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
       return 0;
    }
    /*---(get stroke)------------------------*/
-   rc = LETTER_to_stroke (a_letter, &m, &i, &o, &e);
+   DEBUG_GRAF   yLOG_value   ("r_pos"     , shape.r_pos);
+   rc = LETTER_to_stroke ('-', a_letter, &m, &i, &o, &e);
    DEBUG_GRAF   yLOG_value   ("to_stroke" , rc);
    --rce;  if (rc < 0) {
       DEBUG_GRAF   yLOG_exitr   (__FUNCTION__, rce);
@@ -221,13 +314,15 @@ DRAW_stroke        (char a_type, char a_letter)
    x_seg  = (2.0 * 3.1415927) / 8.0;
    DEBUG_GRAF   yLOG_complex ("center"    , "%3.0fx, %3.0fy, %3.0fz", x_cen, x_mid, z);
    /*---(start)-----------------------------*/
-   x_controls [0][0] = x_cen;
-   x_controls [0][1] = x_mid;
-   x_controls [0][2] = z;
-   DEBUG_GRAF   yLOG_complex ("center"    , "%dc, %3.0fx, %3.0fy, %3.0fz", c, x_controls [c][0], x_controls [c][1], x_controls [c][2]);
-   ++c;
+   if (m < 20) {
+      x_controls [0][0] = x_cen;
+      x_controls [0][1] = x_mid;
+      x_controls [0][2] = z;
+      DEBUG_GRAF   yLOG_complex ("center"    , "%dc, %3.0fx, %3.0fy, %3.0fz", c, x_controls [c][0], x_controls [c][1], x_controls [c][2]);
+      ++c;
+   }
    /*---(inner)-----------------------------*/
-   if (i > -1) {
+   if (m < 20 && i > -1) {
       if      (o < 0)  r = shape.r_inner * 0.80;
       else if (e < 0)  r = shape.r_inner * 1.20;
       else             r = shape.r_inner * 1.00;
@@ -238,7 +333,7 @@ DRAW_stroke        (char a_type, char a_letter)
       ++c;
    }
    /*---(outer)-----------------------------*/
-   if (o > -1) {
+   if (m < 20 && o > -1) {
       if      (e < 0)  r = shape.r_outer * 0.85;
       else             r = shape.r_outer * 0.95;
       x_controls [2][0] = r * sin (x_seg * o + x_seg / 2.0) + x_cen;
@@ -248,7 +343,7 @@ DRAW_stroke        (char a_type, char a_letter)
       ++c;
    }
    /*---(edge)------------------------------*/
-   if (e > -1) {
+   if (m < 20 && e > -1) {
       r = shape.r_edge  * 1.00;
       x_controls [3][0] = r * sin (x_seg * e) + x_cen;
       x_controls [3][1] = r * cos (x_seg * e) + x_mid;
@@ -258,26 +353,76 @@ DRAW_stroke        (char a_type, char a_letter)
    }
    /*---(draw)------------------------*/
    switch (a_type) {
-   case 'c' : glColor4f (0.3f, 0.5f, 1.0f, 0.90f);  break;
+      /*> case 'c' : glColor4f (0.3f, 0.5f, 1.0f, 0.90f);  break;                        <*/
+   case 'c' : glColor4f (0.0f, 0.5f, 1.0f, 0.90f);  break;
    case '2' : glColor4f (0.8f, 0.5f, 0.8f, 0.65f);  break;
    case '3' : glColor4f (0.8f, 0.5f, 0.3f, 0.50f);  break;
+
+   case 'B' : glColor4f (0.0f, 0.0f, 0.0f, 0.90f);  break;
+   case  0  : glColor4f (0.0f, 0.3f, 0.7f, 0.50f);  break;
+   case  1  : glColor4f (0.0f, 0.0f, 1.0f, 0.50f);  break;
+   case  2  : glColor4f (0.3f, 0.0f, 0.7f, 0.50f);  break;
+   case  3  : glColor4f (0.5f, 0.0f, 0.5f, 0.50f);  break;
+   case  4  : glColor4f (0.7f, 0.0f, 0.3f, 0.50f);  break;
+   case  5  : glColor4f (1.0f, 0.0f, 0.0f, 0.50f);  break;
+   case  6  : glColor4f (0.7f, 0.3f, 0.0f, 0.50f);  break;
+   case  7  : glColor4f (0.5f, 0.5f, 0.0f, 0.50f);  break;
+   case  8  : glColor4f (0.3f, 0.7f, 0.0f, 0.50f);  break;
+   case  9  : glColor4f (0.0f, 1.0f, 0.0f, 0.50f);  break;
+   case 10  : glColor4f (0.0f, 0.7f, 0.3f, 0.50f);  break;
+   case 11  : glColor4f (0.0f, 0.5f, 0.5f, 0.50f);  break;
+
+
    case '+' : glColor4f (0.8f, 0.5f, 0.3f, 0.40f);  break;
    }
-   glLineWidth (shape.r_trace);
-   glMap1f   (GL_MAP1_VERTEX_3, 0.0, 1.0, 3, c, &x_controls [0][0]);
-   glEnable  (GL_MAP1_VERTEX_3);
-   glBegin   (GL_LINE_STRIP); {
-      for (x_pos = 0.0; x_pos <= shape.r_prog; x_pos += 0.05) {
-         glEvalCoord1f (x_pos);
+   /*---(draw normal)-----------------------*/
+   if (m < 20) {
+      x_end = shape.r_prog;
+      if (x_end > 1.00)  x_end = 1.00;
+      glLineWidth (shape.r_trace);
+      glMap1f   (GL_MAP1_VERTEX_3, 0.0, 1.0, 3, c, &x_controls [0][0]);
+      glEnable  (GL_MAP1_VERTEX_3);
+      glBegin   (GL_LINE_STRIP); {
+         for (x_pos = 0.0; x_pos <= x_end; x_pos += 0.05) {
+            glEvalCoord1f (x_pos);
+         }
+      } glEnd();
+      glDisable (GL_MAP1_VERTEX_3);
+      glLineWidth(0.8);
+   }
+   /*---(draw special)----------------------*/
+   DEBUG_GRAF   yLOG_complex ("prog"      , "%6.3fp, %6.3fi", shape.r_prog, shape.r_inc);
+   if (m == 20) {
+      c  = 2;
+      r  = shape.r_edge  * 1.00;
+      if (shape.r_prog <= 1.00)   r  = r * shape.r_prog;
+      x  = r * sin (x_seg * rc) + x_cen;
+      y  = r * cos (x_seg * rc) + x_mid;
+      DEBUG_GRAF   yLOG_complex ("special"   , "%6.3fr, %3.0fx, %3.0fy, %3.0fz", r, x, y, z);
+      glLineWidth (shape.r_trace);
+      glBegin   (GL_LINE_STRIP); {
+         glVertex3f (x_cen, x_mid, z);
+         glVertex3f (x    , y    , z);
+      } glEnd();
+      if (shape.r_prog == 0.00) {
+         switch (rc) {
+         case 0 : DRAW_press ("S");  break;
+         case 1 : DRAW_press ("M");  break;
+         }
       }
-   } glEnd();
-   glDisable (GL_MAP1_VERTEX_3);
-   glLineWidth(0.8);
+   } else {
+      if (shape.r_prog > 0.99) {
+         if (locks [SHIFT] == 0) {
+            if (states [SHIFT] != 0)  states [SHIFT] = 0;
+         }
+         if (locks [MODE ] == 0) {
+            if (states [MODE ] != 0)  states [MODE ] = 0;
+         }
+      }
+   }
    /*---(letter output)---------------*/
-   /*> if (shape.r_prog >= 0.50) {                                                    <*/
-   shape.r_done [shape.r_pos]     = shape.r_seq [shape.r_pos];
-   shape.r_done [shape.r_pos + 1] = '\0';
-   /*> }                                                                              <*/
+   shape.r_done [shape.r_exec]     = shape.r_eng [shape.r_exec];
+   shape.r_done [shape.r_exec + 1] = '\0';
    /*---(increment position)----------*/
    switch (c) {
    case 2 :
@@ -290,6 +435,130 @@ DRAW_stroke        (char a_type, char a_letter)
       shape.r_prog += shape.r_inc * 0.50;
       break;
    }
+   DEBUG_GRAF   yLOG_complex ("prog"      , "%6.3fp, %6.3fi", shape.r_prog, shape.r_inc);
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+DRAW_stroke_all         (void)
+{
+   /*---(locals)----------------------------*/
+   char        i;
+   float       x_prog      = 0.0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   /*---(quick-out)----------------------*/
+   if (shape.r_pos < 0) {
+      DEBUG_GRAF   yLOG_note    ("r_pos less than zero, no drawing");
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   if (shape.r_pos >= shape.r_len) {
+      DEBUG_GRAF   yLOG_note    ("r_pos greater than r_len, no drawing");
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   DEBUG_GRAF   yLOG_char    ("r_mode"    , shape.r_mode);
+   /*---(draw current only)--------------*/
+   if (shape.r_mode == '-') {
+      DRAW_stroke     ('c', shape.r_seq [shape.r_pos]);
+   }
+   /*---(draw last two)------------------*/
+   else if (shape.r_mode == '2') {
+      x_prog = shape.r_prog;
+      if (shape.r_pos > 0) {
+         shape.r_prog = 1.00;
+         DRAW_stroke     ('2', shape.r_seq [shape.r_pos - 1]);
+      }
+      shape.r_prog = x_prog;
+      DRAW_stroke     ('c', shape.r_seq [shape.r_pos]);
+   }
+   /*---(draw last two)------------------*/
+   else if (shape.r_mode == '3') {
+      x_prog = shape.r_prog;
+      if (shape.r_pos > 1) {
+         shape.r_prog = 1.00;
+         DRAW_stroke     ('3', shape.r_seq [shape.r_pos - 2]);
+      }
+      if (shape.r_pos > 0) {
+         shape.r_prog = 1.00;
+         DRAW_stroke     ('2', shape.r_seq [shape.r_pos - 1]);
+      }
+      shape.r_prog = x_prog;
+      DRAW_stroke     ('c', shape.r_seq [shape.r_pos]);
+   }
+   /*---(draw all, normal, with shadow)--*/
+   else if (shape.r_mode == '*') {
+      if (shape.r_pos == 0) {
+         DRAW_stroke     ('c', shape.r_seq [0]);
+      } else {
+         x_prog = shape.r_prog;
+         for (i = 0; i <= shape.r_pos; ++i) {
+            if (i < shape.r_pos - 1) {
+               shape.r_prog = 1.00;
+               DRAW_stroke     ('3', shape.r_seq [i]);
+               continue;
+            }
+            if (i < shape.r_pos) {
+               shape.r_prog = 1.00;
+               DRAW_stroke     ('2', shape.r_seq [i]);
+               continue;
+            }
+            shape.r_prog = x_prog;
+            DRAW_stroke     ('c', shape.r_seq [i]);
+         }
+      }
+   }
+   /*---(draw all, normal, rainbow)------*/
+   else if (shape.r_mode == 'r') {
+      x_prog = shape.r_prog;
+      for (i = 0; i <= shape.r_pos; ++i) {
+         if (i == shape.r_pos) {
+            shape.r_prog = x_prog;
+            if (shape.r_prog > 1.00) {
+               shape.r_prog = 1.00;
+               DRAW_stroke     (i % 12, shape.r_seq [i]);
+            } else {
+               DRAW_stroke     ('B', shape.r_seq [i]);
+            }
+         } else {
+            shape.r_prog = 1.00;
+            DRAW_stroke     (i % 12, shape.r_seq [i]);
+         }
+      }
+   }
+   /*---(draw all, normal, no shadow)----*/
+   else if (shape.r_mode == 'c') {
+      if (shape.r_pos == 0) {
+         DRAW_stroke     ('c', shape.r_seq [0]);
+      } else {
+         x_prog = shape.r_prog;
+         for (i = 0; i <= shape.r_pos; ++i) {
+            if (i < shape.r_pos - 1) {
+               shape.r_prog = 1.00;
+               DRAW_stroke     ('c', shape.r_seq [i]);
+               continue;
+            }
+            if (i < shape.r_pos) {
+               shape.r_prog = 1.00;
+               DRAW_stroke     ('c', shape.r_seq [i]);
+               continue;
+            }
+            shape.r_prog = x_prog;
+            DRAW_stroke     ('c', shape.r_seq [i]);
+         }
+      }
+   }
+   /*---(draw all now)-------------------*/
+   else if (shape.r_mode == '!') {
+      for (i = 0; i < shape.r_len; ++i) {
+         shape.r_pos = shape.r_exec = i;
+         shape.r_prog = 1.00;
+         DRAW_stroke     ('c', shape.r_seq [i]);
+      }
+   }
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -298,20 +567,22 @@ DRAW_stroke        (char a_type, char a_letter)
 char
 DRAW_done               (void)
 {
+   int         l           =    0;
    if (shape.r_done_show != 'y')  return 0;
+   l = strlen (shape.r_eng);
    glPushMatrix(); {
       glColor4f  (0.0f, 0.0f, 0.0f, 1.0f);
-      if        (shape.r_len < 12) {
+      if        (l < 12) {
          glTranslatef (5, shape.sz_height - 25, 200.0f);
          yFONT_print  (my.txf_sm, my.size_norm +  3, YF_TOPLEF, shape.r_done);
-      } else if (shape.r_len < 20) {
-         glTranslatef (5, shape.sz_height - 20, 200.0f);
+      } else if (l < 20) {
+         glTranslatef (5, shape.sz_height - 21, 200.0f);
          yFONT_print  (my.txf_sm, my.size_norm     , YF_TOPLEF, shape.r_done);
-      } else if (shape.r_len < 35) {
-         glTranslatef (5, shape.sz_height - 15, 200.0f);
+      } else if (l < 35) {
+         glTranslatef (5, shape.sz_height - 18, 200.0f);
          yFONT_print  (my.txf_sm, my.size_norm -  3, YF_TOPLEF, shape.r_done);
       } else {
-         glTranslatef (5, shape.sz_height - 10, 200.0f);
+         glTranslatef (5, shape.sz_height - 15, 200.0f);
          yFONT_print  (my.txf_sm, my.size_norm -  6, YF_TOPLEF, shape.r_done);
       }
    } glPopMatrix();
@@ -342,22 +613,24 @@ DRAW_main          (void)
    /*---(start)--------------------------*/
    long  x_start, x_stop;
    x_start = time_stamp();
-   if (shape.r_len > 0) {
+   DEBUG_GRAF   yLOG_complex ("position"  , "%6.3fp, %3dl, %3dp, %3dx, %c", shape.r_prog, shape.r_len, shape.r_pos, shape.r_exec, shape.r_seq [shape.r_pos]);
+   if (shape.r_pos >= 0 && shape.r_len > 0) {
       if (shape.r_prog >  1.00) {
-         ++shape.r_pos;
          if (shape.r_pos >= shape.r_len) {
-            shape.r_pos = shape.r_len - 1;
-            shape.r_prog=   1.01;
+            shape.r_pos     = shape.r_len - 1;
+            shape.r_prog    =  1.01;
          } else {
-            shape.r_prog    =  0.00;
+            ++shape.r_pos;
+            if (shape.r_pos >= shape.r_len)   shape.r_pos     = shape.r_len - 1;
+            else   {
+               if (shape.r_pos > 0 && strchr ("SM", shape.r_seq [shape.r_pos - 1]) == NULL) ++(shape.r_exec);
+               shape.r_prog    =  0.00;
+            }
             shape.r_letter  = shape.r_seq [shape.r_pos];
          }
       }
-      /*> else if (shape.r_prog >= 0.00) {                                            <* 
-       *>    shape.r_prog +=  shape.r_inc;                                            <* 
-       *> }                                                                           <*/
    }
-   /*> else if (shape.r_prog >= 0.00)  shape.r_prog +=  0.002;                        <*/
+   DEBUG_GRAF   yLOG_complex ("position"  , "%6.3fp, %3dl, %3dp, %3dx, %c", shape.r_prog, shape.r_len, shape.r_pos, shape.r_exec, shape.r_seq [shape.r_pos]);
    /*---(draw)---------------------------*/
    glLineWidth (1.0);
    glColor4f   (0.0f, 0.0f, 0.0f, 1.0f);
@@ -371,86 +644,13 @@ DRAW_main          (void)
       /*> DRAW_arrows();                                                              <*/
    } glPopMatrix();
    /*---(NN)-------*/
-   switch (shape.r_mode) {
-   case '-':
-      DRAW_stroke     ('c', shape.r_seq [shape.r_pos]);
-      break;
-   case '2' :
-      x_prog = shape.r_prog;
-      if (shape.r_pos > 0) {
-         shape.r_prog = 1.01;
-         DRAW_stroke     ('2', shape.r_seq [shape.r_pos - 1]);
-      }
-      shape.r_prog = x_prog;
-      DRAW_stroke     ('c', shape.r_seq [shape.r_pos]);
-      break;
-   case '3' :
-      x_prog = shape.r_prog;
-      if (shape.r_pos > 1) {
-         shape.r_prog = 1.00;
-         DRAW_stroke     ('3', shape.r_seq [shape.r_pos - 2]);
-      }
-      if (shape.r_pos > 0) {
-         shape.r_prog = 1.00;
-         DRAW_stroke     ('2', shape.r_seq [shape.r_pos - 1]);
-      }
-      shape.r_prog = x_prog;
-      DRAW_stroke     ('c', shape.r_seq [shape.r_pos]);
-      break;
-   case '*':
-      if (shape.r_pos == 0) {
-         DRAW_stroke     ('c', shape.r_seq [0]);
-      } else {
-         x_prog = shape.r_prog;
-         for (i = 0; i <= shape.r_pos; ++i) {
-            if (i < shape.r_pos - 1) {
-               shape.r_prog = 1.01;
-               DRAW_stroke     ('3', shape.r_seq [i]);
-               continue;
-            }
-            if (i < shape.r_pos) {
-               shape.r_prog = 1.01;
-               DRAW_stroke     ('2', shape.r_seq [i]);
-               continue;
-            }
-            shape.r_prog = x_prog;
-            DRAW_stroke     ('c', shape.r_seq [i]);
-         }
-      }
-      break;
-   case 'C':
-      if (shape.r_pos == 0) {
-         DRAW_stroke     ('c', shape.r_seq [0]);
-      } else {
-         x_prog = shape.r_prog;
-         for (i = 0; i <= shape.r_pos; ++i) {
-            if (i < shape.r_pos - 1) {
-               shape.r_prog = 1.01;
-               DRAW_stroke     ('c', shape.r_seq [i]);
-               continue;
-            }
-            if (i < shape.r_pos) {
-               shape.r_prog = 1.01;
-               DRAW_stroke     ('c', shape.r_seq [i]);
-               continue;
-            }
-            shape.r_prog = x_prog;
-            DRAW_stroke     ('c', shape.r_seq [i]);
-         }
-      }
-      break;
-   case '!':
-      for (i = 0; i <= shape.r_len; ++i) {
-         shape.r_prog = 1.01;
-         DRAW_stroke     ('c', shape.r_seq [i]);
-      }
-      break;
-   }
+   DRAW_stroke_all ();
    DRAW_navigation ();
    /*> DRAW_stroke  ('"');                                                            <*/
    /*> DRAW_context();                                                                <*/
    /*> DRAW_dots();                                                                   <*/
    DRAW_done       ();
+   DRAW_debug      ();
    /*---(timing)-------------------------*/
    x_stop  = time_stamp();
    DEBUG_GRAF   yLOG_llong   ("elapsed"   , x_stop - x_start);
@@ -581,7 +781,7 @@ DRAW_image (void)
       glPushMatrix(); {
          glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
          glTranslatef (shape.r_edge * 1.00, 0.0f, 0.0f);
-         if (stroke.color != 1 && stroke.color != 4)
+         if (shape.r_color != 1 && shape.r_color != 4)
             glColor4f (1.0f, 1.0f, 1.0f, 0.1f);
          else if ((i % 2) == 0)
             glColor4f (0.0f, 0.0f, 0.8f, 0.2f);
@@ -617,7 +817,7 @@ DRAW_image (void)
          glRotatef    (22.5, 0.0f, 0.0f, 1.0f);
          /*> glTranslatef (shape.r_outer * 0.87, 0.0f, 0.0f);                         <*/
          glTranslatef (shape.r_outer * 0.85, 0.0f, 0.0f);
-         if (stroke.color == 1 || stroke.color == 3 || stroke.color == 5)
+         if (shape.r_color == 1 || shape.r_color == 3 || shape.r_color == 5)
             glColor4f (0.6f, 0.0f, 0.6f, 0.3f);
          else
             glColor4f (1.0f, 1.0f, 1.0f, 0.1f);
@@ -639,7 +839,7 @@ DRAW_image (void)
       glPushMatrix(); {
          glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
          glTranslatef (shape.r_inner * 0.65, 0.0f, 0.0f);
-         if (stroke.color == 1 || stroke.color == 2 || stroke.color == 5)
+         if (shape.r_color == 1 || shape.r_color == 2 || shape.r_color == 5)
             glColor4f (0.6f, 0.0f, 0.3f, 0.3f);
          else
             glColor4f (1.0f, 1.0f, 1.0f, 0.1f);
@@ -651,7 +851,7 @@ DRAW_image (void)
    glCallList (shape.dl_center);
    glPushMatrix(); {
       glTranslatef(0.0f, 0.0f, 25.0f);
-      if (stroke.color == 1 || stroke.color == 0)
+      if (shape.r_color == 1 || shape.r_color == 0)
          glColor4f (1.0f, 1.0f, 0.0f, 0.4f);
       else
          glColor4f (1.0f, 1.0f, 1.0f, 0.1f);
@@ -716,6 +916,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
    float       x, y;
    float       rad;
    char        t           [LEN_TERSE] = "";
+   char        x_pos       =    0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_senter  (__FUNCTION__);
    DEBUG_GRAF   yLOG_svalue  ("a_lvl", a_lvl);
@@ -727,6 +928,14 @@ DRAW_label_one          (char a_lvl, char a_pos)
          DEBUG_GRAF   yLOG_sexit   (__FUNCTION__);
          return 0;
       }
+   }
+   if (shape.r_pos < 0) {
+      DEBUG_GRAF   yLOG_sexit   (__FUNCTION__);
+      return 0;
+   }
+   if (a_lvl == 6 && stroke.help == 20 && strchr ("SMTHNAEC", shape.r_letter) == NULL) {
+      DEBUG_GRAF   yLOG_sexit   (__FUNCTION__);
+      return 0;
    }
    /*---(check for label adjustments)----*/
    if      (states [MODE]) {
@@ -743,44 +952,56 @@ DRAW_label_one          (char a_lvl, char a_pos)
    switch (a_lvl) {
    case 1 :
       DEBUG_GRAF   yLOG_snote   ("inner      ");
-      r = shape.r_inner * 0.90;
-      d = a_pos * 45;
-      c = x_labels [a_pos * 5];
+      glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
+      r     = shape.r_inner * 0.90;
+      d     = a_pos * 45;
+      x_pos = a_pos * 5;
+      c     = x_labels [x_pos];
       break;
    case 2 :
+      glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
       DEBUG_GRAF   yLOG_snote   ("outer left ");
-      r = shape.r_outer * 0.91;
-      d = a_pos * 45 - 12;
-      c = x_labels [(a_pos * 5) + 1];
+      r     = shape.r_outer * 0.91;
+      d     = a_pos * 45 - 12;
+      x_pos = (a_pos * 5) + 1;
+      c     = x_labels [x_pos];
       break;
    case 3 :
+      glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
       DEBUG_GRAF   yLOG_snote   ("edge left  ");
-      r = shape.r_edge  * 1.00;
-      d = a_pos * 45 - 35;
-      c = x_labels [(a_pos * 5) + 2];
+      r     = shape.r_edge  * 1.00;
+      d     = a_pos * 45 - 35;
+      x_pos = (a_pos * 5) + 2;
+      c     = x_labels [x_pos];
       break;
    case 4 :
+      glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
       DEBUG_GRAF   yLOG_snote   ("outer right");
-      r = shape.r_outer * 0.91;
-      d = a_pos * 45 + 12;
-      c = x_labels [(a_pos * 5) + 3];
+      r     = shape.r_outer * 0.91;
+      d     = a_pos * 45 + 12;
+      x_pos = (a_pos * 5) + 3;
+      c     = x_labels [x_pos];
       break;
    case 5 :
+      glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
       DEBUG_GRAF   yLOG_snote   ("edge right ");
-      r = shape.r_edge  * 1.00;
-      d = a_pos * 45 + 35;
-      c = x_labels [(a_pos * 5) + 4];
+      r     = shape.r_edge  * 1.00;
+      d     = a_pos * 45 + 35;
+      x_pos = (a_pos * 5) + 4;
+      c     = x_labels [x_pos];
       break;
    case 6 :
       DEBUG_GRAF   yLOG_snote   ("special    ");
-      r = shape.r_edge  * 1.10;
-      d = a_pos * 45;
-      c = g_special [a_pos];
+      glColor4f (1.0f, 0.0f, 0.0f, 0.7f);
+      r     = shape.r_edge  * 1.05;
+      d     = a_pos * 45;
+      x_pos = a_pos;
+      c     = g_special [a_pos];
       break;
    }
    DEBUG_GRAF   yLOG_schar   (c);
    if (stroke.help == 20) {
-      if (shape.r_letter != c) {
+      if (shape.r_loc != x_pos) {
          DEBUG_GRAF   yLOG_sexit   (__FUNCTION__);
          return 0;
       }
@@ -818,13 +1039,20 @@ DRAW_labels             (void)
       DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
       return 0;
    }
+   /*> if (shape.r_prog < 0.00) {                                                     <* 
+    *>    DEBUG_GRAF   yLOG_note    ("nothing moving");                               <* 
+    *>    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);                                   <* 
+    *>    return 0;                                                                   <* 
+    *> }                                                                              <*/
+   /*> if (shape.r_letter == '\0') {                                                  <* 
+    *>    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);                                   <* 
+    *>    return 0;                                                                   <* 
+    *> }                                                                              <*/
    /*---(current)--------------------------*/
    /*> glPushMatrix();                                                                <* 
     *> glTranslatef(  0,  0,   75.0);                                                 <* 
     *> yFONT_print (my.txf_bg, my.size_big, YF_MIDCEN, stroke.text);                  <* 
     *> glPopMatrix();                                                                 <*/
-   /*---(current)--------------------------*/
-   glColor4f(0.0f, 0.0f, 0.0f, 0.7f);
    /*---(modes)----------------------------*/
    if (stroke.help < 10 || stroke.help == 13 || stroke.help == 20) {
       r = shape.r_edge * 1.10;
@@ -1020,6 +1248,74 @@ DRAW_current (void)
 }
 
 char
+DRAW_debug              (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        t           [LEN_LABEL] = "";
+   int         n           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   /*---(quick-out)----------------------*/
+   DEBUG_GRAF   yLOG_char    ("r_debug"   , shape.r_debug);
+   if (shape.r_debug == '-') {
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   /*---(prepare)------------------------*/
+   glColor4f  (1.0f, 0.5f, 0.0f, 1.0f);
+   /*---(config)-------------------------*/
+   glPushMatrix (); {
+      sprintf (t, "i: %c, %5.3f", shape.r_inc_txt, shape.r_inc);
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   glPushMatrix (); {
+      sprintf (t, "c: %c, %d", shape.r_color_txt, shape.r_color);
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   glPushMatrix (); {
+      sprintf (t, "h: %2d, %s", stroke.help, stroke.help_txt);
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   glPushMatrix (); {
+      sprintf (t, "m: %c", shape.r_mode);
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   /*---(positions)----------------------*/
+   glPushMatrix (); {
+      sprintf (t, "l: %3d", shape.r_len);
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   glPushMatrix (); {
+      sprintf (t, "r: %3d", shape.r_pos);
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   glPushMatrix (); {
+      sprintf (t, "e: %3d", shape.r_exec);
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   glPushMatrix (); {
+      sprintf (t, "c: %c", chrvisible (shape.r_letter));
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   glPushMatrix (); {
+      sprintf (t, "p: %5.3f", shape.r_prog);
+      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
+   } glPopMatrix ();
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
 DRAW_navigation         (void)
 {
    /*---(locals)----------------------------*/
@@ -1048,6 +1344,15 @@ DRAW_navigation         (void)
       glVertex3f ( x_rig, x_bot, z);
       glVertex3f ( x_lef, x_bot, z);
    } glEnd();
+   if (yMACRO_exe_mode () == MACRO_RUN) {
+      glColor4f  (0.7f, 0.0f, 0.0f, 1.0f);
+      glBegin    (GL_POLYGON); {
+         glVertex3f ( x_lef, x_top + 4, z);
+         glVertex3f ( x_rig, x_top + 4, z);
+         glVertex3f ( x_rig, x_top    , z);
+         glVertex3f ( x_lef, x_top    , z);
+      } glEnd();
+   }
    /*---(move up)------------------------*/
    z += 5;
    /*---(prev workspace)-----------------*/

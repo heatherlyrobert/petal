@@ -4,18 +4,34 @@
 ##
 
 ## slow down the execution speed
-ºµre5»
+µren
+µre5
 
 ## put the floating command line at the bottom
-ºµcF8»
+µcF8
 
-º:speed 7¦»
-º:label !¦»
-º:seq¦»
+:pad   -¦
+:speed 7¦
+:label !¦
+:seq   -¦
+µre3
+µref
 
-«
+«« 
+«« 
+«« 
 
-º:seq   3 hw¦»
+:seq   3 hw¦
 
+«« 
+«« 
+«« 
+«« 
+«« 
+«« 
+«« 
+«« 
+«« 
+«« 
 
 

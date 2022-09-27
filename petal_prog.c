@@ -340,8 +340,8 @@ PROG__init              (int argc, char *argv[])
    /*---(header)-------------------------*/
    DEBUG_TOPS   yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
-   stroke.help       = -1;
-   stroke.color      = -1;
+   DRAW_help  ("-");
+   DRAW_color ("all");
    stroke.max        = -1;
    stroke.zth        = -1;
    stroke.fst        = -1;
@@ -352,13 +352,14 @@ PROG__init              (int argc, char *argv[])
    stroke.small      = NOR;
    strlcpy (my.win_title, "petal_writing", LEN_STR);
    strlcpy (my.face_bg  , "coolvetica"   , LEN_STR);
-   strlcpy (my.face_sm  , "shrike"       , LEN_STR);
    /*> strlcpy (my.face_sm  , "courier"      , LEN_STR);                              <*/
+   strlcpy (my.face_sm  , "shrike"       , LEN_STR);
    /*---(flags)--------------------------*/
    my.rptg_events    = '-';
    my.rptg_dots      = '-';
    my.rptg_recog     = '-';
    my.loop_msec      =   1;
+   strlcpy (shape.r_eng , "", LEN_RECD);
    strlcpy (shape.r_seq , "", LEN_RECD);
    shape.r_len       =   0;
    shape.r_pos       =   0;
@@ -366,9 +367,12 @@ PROG__init              (int argc, char *argv[])
    shape.r_done_show = 'y';
    shape.r_mode      = '-';
    shape.r_letter    = '\0';
+   shape.r_loc       = -1;
+   shape.r_exec      =  0;
    shape.r_state     = -1;
+   shape.r_debug     = '-';
    shape.r_prog      = 0.0;
-   shape.r_inc       = 0.0;
+   DRAW_speed ("-");
    /*---(file names)---------------------*/
    DEBUG_PROG   yLOG_note    ("file names");
    snprintf (my.name_event  , LEN_STR, "%s%s", DIR_INPUT, FILE_EVENT );
@@ -389,21 +393,21 @@ PROG__args              (int argc, char *argv[])
    char *a = NULL;
    for (i= 1; i < argc; ++i) {
       a = argv[i];
-      if      (strncmp(a, "--letters" , 20) == 0)  stroke.help     = 0;
-      else if (strncmp(a, "--NN"      , 20) == 0)  stroke.help     = 1;
-      else if (strncmp(a, "--NE"      , 20) == 0)  stroke.help     = 2;
-      else if (strncmp(a, "--EE"      , 20) == 0)  stroke.help     = 3;
-      else if (strncmp(a, "--SE"      , 20) == 0)  stroke.help     = 4;
-      else if (strncmp(a, "--SS"      , 20) == 0)  stroke.help     = 5;
-      else if (strncmp(a, "--SW"      , 20) == 0)  stroke.help     = 6;
-      else if (strncmp(a, "--WW"      , 20) == 0)  stroke.help     = 7;
-      else if (strncmp(a, "--NW"      , 20) == 0)  stroke.help     = 8;
-      else if (strncmp(a, "--inner"   , 20) == 0)  stroke.help     = 10;
-      else if (strncmp(a, "--outer"   , 20) == 0)  stroke.help     = 11;
-      else if (strncmp(a, "--edge"    , 20) == 0)  stroke.help     = 12;
-      else if (strncmp(a, "--mode"    , 20) == 0)  stroke.help     = 13;
-      else if (strncmp(a, "--two"     , 20) == 0)  stroke.help     = 14;
-      else if (strncmp(a, "--color"   , 20) == 0)  stroke.color    = 1;
+      if      (strncmp(a, "--letters" , 20) == 0)  DRAW_help ("all");
+      else if (strncmp(a, "--NN"      , 20) == 0)  DRAW_help ("NN");
+      else if (strncmp(a, "--NE"      , 20) == 0)  DRAW_help ("NE");
+      else if (strncmp(a, "--EE"      , 20) == 0)  DRAW_help ("EE");
+      else if (strncmp(a, "--SE"      , 20) == 0)  DRAW_help ("SE");
+      else if (strncmp(a, "--SS"      , 20) == 0)  DRAW_help ("SS");
+      else if (strncmp(a, "--SW"      , 20) == 0)  DRAW_help ("SW");
+      else if (strncmp(a, "--WW"      , 20) == 0)  DRAW_help ("WW");
+      else if (strncmp(a, "--NW"      , 20) == 0)  DRAW_help ("NW");
+      else if (strncmp(a, "--inner"   , 20) == 0)  DRAW_help ("inner");
+      else if (strncmp(a, "--outer"   , 20) == 0)  DRAW_help ("outer");
+      else if (strncmp(a, "--edge"    , 20) == 0)  DRAW_help ("edge");
+      else if (strncmp(a, "--mode"    , 20) == 0)  DRAW_help ("mode");
+      else if (strncmp(a, "--two"     , 20) == 0)  DRAW_help ("two");
+      else if (strncmp(a, "--color"   , 20) == 0)  DRAW_color ("a");
       else if (strncmp(a, "--tiny"    , 20) == 0)  stroke.small    = TNY;
       else if (strncmp(a, "--small"   , 20) == 0)  stroke.small    = SML;
       else if (strncmp(a, "--med"     , 20) == 0)  stroke.small    = MED;
@@ -534,6 +538,8 @@ PROG_dawn          (void)
    DEBUG_PROG   yLOG_value   ("done"      , rc);
    rc = yCMD_add (YCMD_M_CONFIG, "press"       , ""    , "s"    , DRAW_press           , "configure showing completed text"                            );
    DEBUG_PROG   yLOG_value   ("press"     , rc);
+   rc = yCMD_add (YCMD_M_CONFIG, "debug"       , ""    , "s"    , DRAW_debug_set       , "configure showing completed text"                            );
+   DEBUG_PROG   yLOG_value   ("debug"     , rc);
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;
