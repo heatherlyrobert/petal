@@ -3,35 +3,182 @@
 ## yVIKEYS script to automate hello world demo
 ##
 
-## slow down the execution speed
-µren
-µre5
+##===[[ preparation ]]=========================================================#
+  ## slow down the execution speed
+  ºµre5··µren»
+  ## clear notes
+  º:note #¦»
+  ## put the floating command line at the bottom
+  ºµcF8»
 
-## put the floating command line at the bottom
-µcF8
+  º:size  g¦»
+  º:pad   -¦»
+  º:speed 7¦»
+  º:label !¦»
+  º:seq   -¦»
+  º:press -¦»
+  º:done  y¦»
+  ««·««·««·««
 
-:pad   -¦
-:speed 7¦
-:label !¦
-:seq   -¦
-µre3
-µref
 
-«« 
-«« 
-«« 
+##===[[ quick example ]]=======================================================#
+  ºµre3··µref»
+  º:note 91)quick show¦»
+  ««··º:note 37-letters draw down here¦»
+  ««··º:note 22-results shown here¦»
+  ««··º:note 91#¦»
 
-:seq   3 hw¦
+  º:seq   - hw¦»
 
-«« 
-«« 
-«« 
-«« 
-«« 
-«« 
-«« 
-«« 
-«« 
-«« 
+  ««·««·««·««·««·«« 
+  º:note #¦»
+  ««·«« 
+  º:seq   -¦»
+  ºµre5··µren»
+
+##===[[ show inner ]]==========================================================#
+
+  ºµre5··µren»
+
+  º:note #¦»
+  º:note 91)use strokes to make letters¦»
+  ÏÏ
+  º:note 22-start in the center¦»
+  º:pad   c¦»
+  ÏÏ
+  º:note 27-most common are short¦»
+  º:pad   i¦»
+  ÏÏ
+  º:label i¦»
+  ««·««·««
+
+  ºµre3··µref»
+  º:label !¦»
+  º:seq   - nai¦»
+  ««·««·««·««
+  º:seq   -¦»
+  ºµre5··µren»
+
+##===[[ show outer ]]==========================================================#
+
+  ºµre5··µren»
+
+  º:note #¦»
+  ÏÏ
+  º:note 28-next are little curves¦»
+  º:pad   o¦»
+  ÏÏ
+  º:label o¦»
+  ««·««·««
+
+  ºµre3··µref»
+  º:label !¦»
+  º:seq   - rljm¦»
+  ««·««·««·««·«« 
+  º:seq   -¦»
+  ºµre5··µren»
+
+##===[[ show edges ]]==========================================================#
+
+  ºµre5··µren»
+
+  º:note #¦»
+  ÏÏ
+  º:note 26-next are longer curves¦»
+  º:pad   e¦»
+  ÏÏ
+  º:label e¦»
+  ««·««·««
+
+  ºµre3··µref»
+  º:label !¦»
+  º:seq   - xb(]¦»
+  ««·««·««·««·«« 
+  º:seq   -¦»
+  ºµre5··µren»
+
+##===[[ show states ]]=========================================================#
+
+  ºµre5··µren»
+
+  º:note #¦»
+  ÏÏ
+  º:pad   a¦»
+  º:label a¦»
+  º:note 13-swipe to top 'S' for shift Ô5w¦»
+  ««·««
+  º:note 18-swipe twice to lock¦»
+  º:press S¦»
+  ««·««
+  º:note 18#¦»
+  º:press -¦»
+
+  ºµre3··µref»
+  º:label !¦»
+  º:seq   - CAB¦»
+  ««·««·««·««·«« 
+  º:seq   -¦»
+  ºµre5··µren»
+
+  º:note  #¦»
+  º:pad   a¦»
+  º:label a¦»
+  º:note 14-top-right 'M' for mode Ôpq¦»
+  ««·««
+  º:note 18-swipe twice to lock¦»
+  º:press M¦»
+  ««·««
+  º:note 18#¦»
+  º:press -¦»
+
+  ºµre3··µref»
+  º:label !¦»
+  º:seq   - 3*7¦»
+  ««·««·««·««·«« 
+  º:seq   -¦»
+  ºµre5··µren»
+
+##===[[ all letters ]]=========================================================#
+
+  ºµre5··µren»
+  º:note #¦»
+  º:note 11-show all strokes¦»
+  º:speed  3¦»
+  º:label  !¦»
+  º:pad    a¦»
+  º:done   -¦»
+
+  ºµre3··µref»
+  º:seq r **¦»
+  ««·««·««·««·««·««·««·««·««·««
+  ºµre5··µren»
+
+##===[[ show sizes ]]==========================================================#
+
+  ºµre5··µren»
+
+  º:note #¦»
+  ÏÏ
+  º:pad   a¦»
+  º:label -¦»
+  º:note 55-been showing giant size¦»
+  ««·««
+  º:note  #¦»
+  º:size  n¦»
+  º:note 11,normal¦»
+  ««·««
+  º:size  t¦»
+  º:note 11,tiny¦»
+  ««·««
+  º:size  l¦»
+  º:note 11,large¦»
+  ««·««
+  º:size  g¦»
+  º:note 11-and, giant for demos¦»
+  º:note 18-size is personal¦»
+  ««·««
+  º:note  #¦»
+  º:note 55-done, finito, completare¦»
+
 
 

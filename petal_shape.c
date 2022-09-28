@@ -29,7 +29,6 @@ char       displist_touch2     (void);
 char       displist_back       (void);
 
 
-char       displist_inner_MOD   (void);
 
 /*============================--------------------============================*/
 /*===----                        general sizing                        ----===*/
@@ -112,7 +111,6 @@ displist_init(void)
    displist_center     ();
    SHAPE_ring          ();
    displist_inner      ();
-   /*> displist_inner_MOD  ();                                                        <*/
    SHAPE_buffer        ();
    displist_outer      ();
    displist_edge       ();
@@ -224,47 +222,35 @@ displist_center(void)
    float   r  = shape.r_center;
    float   z  =  20.00;
    /*---(interior)--------------------------*/
-   glBegin(GL_POLYGON);
    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-   for (d = 0; d <= 360; d += 10) {
-      rad = d * DEG2RAD;
-      x   = r * cos(rad);
-      y   = r * sin(rad);
-      glVertex3f( x, y, z);
-   }
-   glEnd();
-   /*---(center)----------------------------*/
-   /*> glBegin(GL_POLYGON);                                                           <* 
-    *> glColor4f(1.0f, 1.0f, 0.0f, 0.5f);                                             <* 
-    *> for (d = 0; d <= 360; d += 10) {                                               <* 
-    *>    rad = d * DEG2RAD;                                                          <* 
-    *>    x   = r * cos(rad) * 0.5;                                                   <* 
-    *>    y   = r * sin(rad) * 0.5;                                                   <* 
-    *>    glVertex3f( x, y, z + 1);                                                   <* 
-    *> }                                                                              <* 
-    *> glEnd();                                                                       <*/
-   /*---(inside line)-----------------------*/
-   glBegin(GL_LINE_STRIP);
-   glLineWidth(shape.r_lines);
-   glColor4f(0.3f, 0.3f, 0.3f, 1.0f);
-   for (d = 0; d <= 360; d += 15) {
-      rad = d * DEG2RAD;
-      x   = r * cos(rad) * (((((int) d) % 45) == 0) ? 0.6f : 0.4f);
-      y   = r * sin(rad) * (((((int) d) % 45) == 0) ? 0.6f : 0.4f);
-      glVertex3f( x, y, z + 2);
-   }
-   glEnd();
+   glBegin(GL_POLYGON); {
+      for (d = 0; d <= 360; d += 10) {
+         rad = d * DEG2RAD;
+         x   = r * cos(rad);
+         y   = r * sin(rad);
+         glVertex3f ( x, y, z);
+      }
+   } glEnd();
+   /*---(inside star)-----------------------*/
+   glLineWidth (shape.r_lines);
+   glColor4f   (0.0f, 0.5f, 0.0f, 0.5f);
+   glBegin (GL_LINE_STRIP); {
+      for (d = 0; d <= 360; d += 15) {
+         rad = d * DEG2RAD;
+         x   = r * cos(rad) * (((((int) d) % 45) == 0) ? 0.6f : 0.4f);
+         y   = r * sin(rad) * (((((int) d) % 45) == 0) ? 0.6f : 0.4f);
+         glVertex3f ( x, y, z + 2);
+      }
+   } glEnd();
    /*---(outline)---------------------------*/
-   glBegin(GL_LINE_STRIP);
-   glLineWidth(shape.r_lines);
-   glColor4f(0.3f, 0.3f, 0.3f, 1.0f);
-   for (d = 0; d < 360; d += 2) {
-      rad = d * DEG2RAD;
-      x   = r * cos(rad);
-      y   = r * sin(rad);
-      glVertex3f( x, y, z + 2);
-   }
-   glEnd();
+   glBegin(GL_LINE_STRIP); {
+      for (d = 0; d < 360; d += 2) {
+         rad = d * DEG2RAD;
+         x   = r * cos(rad);
+         y   = r * sin(rad);
+         glVertex3f ( x, y, z + 2);
+      }
+   } glEnd();
    /*---(end)-------------------------------*/
    glEndList();
    /*---(complete)-----------------------*/
@@ -287,87 +273,30 @@ displist_inner     (void)
    float   r  = shape.r_inner;
    float   z  = -15.00;
    /*---(interior)--------------------------*/
-   glBegin(GL_POLYGON); {
-      glColor4f(1.0f, 1.0f, 0.0f, 0.2f);
-      glVertex3f( 0.0, 0.0, z);
+   glColor4f   (1.0f, 1.0f, 0.0f, 0.2f);
+   glBegin (GL_POLYGON); {
+      glVertex3f ( 0.0, 0.0, z);
       for (d = -22; d < 22; d+=6) {
          rad = d * DEG2RAD;
          x   = r * cos(rad);
          y   = r * sin(rad);
-         glVertex3f( x, y, z);
+         glVertex3f ( x, y, z);
       }
-      glVertex3f( 0.0, 0.0, z);
-   } glEnd();
+      glVertex3f ( 0.0, 0.0, z);
+   } glEnd ();
    /*---(outline)---------------------------*/
-   glBegin     (GL_LINE_STRIP); {
-      glLineWidth (20);
-      glColor4f   (0.4f, 0.4f, 0.4f, 0.5f);
-      glVertex3f( 0.0, 0.0, z + 5);
+   glLineWidth (shape.r_lines);
+   glColor4f   (0.0f, 0.5f, 0.0f, 0.5f);
+   glBegin (GL_LINE_STRIP); {
+      glVertex3f ( 0.0, 0.0, z + 5);
       for (d = -22; d < 22; d+=6) {
          rad = d * DEG2RAD;
          x   = r * cos(rad);
          y   = r * sin(rad);
          glVertex3f ( x, y, z + 5);
       }
-      glVertex3f( 0.0, 0.0, z + 5);
-   } glEnd();
-   /*---(end)-------------------------------*/
-   glEndList();
-   /*---(complete)-----------------------*/
-   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
-   return 0;
-}
-
-char
-displist_inner_MOD   (void)
-{
-   /*---(header)-------------------------*/
-   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
-   /*---(begin)-----------------------------*/
-   shape.dl_inner = glGenLists(1);
-   glNewList(shape.dl_inner, GL_COMPILE);
-   /*---(locals)----------------------------*/
-   float   d;
-   float   rad;
-   float   x, y;
-   float   r1 = shape.r_center + 10;
-   float   r2 = shape.r_inner;
-   float   z  = -15.00;
-   glColor4f(1.0f, 1.0f, 0.0f, 1.0f);
-   glBegin(GL_POLYGON); {
-      /*---(first side)------------------------*/
-      d   = -15;
-      rad = d * DEG2RAD;
-      x   = r1 * cos(rad);
-      y   = r1 * sin(rad);
-      glVertex3f( x, y, z);
-      x   = r2 * cos(rad);
-      y   = r2 * sin(rad);
-      glVertex3f( x, y, z);
-      /*---(outside arc)-----------------------*/
-      for (d = -15; d < 15; d+=1) {
-         rad = d  * DEG2RAD;
-         x   = r2 * cos(rad);
-         y   = r2 * sin(rad);
-         glVertex3f( x, y, z);
-      }
-      /*---(second side)-----------------------*/
-      d   =  15;
-      rad = d * DEG2RAD;
-      x   = r2 * cos(rad);
-      y   = r2 * sin(rad);
-      glVertex3f( x, y, z);
-      x   = r1 * cos(rad);
-      y   = r1 * sin(rad);
-      glVertex3f( x, y, z);
-      /*---(inside arc)------------------------*/
-      for (d =  15; d > -15; d-=1) {
-         rad = d  * DEG2RAD;
-         x   = r1 * cos(rad);
-         y   = r1 * sin(rad);
-         glVertex3f( x, y, z);
-      }
-   } glEnd();
+      glVertex3f ( 0.0, 0.0, z + 5);
+   } glEnd ();
    /*---(end)-------------------------------*/
    glEndList();
    /*---(complete)-----------------------*/
@@ -389,30 +318,30 @@ displist_outer(void)
    float   x, y;
    float   z = -25.0;
    /*---(interior)--------------------------*/
-   glBegin(GL_POLYGON);
-   glColor4f(0.0f, 1.0f, 0.0f, 0.2f);
-   glVertex3f( 0.0, 0.0, z);
-   for (d = 1; d <  44; d+=6) {
-      rad = d * DEG2RAD;
-      x   = shape.r_outer * cos(rad);
-      y   = shape.r_outer * sin(rad);
-      glVertex3f( x, y, z);
-   }
-   glVertex3f( 0.0, 0.0, z);
-   glEnd();
+   glColor4f   (0.0f, 1.0f, 0.0f, 0.2f);
+   glBegin (GL_POLYGON); {
+      glVertex3f ( 0.0, 0.0, z);
+      for (d = 1; d <  44; d+=6) {
+         rad = d * DEG2RAD;
+         x   = shape.r_outer * cos(rad);
+         y   = shape.r_outer * sin(rad);
+         glVertex3f ( x, y, z);
+      }
+      glVertex3f ( 0.0, 0.0, z);
+   } glEnd ();
    /*---(begin)-----------------------------*/
-   glBegin(GL_LINE_STRIP);
-   glLineWidth(shape.r_lines);
-   glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
-   glVertex3f( 0.0, 0.0, z + 1);
-   for (d = 1; d <  44; d+=6) {
-      rad = d * DEG2RAD;
-      x   = shape.r_outer * cos(rad);
-      y   = shape.r_outer * sin(rad);
-      glVertex3f( x, y, z);
-   }
-   glVertex3f( 0.0, 0.0, z + 1);
-   glEnd();
+   glLineWidth (shape.r_lines);
+   glColor4f   (0.0f, 0.5f, 0.0f, 0.5f);
+   glBegin (GL_LINE_STRIP); {
+      glVertex3f ( 0.0, 0.0, z + 1);
+      for (d = 1; d <  44; d+=6) {
+         rad = d * DEG2RAD;
+         x   = shape.r_outer * cos(rad);
+         y   = shape.r_outer * sin(rad);
+         glVertex3f ( x, y, z);
+      }
+      glVertex3f ( 0.0, 0.0, z + 1);
+   } glEnd ();
    /*---(end)-------------------------------*/
    glEndList();
    /*---(complete)-----------------------*/
@@ -422,7 +351,7 @@ displist_outer(void)
 }
 
 char
-displist_edge(void)
+displist_edge           (void)
 {
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
@@ -437,35 +366,35 @@ displist_edge(void)
    float   r2 = (shape.r_outer * 0.35) + (shape.r_edge * 0.65);
    float   r3 = shape.r_edge;
    float   z  = -30.00;
-   /*---(start line)------------------------*/
-   glBegin(GL_LINE_STRIP);
-   glLineWidth(shape.r_lines);
-   glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
-   d   = 12.0;
-   rad = d  * DEG2RAD;
-   x   = r1 * cos(rad);
-   y   = r1 * sin(rad);
-   glVertex3f( x, y, z);
-   x   = r3 * cos(rad);
-   y   = r3 * sin(rad);
-   glVertex3f( x, y, z);
-   /*---(point)-----------------------------*/
-   d   = 22.0;
-   rad = d  * DEG2RAD;
-   x   = r2 * cos(rad);
-   y   = r2 * sin(rad);
-   glVertex3f( x, y, z);
-   /*---(end line)--------------------------*/
-   d   = 31.5;
-   rad = d  * DEG2RAD;
-   x   = r3 * cos(rad);
-   y   = r3 * sin(rad);
-   glVertex3f( x, y, z);
-   x   = r1 * cos(rad);
-   y   = r1 * sin(rad);
-   glVertex3f( x, y, z);
-   glEnd();
-   /*---(end)-------------------------------*/
+   glLineWidth (shape.r_lines);
+   glColor4f   (0.0f, 0.5f, 0.0f, 0.5f);
+   glBegin (GL_LINE_STRIP); {
+      /*---(start line)------------------*/
+      d   = 12.0;
+      rad = d  * DEG2RAD;
+      x   = r1 * cos(rad);
+      y   = r1 * sin(rad);
+      glVertex3f( x, y, z);
+      x   = r3 * cos(rad);
+      y   = r3 * sin(rad);
+      glVertex3f( x, y, z);
+      /*---(point)-----------------------*/
+      d   = 22.0;
+      rad = d  * DEG2RAD;
+      x   = r2 * cos(rad);
+      y   = r2 * sin(rad);
+      glVertex3f( x, y, z);
+      /*---(end line)--------------------*/
+      d   = 31.5;
+      rad = d  * DEG2RAD;
+      x   = r3 * cos(rad);
+      y   = r3 * sin(rad);
+      glVertex3f( x, y, z);
+      x   = r1 * cos(rad);
+      y   = r1 * sin(rad);
+      glVertex3f( x, y, z);
+      /*---(end)-------------------------*/
+   } glEnd();
    glEndList();
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
@@ -560,7 +489,7 @@ SHAPE_buffer       (void)
 }
 
 char
-displist_leaf(void)
+displist_leaf           (void)
 {
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
@@ -575,32 +504,32 @@ displist_leaf(void)
    float   r5 = shape.r_edge + r2;
    float   z  = -40.00;
    /*---(interior)--------------------------*/
-   glBegin(GL_POLYGON);
-   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-   glVertex3f( r1, r1, z);
-   glVertex3f( r2, r3, z);
-   glVertex3f( r1, r5, z);
-   glVertex3f( r3, r4, z);
-   glVertex3f( r5, r5, z);
-   glVertex3f( r4, r3, z);
-   glVertex3f( r5, r1, z);
-   glVertex3f( r3, r2, z);
-   glVertex3f( r1, r1, z);
-   glEnd();
+   glColor4f   (1.0f, 1.0f, 1.0f, 1.0f);
+   glBegin (GL_POLYGON); {
+      glVertex3f  ( r1, r1, z);
+      glVertex3f  ( r2, r3, z);
+      glVertex3f  ( r1, r5, z);
+      glVertex3f  ( r3, r4, z);
+      glVertex3f  ( r5, r5, z);
+      glVertex3f  ( r4, r3, z);
+      glVertex3f  ( r5, r1, z);
+      glVertex3f  ( r3, r2, z);
+      glVertex3f  ( r1, r1, z);
+   } glEnd ();
    /*---(outline)---------------------------*/
-   glBegin(GL_LINE_STRIP);
-   glLineWidth(shape.r_lines);
-   glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
-   glVertex3f( r1, r1, z);
-   glVertex3f( r2, r3, z);
-   glVertex3f( r1, r5, z);
-   glVertex3f( r3, r4, z);
-   glVertex3f( r5, r5, z);
-   glVertex3f( r4, r3, z);
-   glVertex3f( r5, r1, z);
-   glVertex3f( r3, r2, z);
-   glVertex3f( r1, r1, z);
-   glEnd();
+   glLineWidth (shape.r_lines);
+   glColor4f   (0.0f, 0.5f, 0.0f, 0.5f);
+   glBegin (GL_LINE_STRIP); {
+      glVertex3f  ( r1, r1, z);
+      glVertex3f  ( r2, r3, z);
+      glVertex3f  ( r1, r5, z);
+      glVertex3f  ( r3, r4, z);
+      glVertex3f  ( r5, r5, z);
+      glVertex3f  ( r4, r3, z);
+      glVertex3f  ( r5, r1, z);
+      glVertex3f  ( r3, r2, z);
+      glVertex3f  ( r1, r1, z);
+   } glEnd ();
    /*---(end)-------------------------------*/
    glEndList();
    /*---(complete)-----------------------*/
@@ -864,23 +793,25 @@ displist_balls(void)
    float   r  =  shape.r_center / 5.0;
    float   z  =  -5.00;
    /*---(interior)--------------------------*/
-   glBegin(GL_POLYGON);
-   for (d = 0; d <= 360; d += 10) {
-      rad = d * DEG2RAD;
-      x   =  r * cos(rad);
-      y   =  r * sin(rad);
-      glVertex3f( x, y, z);
-   }
-   glEnd();
-   glColor4f(0.6f, 0.6f, 0.6f, 1.0f);
-   glBegin(GL_LINE_STRIP);
-   for (d = 0; d <= 360; d += 10) {
-      rad = d * DEG2RAD;
-      x   =  r * cos(rad);
-      y   =  r * sin(rad);
-      glVertex3f( x, y, z + 5);
-   }
-   glEnd();
+   glBegin(GL_POLYGON); {
+      for (d = 0; d <= 360; d += 10) {
+         rad = d * DEG2RAD;
+         x   =  r * cos(rad);
+         y   =  r * sin(rad);
+         glVertex3f( x, y, z);
+      }
+   } glEnd();
+   /*---(line)------------------------------*/
+   glLineWidth (shape.r_lines);
+   glColor4f   (0.0f, 0.5f, 0.0f, 0.5f);
+   glBegin(GL_LINE_STRIP); {
+      for (d = 0; d <= 360; d += 10) {
+         rad = d * DEG2RAD;
+         x   =  r * cos(rad);
+         y   =  r * sin(rad);
+         glVertex3f( x, y, z + 5);
+      }
+   } glEnd();
    /*---(end)-------------------------------*/
    glEndList();
    /*---(complete)-----------------------*/

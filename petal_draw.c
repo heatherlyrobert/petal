@@ -86,16 +86,17 @@ char
 DRAW_help          (char *a_help)
 {
    /*---(header)-------------------------*/
-   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   DEBUG_GRAF   yLOG_senter  (__FUNCTION__);
    /*---(defaults)-----------------------*/
    stroke.help = -1;
    strlcpy (stroke.help_txt, "", LEN_LABEL);
    /*---(defense)------------------------*/
-   if (a_help == NULL) {
-      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   if (a_help == NULL || a_help [0] == '\0') {
+      DEBUG_GRAF   yLOG_sexit   (__FUNCTION__);
       return 0;
    }
    /*---(set)----------------------------*/
+   DEBUG_GRAF   yLOG_snote   (a_help);
    strlcpy (stroke.help_txt, a_help, LEN_LABEL);
    switch (a_help [0]) {
    case '-'  : stroke.help = -1;        break;
@@ -122,9 +123,9 @@ DRAW_help          (char *a_help)
    case '!'  : stroke.help = 20;        break;
    default   : stroke.help = -1;        break;
    }
-   DEBUG_GRAF   yLOG_value   ("help"      , stroke.help);
+   DEBUG_GRAF   yLOG_svalue  ("help", stroke.help);
    /*---(complete)-----------------------*/
-   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   DEBUG_GRAF   yLOG_sexit   (__FUNCTION__);
    return 0;
 }
 
@@ -160,10 +161,10 @@ DRAW_speed         (char *a_speed)
    shape.r_inc_txt = a_speed [0];
    switch (a_speed [0]) {
    case '-' :
-   case '0' :   shape.r_inc   = 0.000;  break;
-   case '1' :   shape.r_inc   = 0.200;  break;
-   case '2' :   shape.r_inc   = 0.150;  break;
-   case '3' :   shape.r_inc   = 0.100;  break;
+   case '0' :   shape.r_inc   = 0.200;  break;
+   case '1' :   shape.r_inc   = 0.150;  break;
+   case '2' :   shape.r_inc   = 0.100;  break;
+   case '3' :   shape.r_inc   = 0.075;  break;
    case '4' :   shape.r_inc   = 0.050;  break;
    case '5' :   shape.r_inc   = 0.040;  break;
    case '6' :   shape.r_inc   = 0.030;  break;
@@ -929,7 +930,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
          return 0;
       }
    }
-   if (shape.r_pos < 0) {
+   if (stroke.help == 20 && shape.r_pos < 0) {
       DEBUG_GRAF   yLOG_sexit   (__FUNCTION__);
       return 0;
    }

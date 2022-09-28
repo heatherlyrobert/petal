@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  ""
 #define     P_VERMINOR  ""
-#define     P_VERNUM    "2.2c"
-#define     P_VERTXT    "fixed pausing and many little display bothers"
+#define     P_VERNUM    "2.2d"
+#define     P_VERTXT    "90 second demo build and recorded, looking good"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
