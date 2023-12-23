@@ -1302,7 +1302,7 @@ DRAW_debug              (void)
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    glPushMatrix (); {
-      sprintf (t, "c: %c", chrvisible (shape.r_letter));
+      sprintf (t, "c: %c", ychrvisible (shape.r_letter));
       glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
@@ -1345,15 +1345,15 @@ DRAW_navigation         (void)
       glVertex3f ( x_rig, x_bot, z);
       glVertex3f ( x_lef, x_bot, z);
    } glEnd();
-   if (yMACRO_exe_mode () == MACRO_RUN) {
-      glColor4f  (0.7f, 0.0f, 0.0f, 1.0f);
-      glBegin    (GL_POLYGON); {
-         glVertex3f ( x_lef, x_top + 4, z);
-         glVertex3f ( x_rig, x_top + 4, z);
-         glVertex3f ( x_rig, x_top    , z);
-         glVertex3f ( x_lef, x_top    , z);
-      } glEnd();
-   }
+   /*> if (yMACRO_exe_mode () == MACRO_RUN) {                                         <* 
+    *>    glColor4f  (0.7f, 0.0f, 0.0f, 1.0f);                                        <* 
+    *>    glBegin    (GL_POLYGON); {                                                  <* 
+    *>       glVertex3f ( x_lef, x_top + 4, z);                                       <* 
+    *>       glVertex3f ( x_rig, x_top + 4, z);                                       <* 
+    *>       glVertex3f ( x_rig, x_top    , z);                                       <* 
+    *>       glVertex3f ( x_lef, x_top    , z);                                       <* 
+    *>    } glEnd();                                                                  <* 
+    *> }                                                                              <*/
    /*---(move up)------------------------*/
    z += 5;
    /*---(prev workspace)-----------------*/

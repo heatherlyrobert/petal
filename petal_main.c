@@ -84,7 +84,7 @@ PROG_event         (void)
     *> char       the_key[5];                                                         <*/
    /*> printf ("begin loop\n");                                                       <*/
    DRAW_main ();
-   DEBUG_TOPS   printf("EVENT LOOP :: begin -------------\n\n");
+   DEBUG_PROG   printf("EVENT LOOP :: begin -------------\n\n");
    while (1) {
       if (XPending(YX_DISP)) {
          XNextEvent(YX_DISP, &YX_EVNT);
@@ -171,7 +171,7 @@ PROG_event         (void)
       /*> if (ndot > 0 && (ndot % 3) == 0) DRAW_main ();                            <*/
       /*> while (rc == 0)  rc = TOUCH_read ();                                        <*/
    }
-   DEBUG_TOPS   printf("EVENT LOOP :: end ---------------\n\n");
+   DEBUG_PROG   printf("EVENT LOOP :: end ---------------\n\n");
    return 0;
 }
 

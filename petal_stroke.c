@@ -3,6 +3,11 @@
 
 tSTROKE     stroke;
 
+char      stroke_letter[MAXWORD];
+int       stroke_index [MAXWORD];
+ulong     stroke_keysym[MAXWORD];
+int       stroke_count;
+
 tDOTS       dots        [MAX_DOTS];
 int         ndot;
 int         s_tries     = 0;

@@ -3,7 +3,7 @@
 
 
 tACCESSOR   my;
-char        unit_answer [LEN_UNIT];
+char          unit_answer [LEN_RECD];
 
 
 
@@ -338,7 +338,7 @@ char       /*----: very first setup ------------------s-----------------------*/
 PROG__init              (int argc, char *argv[])
 {
    /*---(header)-------------------------*/
-   DEBUG_TOPS   yLOG_enter   (__FUNCTION__);
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
    DRAW_help  ("-");
    DRAW_color ("all");
@@ -378,7 +378,7 @@ PROG__init              (int argc, char *argv[])
    snprintf (my.name_event  , LEN_STR, "%s%s", DIR_INPUT, FILE_EVENT );
    my.file_event     = NULL;
    /*---(complete)-----------------------*/
-   DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
@@ -521,24 +521,31 @@ PROG_dawn          (void)
       return rce;
    }
    yCMD_direct (":layout min");
+   /*---(dawn)---------------------------*/
+   rc = yVIOPENGL_dawn ();
+   DEBUG_PROG   yLOG_value    ("dawn"      , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    displist_init ();
    font_load     ();
    /*---(commands)-----------------------*/
-   rc = yCMD_add (YCMD_M_CONFIG, "label"       , ""    , "s"    , DRAW_help            , "configure the help labels"                                   );
+   rc = yCMD_add (YVIHUB_M_CONFIG, "label"       , ""    , "s"    , DRAW_help            , "configure the help labels"                                   );
    DEBUG_PROG   yLOG_value   ("label"     , rc);
-   rc = yCMD_add (YCMD_M_CONFIG, "pad"         , ""    , "s"    , DRAW_color           , "configure the help colors"                                   );
+   rc = yCMD_add (YVIHUB_M_CONFIG, "pad"         , ""    , "s"    , DRAW_color           , "configure the help colors"                                   );
    DEBUG_PROG   yLOG_value   ("pad"       , rc);
-   rc = yCMD_add (YCMD_M_CONFIG, "speed"       , ""    , "s"    , DRAW_speed           , "configure the help colors"                                   );
+   rc = yCMD_add (YVIHUB_M_CONFIG, "speed"       , ""    , "s"    , DRAW_speed           , "configure the help colors"                                   );
    DEBUG_PROG   yLOG_value   ("speed"     , rc);
-   rc = yCMD_add (YCMD_M_CONFIG, "seq"         , ""    , "cs"   , DRAW_seq             , "configure the help colors"                                   );
+   rc = yCMD_add (YVIHUB_M_CONFIG, "seq"         , ""    , "cs"   , DRAW_seq             , "configure the help colors"                                   );
    DEBUG_PROG   yLOG_value   ("seq"       , rc);
-   rc = yCMD_add (YCMD_M_CONFIG, "size"        , ""    , "s"    , SHAPE_size           , "configure the help colors"                                   );
+   rc = yCMD_add (YVIHUB_M_CONFIG, "size"        , ""    , "s"    , SHAPE_size           , "configure the help colors"                                   );
    DEBUG_PROG   yLOG_value   ("size"      , rc);
-   rc = yCMD_add (YCMD_M_CONFIG, "done"        , ""    , "s"    , DRAW_done_show       , "configure showing completed text"                            );
+   rc = yCMD_add (YVIHUB_M_CONFIG, "done"        , ""    , "s"    , DRAW_done_show       , "configure showing completed text"                            );
    DEBUG_PROG   yLOG_value   ("done"      , rc);
-   rc = yCMD_add (YCMD_M_CONFIG, "press"       , ""    , "s"    , DRAW_press           , "configure showing completed text"                            );
+   rc = yCMD_add (YVIHUB_M_CONFIG, "press"       , ""    , "s"    , DRAW_press           , "configure showing completed text"                            );
    DEBUG_PROG   yLOG_value   ("press"     , rc);
-   rc = yCMD_add (YCMD_M_CONFIG, "debug"       , ""    , "s"    , DRAW_debug_set       , "configure showing completed text"                            );
+   rc = yCMD_add (YVIHUB_M_CONFIG, "debug"       , ""    , "s"    , DRAW_debug_set       , "configure showing completed text"                            );
    DEBUG_PROG   yLOG_value   ("debug"     , rc);
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
@@ -553,6 +560,13 @@ PROG_dusk          (void)
    char        rc          =    0;
    /*---(header)----------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   /*---(dusk)---------------------------*/
+   rc = yVIOPENGL_dusk ();
+   DEBUG_PROG   yLOG_value    ("dawn"      , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    displist_free ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);

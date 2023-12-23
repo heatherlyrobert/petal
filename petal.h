@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  ""
 #define     P_VERMINOR  ""
-#define     P_VERNUM    "2.2d"
-#define     P_VERTXT    "90 second demo build and recorded, looking good"
+#define     P_VERNUM    "2.2e"
+#define     P_VERTXT    "quick fix to work with new yVIOPENGL structure"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -169,6 +169,7 @@
 #include    <yCMD.h>              /* heatherly vikeys command processing      */
 #include    <yMACRO.h>            /* heatherly vikeys macro processing        */
 /*---(custom opengl)---------------------*/
+#include    <yVIHUB.h> 
 #include    <yVIOPENGL.h>    /* heatherly vikeys curses handler          */
 #include    <yX11.h>         /* CUSTOM  heatherly xlib/glx setup/teardown     */
 #include    <yFONT.h>        /* CUSTOM  heatherly texture-mapped fonts        */
@@ -180,9 +181,9 @@
 
 /*===[[ HEATHERLY HEADERS ]]==================================================*/
 #include    <yX11.h>              /* heatherly xlib/glx setup/teardown        */
-#include    <yGOD.h>              /* heatherly opengl godview                 */
+/*> #include    <yGOD.h>              /+ heatherly opengl godview                 +/   <*/
 #include    <yFONT.h>             /* heatherly texture-mapped fonts           */
-#include    <yHUBLIN.h>           /* heatherly hublin shortcut library        */
+/*> #include    <yHUBLIN.h>           /+ heatherly hublin shortcut library        +/   <*/
 
 
 /*---(X11 standard)----------------------*/
@@ -390,8 +391,8 @@ extern    tSHAPES       shape;
 
 extern ulong  g_focus;
 
-uint   states[10];
-uint   locks [10];
+extern uint   states[10];
+extern uint   locks [10];
 
 
 
@@ -431,11 +432,12 @@ extern int last_ring;
 extern int last_petal;
 
 /*---(saved letters)---------------*/
-char      stroke_letter[MAXWORD];
-int       stroke_index [MAXWORD];
-ulong     stroke_keysym[MAXWORD];
-int       stroke_count;
+extern char      stroke_letter[MAXWORD];
+extern int       stroke_index [MAXWORD];
+extern ulong     stroke_keysym[MAXWORD];
+extern int       stroke_count;
 
+extern char          unit_answer [LEN_RECD];
 
 /*===[[ DEBUGGING SETUP ]]====================================================*/
 /* this is my latest standard format, vars, and urgents                       */

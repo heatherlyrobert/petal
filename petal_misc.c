@@ -330,29 +330,26 @@ key_send           (ulong a_keysym)
 /*============================--------------------============================*/
 static void      o___UNIT_TEST_______________o (void) {;}
 
-#define       LEN_TEXT  2000
-char          unit_answer [ LEN_TEXT ];
-
 char*
 unit_accessor(char *a_question, int a_num)
 {
    if        (strcmp(a_question, "dot")         == 0) {
       if (ndot == 0) {
-         snprintf(unit_answer, LEN_TEXT, "Dot Trace (%4d) : there are no dots", a_num);
+         snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : there are no dots", a_num);
       } else if (a_num < 0) {
-         snprintf(unit_answer, LEN_TEXT, "Dot Trace (%4d) : can not be negative", a_num);
+         snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : can not be negative", a_num);
       } else if (a_num >= ndot) {
-         snprintf(unit_answer, LEN_TEXT, "Dot Trace (%4d) : out of range %3d to %3d", a_num, 0, ndot - 1);
+         snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : out of range %3d to %3d", a_num, 0, ndot - 1);
       } else
-         snprintf(unit_answer, LEN_TEXT, "Dot Trace (%4d) : %4dx, %4dy, %4dc", a_num, dots[a_num].relx, dots[a_num].rely, ndot);
+         snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : %4dx, %4dy, %4dc", a_num, dots[a_num].relx, dots[a_num].rely, ndot);
    } else if (strcmp(a_question, "current")     == 0) {
       if (stroke.outward) {
-         snprintf(unit_answer, LEN_TEXT, "Current   (fore) : 0=%2d, 1=%2d, 2=%2d, 3=%2d, m=%2d", stroke.zth, stroke.fst, stroke.snd, stroke.trd, stroke.max);
+         snprintf(unit_answer, LEN_RECD, "Current   (fore) : 0=%2d, 1=%2d, 2=%2d, 3=%2d, m=%2d", stroke.zth, stroke.fst, stroke.snd, stroke.trd, stroke.max);
       } else {
-         snprintf(unit_answer, LEN_TEXT, "Current   (back) : 0=%2d, 1=%2d, 2=%2d, 3=%2d, m=%2d", stroke.zth, stroke.fst, stroke.snd, stroke.trd, stroke.max);
+         snprintf(unit_answer, LEN_RECD, "Current   (back) : 0=%2d, 1=%2d, 2=%2d, 3=%2d, m=%2d", stroke.zth, stroke.fst, stroke.snd, stroke.trd, stroke.max);
       }
    } else if (strcmp(a_question, "status")      == 0) {
-      snprintf(unit_answer, LEN_TEXT, "Letter Status    : done=%d, accept=%d, fail=%d", stroke.done, stroke.pass, stroke.fail);
+      snprintf(unit_answer, LEN_RECD, "Letter Status    : done=%d, accept=%d, fail=%d", stroke.done, stroke.pass, stroke.fail);
    }
    return unit_answer;
 }
