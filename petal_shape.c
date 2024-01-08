@@ -44,9 +44,10 @@ SHAPE_base         (float a_ratio)
    shape.sz_bar        =  20.0 * a_ratio;
    /*---(calc sizes)---------------------*/
    shape.sz_ctl        =     0;
-   shape.sz_nav        =   shape.sz_bar;
-   shape.sz_height     =  (shape.sz_centery * 2) + shape.sz_ctl + shape.sz_nav;
-   shape.sz_width      =  (shape.sz_centerx * 2);
+   /*> shape.sz_nav        =   shape.sz_bar;                                          <*/
+   shape.sz_nav        =     0;
+   my.w_tall           =  (shape.sz_centery * 2) + shape.sz_ctl + shape.sz_nav;
+   my.w_wide           =  (shape.sz_centerx * 2);
    /*---(image sizes)--------------------*/
    shape.r_center      =  25.0 * a_ratio;
    shape.r_ring        =  28.0 * a_ratio;
@@ -91,7 +92,7 @@ SHAPE_size              (char *a_size)
    case 't' :  SHAPE_tiny   ();    break;
    default  :  SHAPE_normal ();    break;
    }
-   yVIEW_resize (shape.sz_width, shape.sz_height, 0);
+   yVIEW_resize (my.w_wide, my.w_tall, 0);
    return 0;
 }
 
@@ -108,17 +109,22 @@ displist_init(void)
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    shape.r_button = (shape.sz_bar / 2.5);
    /*--(petals)---------------------------*/
-   displist_center     ();
+   ARTSY__center (shape.r_center, 20.0, &(shape.dl_center));
+   /*> displist_center     ();                                                        <*/
    SHAPE_ring          ();
-   displist_inner      ();
+   ARTSY__inner  (shape.r_inner , 15.0, &(shape.dl_inner));
+   /*> displist_inner      ();                                                        <*/
    SHAPE_buffer        ();
-   displist_outer      ();
-   displist_edge       ();
+   ARTSY__outer  (shape.r_outer , 10.0, &(shape.dl_outer));
+   /*> displist_outer      ();                                                        <*/
+   ARTSY__edge   (shape.r_edge  ,  5.0, &(shape.dl_edge));
+   /*> displist_edge       ();                                                        <*/
    displist_leaf       ();
    /*--(current)--------------------------*/
    displist_curr       ();
    displist_box        ();
-   displist_balls      ();
+   ARTSY__ball   (shape.r_center / 5.0, 50.0, &(shape.dl_balls));
+   /*> displist_balls      ();                                                        <*/
    displist_touch      ();
    displist_touch2     ();
    displist_back       ();
@@ -547,7 +553,7 @@ displist_box(void)
    glNewList(shape.dl_box, GL_COMPILE);
    /*---(locals)----------------------------*/
    /*> float   r1 =  shape.r_center / 1.5;                                             <*/
-   float   r1 =  shape.sz_width / 4;
+   float   r1 =  my.w_wide / 4;
    float   z  =   50.00;
    /*---(interior)--------------------------*/
    glBegin(GL_POLYGON);

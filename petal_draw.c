@@ -309,9 +309,9 @@ DRAW_stroke        (char a_type, char a_letter)
    }
    DEBUG_GRAF   yLOG_complex ("letter"    , "%dm, %di, %do, %de", m, i, o, e);
    /*---(center)----------------------------*/
-   DEBUG_GRAF   yLOG_complex ("size"      , "%3dw, %3dh, %3dn", shape.sz_width, shape.sz_height, shape.sz_nav);
-   x_cen  = shape.sz_width / 2.0;
-   x_mid  = shape.sz_nav + (shape.sz_height - shape.sz_nav) / 2.0;
+   DEBUG_GRAF   yLOG_complex ("size"      , "%3dw, %3dh, %3dn", my.w_wide, my.w_tall, shape.sz_nav);
+   x_cen  = my.w_wide / 2.0;
+   x_mid  = shape.sz_nav + (my.w_tall - shape.sz_nav) / 2.0;
    x_seg  = (2.0 * 3.1415927) / 8.0;
    DEBUG_GRAF   yLOG_complex ("center"    , "%3.0fx, %3.0fy, %3.0fz", x_cen, x_mid, z);
    /*---(start)-----------------------------*/
@@ -574,16 +574,16 @@ DRAW_done               (void)
    glPushMatrix(); {
       glColor4f  (0.0f, 0.0f, 0.0f, 1.0f);
       if        (l < 12) {
-         glTranslatef (5, shape.sz_height - 25, 200.0f);
+         glTranslatef (5, my.w_tall - 25, 200.0f);
          yFONT_print  (my.txf_sm, my.size_norm +  3, YF_TOPLEF, shape.r_done);
       } else if (l < 20) {
-         glTranslatef (5, shape.sz_height - 21, 200.0f);
+         glTranslatef (5, my.w_tall - 21, 200.0f);
          yFONT_print  (my.txf_sm, my.size_norm     , YF_TOPLEF, shape.r_done);
       } else if (l < 35) {
-         glTranslatef (5, shape.sz_height - 18, 200.0f);
+         glTranslatef (5, my.w_tall - 18, 200.0f);
          yFONT_print  (my.txf_sm, my.size_norm -  3, YF_TOPLEF, shape.r_done);
       } else {
-         glTranslatef (5, shape.sz_height - 15, 200.0f);
+         glTranslatef (5, my.w_tall - 15, 200.0f);
          yFONT_print  (my.txf_sm, my.size_norm -  6, YF_TOPLEF, shape.r_done);
       }
    } glPopMatrix();
@@ -600,17 +600,27 @@ static void      o___LOOP____________________o (void) {;}
 char
 DRAW_main          (void)
 {
-   /*---(locals)----------------------------*/
+   /*---(locals)-----------+-----+-----+-*/
+   char        rc          =    0;
    float       x_mid, x_cen;
    float       z;
    char        i;
    float       x_prog      = 0.0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   /*---(gather data)-----------------------*/
+   rc = yX11_screensize (&(my.s_wide), &(my.s_tall), NULL);
    /*---(center)----------------------------*/
-   x_mid  = shape.sz_nav + (shape.sz_height - shape.sz_nav) / 2.0;
-   x_cen  = shape.sz_width / 2.0;
+   x_mid  = shape.sz_nav + (my.w_tall - shape.sz_nav) / 2.0;
+   x_cen  = my.w_wide / 2.0;
    z      =   20.0;
+
+
+   ARTSY_show (my.w_tall / 2.0, -my.w_wide / 2.0, -my.w_tall / 2.0, my.w_wide / 2.0);
+   return 0;
+
+
+
    /*---(start)--------------------------*/
    long  x_start, x_stop;
    x_start = time_stamp();
@@ -669,8 +679,8 @@ DRAW_back          (void)
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(sizes)-----------------------------*/
-   x_top  = shape.sz_height;
-   x_rig  = shape.sz_width;
+   x_top  = my.w_tall;
+   x_rig  = my.w_wide;
    z      = -20.0;
    /*---(bottom shaded area)----------------*/
    glColor4f  (0.7f, 0.7f, 0.7f, 1.0f);
@@ -749,19 +759,20 @@ DRAW_image (void)
    /*> glCallList(shape.dl_ring);                                                     <*/
    /*---(edge petals)----------------------*/
    glPushMatrix(); {
-      glRotatef( 11.5, 0.0f, 0.0f, 1.0f);
-      for (i = 0; i < 16; i += 1) {
-         glRotatef( 22.5, 0.0f, 0.0f, 1.0f);
-         glCallList(shape.dl_edge);
-         /*> glPushMatrix(); {                                                           <* 
-          *>    glRotatef( 11.2, 0.0f, 0.0f, 1.0f);                                      <* 
-          *>    glTranslatef(shape.r_edge * 0.95, 0.0f, 0.0f);                           <* 
-          *>    if (i % 2 == 0) {                                                        <* 
-          *>       if ((i % 4) == 0)  glColor4f(0.0f, 0.0f, 0.6f, 0.3f);                 <* 
-          *>       else               glColor4f(0.0f, 0.0f, 0.6f, 0.2f);                 <* 
-          *>       glCallList(shape.dl_balls);                                           <* 
-          *>    }                                                                        <* 
-          *> } glPopMatrix();                                                            <*/
+      for (i = 0; i < 8; i += 1) {
+         glPushMatrix(); {
+            glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
+            glCallList  (shape.dl_edge);
+            /*> glPushMatrix(); {                                                           <* 
+             *>    glRotatef( 11.2, 0.0f, 0.0f, 1.0f);                                      <* 
+             *>    glTranslatef(shape.r_edge * 0.95, 0.0f, 0.0f);                           <* 
+             *>    if (i % 2 == 0) {                                                        <* 
+             *>       if ((i % 4) == 0)  glColor4f(0.0f, 0.0f, 0.6f, 0.3f);                 <* 
+             *>       else               glColor4f(0.0f, 0.0f, 0.6f, 0.2f);                 <* 
+             *>       glCallList(shape.dl_balls);                                           <* 
+             *>    }                                                                        <* 
+             *> } glPopMatrix();                                                            <*/
+         } glPopMatrix();
       }
    } glPopMatrix();
    /*---(edges circles)--------------------*/
@@ -779,51 +790,63 @@ DRAW_image (void)
             break;
          }
       }
-      glPushMatrix(); {
-         glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
-         glTranslatef (shape.r_edge * 1.00, 0.0f, 0.0f);
-         if (shape.r_color != 1 && shape.r_color != 4)
-            glColor4f (1.0f, 1.0f, 1.0f, 0.1f);
-         else if ((i % 2) == 0)
-            glColor4f (0.0f, 0.0f, 0.8f, 0.2f);
-         else
-            glColor4f (0.0f, 0.0f, 0.8f, 0.3f);
-         glCallList   (shape.dl_balls);
-      } glPopMatrix();
+      if (my.show_balls == 'y') {
+         glPushMatrix(); {
+            glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
+            glTranslatef (shape.r_edge * 0.85, 0.0f, 0.0f);
+            glColor4f (1.00, 1.00, 1.00, 1.00);
+            glCallList   (shape.dl_balls);
+            /*> if (shape.r_color != 1 && shape.r_color != 4)                            <* 
+             *>    glColor4f (1.0f, 1.0f, 1.0f, 0.1f);                                   <* 
+             *> else if ((i % 2) == 0)                                                   <* 
+             *>    glColor4f (0.0f, 0.0f, 0.8f, 0.2f);                                   <* 
+             *> else                                                                     <* 
+             *>    glColor4f (0.0f, 0.0f, 0.8f, 0.3f);                                   <*/
+            glColor4f (0.00, 0.60, 0.00, 0.45);
+            /*> glColor4f (0.00, 0.30, 0.60, 0.45);                                   <*/
+            glCallList   (shape.dl_balls);
+         } glPopMatrix();
+      }
    }
    /*---(the buffer)-----------------------*/
-   glCallList(shape.dl_buffer);
+   /*> glCallList(shape.dl_buffer);                                                   <*/
    /*---(outer)----------------------------*/
    glPushMatrix();
    for (i = 0; i < 8; i += 1) {
       glPushMatrix(); {
-         glRotatef    (45 - (i * 45), 0.0f, 0.0f, 1.0f);
-         glCallList(shape.dl_outer);
+         /*> glRotatef    (45 - (i * 45), 0.0f, 0.0f, 1.0f);                          <*/
+         glRotatef    ( 22.5 - (i * 45), 0.0f, 0.0f, 1.0f);
+         glCallList   (shape.dl_outer);
       } glPopMatrix();
-      if (stroke.help > 0 && stroke.help < 10) {
-         switch (stroke.help) {
-         case 1 :
-            if (i > 0 && i < 7)  continue;
-            break;
-         case 8 :
-            if (i < 6)           continue;
-            break;
-         default :
-            if (stroke.help < i + 1 || stroke.help > i + 2)  continue;
-            break;
-         }
+      /*> if (stroke.help > 0 && stroke.help < 10) {                                  <* 
+       *>    switch (stroke.help) {                                                   <* 
+       *>    case 1 :                                                                 <* 
+       *>       if (i > 0 && i < 7)  continue;                                        <* 
+       *>       break;                                                                <* 
+       *>    case 8 :                                                                 <* 
+       *>       if (i < 6)           continue;                                        <* 
+       *>       break;                                                                <* 
+       *>    default :                                                                <* 
+       *>       if (stroke.help < i + 1 || stroke.help > i + 2)  continue;            <* 
+       *>       break;                                                                <* 
+       *>    }                                                                        <* 
+       *> }                                                                           <*/
+      if (my.show_balls == 'y') {
+         glPushMatrix(); {
+            glRotatef    (45 - (i * 45), 0.0f, 0.0f, 1.0f);
+            glRotatef    (22.5, 0.0f, 0.0f, 1.0f);
+            /*> glTranslatef (shape.r_outer * 0.87, 0.0f, 0.0f);                         <*/
+            glTranslatef (shape.r_outer * 0.70, 0.0f, 0.0f);
+            glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
+            glCallList(  shape.dl_balls);
+            /*> if (shape.r_color == 1 || shape.r_color == 3 || shape.r_color == 5)      <* 
+             *>    glColor4f (0.00, 0.25, 0.00, 0.50);                                   <* 
+             *> else                                                                     <* 
+             *>    glColor4f (1.0f, 1.0f, 1.0f, 0.1f);                                   <*/
+            glColor4f (0.00, 0.60, 0.00, 0.45);
+            glCallList(  shape.dl_balls);
+         } glPopMatrix();
       }
-      glPushMatrix(); {
-         glRotatef    (45 - (i * 45), 0.0f, 0.0f, 1.0f);
-         glRotatef    (22.5, 0.0f, 0.0f, 1.0f);
-         /*> glTranslatef (shape.r_outer * 0.87, 0.0f, 0.0f);                         <*/
-         glTranslatef (shape.r_outer * 0.85, 0.0f, 0.0f);
-         if (shape.r_color == 1 || shape.r_color == 3 || shape.r_color == 5)
-            glColor4f (0.6f, 0.0f, 0.6f, 0.3f);
-         else
-            glColor4f (1.0f, 1.0f, 1.0f, 0.1f);
-         glCallList(  shape.dl_balls);
-      } glPopMatrix();
    }
    glPopMatrix();
    /*---(inner)----------------------------*/
@@ -837,27 +860,37 @@ DRAW_image (void)
       if (stroke.help > 0 && stroke.help < 10) {
          if (stroke.help != i + 1)  continue;
       }
-      glPushMatrix(); {
-         glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
-         glTranslatef (shape.r_inner * 0.65, 0.0f, 0.0f);
-         if (shape.r_color == 1 || shape.r_color == 2 || shape.r_color == 5)
-            glColor4f (0.6f, 0.0f, 0.3f, 0.3f);
-         else
-            glColor4f (1.0f, 1.0f, 1.0f, 0.1f);
-         glCallList   (shape.dl_balls);
-      } glPopMatrix();
+      if (my.show_balls == 'y') {
+         glPushMatrix(); {
+            glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
+            glTranslatef (shape.r_inner * 0.65, 0.0f, 0.0f);
+            glColor4f (1.00, 1.00, 1.00, 1.00);
+            glCallList   (shape.dl_balls);
+            /*> if (shape.r_color == 1 || shape.r_color == 2 || shape.r_color == 5)   <* 
+             *>    glColor4f (1.00, 0.00, 0.00, 0.50);                                <* 
+             *> else                                                                  <* 
+             *>    glColor4f (1.00, 1.00, 1.00, 0.10);                                <*/
+            glColor4f (1.00, 0.00, 0.00, 0.30);
+            glCallList   (shape.dl_balls);
+         } glPopMatrix();
+      }
    }
    glPopMatrix();
    /*---(center)---------------------------*/
    glCallList (shape.dl_center);
    glPushMatrix(); {
       glTranslatef(0.0f, 0.0f, 25.0f);
-      if (shape.r_color == 1 || shape.r_color == 0)
-         glColor4f (1.0f, 1.0f, 0.0f, 0.4f);
-      else
-         glColor4f (1.0f, 1.0f, 1.0f, 0.1f);
+      glColor4f (1.00, 1.00, 1.00, 1.00);
+      glCallList (shape.dl_balls);
+      /*> if (shape.r_color == 1 || shape.r_color == 0)                               <* 
+       *>    glColor4f (1.0f, 1.0f, 0.0f, 0.4f);                                      <* 
+       *> else                                                                        <* 
+       *>    glColor4f (1.0f, 1.0f, 1.0f, 0.1f);                                      <*/
+      glColor4f (1.00, 0.50, 0.00, 1.00);
       glCallList (shape.dl_balls);
    } glPopMatrix();
+   /*---(new)----------------------------*/
+   yGLTEX_scr2png ("/tmp/petal_screenshot.png", 300, 330);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -1093,8 +1126,8 @@ DRAW_locks (void)
    if (states [MODE] != 0 || locks [MODE] != 0) {
       glPushMatrix(); {
          glLineWidth  (0.8);
-         x = - shape.sz_width  / 4;
-         y = (shape.sz_height - shape.sz_bar * 2) / 4;
+         x = - my.w_wide  / 4;
+         y = (my.w_tall - shape.sz_bar * 2) / 4;
          glColor4f    (1.0f, 1.0f, 0.0f, 0.0f);
          if      (locks  [MODE]   != 0) glColor4f(1.0f, 0.0f, 0.0f, 0.3f);
          else if (states [MODE]   != 0) glColor4f(1.0f, 1.0f, 0.0f, 0.3f);
@@ -1106,8 +1139,8 @@ DRAW_locks (void)
    if (states[SHIFT] == 1 || locks[SHIFT] == 1) {
       glPushMatrix();
       glLineWidth(0.8);
-      x = shape.sz_width  / 4;
-      y = (shape.sz_height - shape.sz_bar * 2) / 4;
+      x = my.w_wide  / 4;
+      y = (my.w_tall - shape.sz_bar * 2) / 4;
       glColor4f(1.0f, 1.0f, 0.0f, 0.0f);
       if      (locks[SHIFT]   != 0) glColor4f(1.0f, 0.0f, 0.0f, 0.3f);
       else if (states[SHIFT]  != 0) glColor4f(1.0f, 1.0f, 0.0f, 0.3f);
@@ -1119,8 +1152,8 @@ DRAW_locks (void)
    if (states[HUBLIN] != 0 || locks[HUBLIN] != 0 || states[MYHUBLIN] != 0) {
       glPushMatrix();
       glLineWidth(0.8);
-      x = shape.sz_width  / 4;
-      y = - (shape.sz_height - shape.sz_bar * 2) / 4;
+      x = my.w_wide  / 4;
+      y = - (my.w_tall - shape.sz_bar * 2) / 4;
       glColor4f(1.0f, 1.0f, 0.0f, 0.0f);
       if      (locks [HUBLIN]   != 0) glColor4f(1.0f, 0.0f, 0.0f, 0.3f);
       else if (states[MYHUBLIN] != 0) glColor4f(0.0f, 1.0f, 0.0f, 0.3f);
@@ -1267,48 +1300,48 @@ DRAW_debug              (void)
    /*---(config)-------------------------*/
    glPushMatrix (); {
       sprintf (t, "i: %c, %5.3f", shape.r_inc_txt, shape.r_inc);
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    glPushMatrix (); {
       sprintf (t, "c: %c, %d", shape.r_color_txt, shape.r_color);
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    glPushMatrix (); {
       sprintf (t, "h: %2d, %s", stroke.help, stroke.help_txt);
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    glPushMatrix (); {
       sprintf (t, "m: %c", shape.r_mode);
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    /*---(positions)----------------------*/
    glPushMatrix (); {
       sprintf (t, "l: %3d", shape.r_len);
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    glPushMatrix (); {
       sprintf (t, "r: %3d", shape.r_pos);
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    glPushMatrix (); {
       sprintf (t, "e: %3d", shape.r_exec);
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    glPushMatrix (); {
       sprintf (t, "c: %c", ychrvisible (shape.r_letter));
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    glPushMatrix (); {
       sprintf (t, "p: %5.3f", shape.r_prog);
-      glTranslatef (5, shape.sz_height - 50 - (n++) * 20, 200.0f);
+      glTranslatef (5, my.w_tall - 50 - (n++) * 20, 200.0f);
       yFONT_print  (my.txf_sm, my.size_norm, YF_TOPLEF, t);
    } glPopMatrix ();
    /*---(complete)-----------------------*/
@@ -1332,9 +1365,9 @@ DRAW_navigation         (void)
    x_mid  = shape.sz_nav / 2.0;
    /*---(horizontal)------------------------*/
    x_lef  = 0;
-   x_rig  = shape.sz_width;
-   x_cen  = shape.sz_width / 2.0;
-   x_inc  = shape.sz_width / 8.0;
+   x_rig  = my.w_wide;
+   x_cen  = my.w_wide / 2.0;
+   x_inc  = my.w_wide / 8.0;
    /*---(depth)-----------------------------*/
    z =   20.0;
    /*---(bottom shaded area)----------------*/

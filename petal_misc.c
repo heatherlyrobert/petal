@@ -134,7 +134,7 @@ char
 event_navigation(int a_x)
 {
    /*---(determine slot)------------------------*/
-   int slot = (a_x + shape.sz_centerx) / (shape.sz_width / 7.0);
+   int slot = (a_x + shape.sz_centerx) / (my.w_wide / 7.0);
    if (slot < 0) slot = 0;
    if (slot > 6) slot = 6;
    DEBUG_INPT   printf("event_navigation(%dx) so slot %d\n", a_x, slot);

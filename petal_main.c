@@ -23,7 +23,10 @@ main                    (int a_argc, char *a_argv [])
    DEBUG_PROG   yLOG_value    ("dawn"      , rc);
    if (rc <  0) { PROG_shutdown (); return --rce; }
    /*---(main-loop)----------------------*/
-   rc = yVIOPENGL_main  ("10ms", "10ms", NULL);
+   ARTSY_draw ();
+   ARTSY_mask ();
+   /*> rc = yVIOPENGL_main  ("10ms", "10ms", TOUCH_read);                             <*/
+   rc = yVIOPENGL_main  ("1us"  , "10ms", TOUCH_read);
    DEBUG_PROG   yLOG_value    ("main"      , rc);
    /*---(visual shutdown)----------------*/
    rc = PROG_dusk     ();
@@ -105,7 +108,7 @@ PROG_event         (void)
              *> }                                                                                                             <* 
              *> if (YX_EVNT.xconfigure.width != (int) WIDTH || YX_EVNT.xconfigure.height != (int) HEIGHT) {                   <* 
              *>    DEBUG_LOOP   printf("   - resized  w=%3d, h=%3d¦", YX_EVNT.xconfigure.width, YX_EVNT.xconfigure.height);   <* 
-             *>    DRAW_resize(shape.sz_width, shape.sz_height);                                                              <* 
+             *>    DRAW_resize(my.w_wide, my.w_tall);                                                              <* 
              *> }                                                                                                             <*/
             break;
 
@@ -164,7 +167,7 @@ PROG_event         (void)
          }
       }
       rc = 0;
-      /*> rc = TOUCH_read ();                                                         <*/
+      rc = TOUCH_read ();
       if (rc == 0) DRAW_main ();
       /*---(sleeping)--------------------*/
       nanosleep    (&x_dur, NULL);

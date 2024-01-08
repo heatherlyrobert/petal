@@ -32,10 +32,10 @@
 #define     P_AUTHOR    "heatherlyrobert"
 #define     P_CREATED   "2009-05"
 
-#define     P_VERMAJOR  ""
-#define     P_VERMINOR  ""
-#define     P_VERNUM    "2.2e"
-#define     P_VERTXT    "quick fix to work with new yVIOPENGL structure"
+#define     P_VERMAJOR  "3.-- third major phase"
+#define     P_VERMINOR  "3.0- ramped the beauty way up ;)"
+#define     P_VERNUM    "3.0a"
+#define     P_VERTXT    "huge changes visually
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -155,6 +155,20 @@
 #define YPETAL loaded
 
 
+
+/*===[[ CLIB HEADERS ]]=======================================================*/
+#include    <stdio.h>
+#include    <stdlib.h>
+#include    <math.h>
+#include    <string.h>
+#include    <unistd.h>
+#include    <ctype.h>
+#include    <time.h>
+#include    <sys/time.h>
+#include    <fcntl.h>             /* clibc standard file control              */
+
+
+
 /*===[[ HEATHERLY HEADERS ]]==================================================*/
 /*---(custom core)-----------------------*/
 #include    <yURG.h>              /* heatherly urgent processing              */
@@ -174,50 +188,26 @@
 #include    <yX11.h>         /* CUSTOM  heatherly xlib/glx setup/teardown     */
 #include    <yFONT.h>        /* CUSTOM  heatherly texture-mapped fonts        */
 #include    <yGLTEX.h>       /* CUSTOM  heatherly texture handling            */
+#include    <yCOLOR.h>
 
-
-#include    <ySTR.h>              /* heatherly safer string handling          */
-#include    <yLOG.h>              /* heatherly programming tracing/logging    */
-
-/*===[[ HEATHERLY HEADERS ]]==================================================*/
-#include    <yX11.h>              /* heatherly xlib/glx setup/teardown        */
-/*> #include    <yGOD.h>              /+ heatherly opengl godview                 +/   <*/
-#include    <yFONT.h>             /* heatherly texture-mapped fonts           */
-/*> #include    <yHUBLIN.h>           /+ heatherly hublin shortcut library        +/   <*/
 
 
 /*---(X11 standard)----------------------*/
 #include   <X11/X.h>              /* X11    standard overall file             */
 #include   <X11/Xlib.h>           /* X11    standard C API                    */
+#include    <X11/extensions/shape.h>    /* shape extention -- funky windows    */
 /*---(opengl standard)-------------------*/
 #include   <GL/gl.h>              /* opengl standard primary header           */
 #include   <GL/glx.h>             /* opengl standard X11 integration          */
 
 
-/*===[[ CLIB HEADERS ]]=======================================================*/
-#include    <stdio.h>
-#include    <stdlib.h>
-#include    <math.h>
-#include    <string.h>
-#include    <unistd.h>
-#include    <ctype.h>
-#include    <time.h>
-#include    <sys/time.h>
-#include    <fcntl.h>             /* clibc standard file control              */
 
 
 
-
-
-
-/*---(rational limits)------------------------------------------*/
-#define     LEN_NAME        20     /* max naming string                       */
-#define     LEN_STR        200     /* max string                              */
-#define     LEN_UNIT       200     /* max unit test return string             */
-#define     LEN_RECD      2000     /* max record len                          */
 
 #define   MAXWORD      50
 
+typedef   unsigned int     uint;
 typedef   unsigned char    uchar;
 typedef   long long        llong;
 
@@ -225,23 +215,49 @@ typedef   long long        llong;
 typedef     struct cACCESSOR  tACCESSOR;
 struct cACCESSOR {
    /*---(overall)--------------*/
-   char        version     [LEN_STR];  /* version reporting string            */
-   char        progname    [LEN_STR];  /* program name                        */
-   char        win_title   [LEN_STR];
+   char        version     [LEN_FULL];  /* version reporting string            */
+   char        progname    [LEN_FULL];  /* program name                        */
+   char        win_title   [LEN_FULL];
+   char        n_event     [LEN_FULL];
+   FILE       *f_event;
+   /*---(tablet)---------------*/
+   int         t_left;
+   int         t_topp;
+   int         t_wide;
+   int         t_tall;
+   /*---(screen)---------------*/
+   int         s_wide;
+   int         s_tall;
+   /*---(window)---------------*/
+   int         w_left;
+   int         w_topp;
+   int         w_wide;
+   int         w_tall;
+   /*---(opengl objects)-----------------*/
+   uint        g_tex;                    /* task texture                      */
+   uint        g_fbo;                    /* task fbo                          */
+   uint        g_dep;                    /* task depth                        */
+   int         g_wide;
+   int         g_tall;
    /*---(fonts)----------------*/
-   char        face_bg     [LEN_STR];
-   char        face_sm     [LEN_STR];
+   char        face_bg     [LEN_FULL];
+   char        face_sm     [LEN_FULL];
    int         txf_bg;
    int         txf_sm;
    int         size_big;
    int         size_norm;
    /*---(files)-----------------*/
-   char        name_event  [LEN_STR];  /* name of event device                */
+   char        name_event  [LEN_FULL];  /* name of event device                */
    FILE       *file_event;             /* pointer to event device             */
    /*---(flags)----------------*/
    char        rptg_events;            /* request to dump events to screen    */
+   uchar       ev_major;               /* which ev_code to show               */
+   uchar       ev_minor;               /* which ev_code to show               */
    char        rptg_dots;              /* request to dump dots to screen      */
    char        rptg_recog;             /* request to dump regcognition        */
+   char        show_balls;
+   char        save_png;
+   char        mask;     
    /*---(arguments)-------------*/
    long        loop_msec;              /* wait time in milliseconds           */
    /*---(done)------------------*/
@@ -257,7 +273,8 @@ extern      tACCESSOR   my;
 #define     DIR_INPUT        "/dev/input/"
 
 /*---(file names)-------------------------------*/
-#define     FILE_EVENT       "event16"
+/*> #define     FILE_EVENT       "event16"                                            <*/
+#define     FILE_EVENT       "event7"
 
 
 /*===[[ drawing semi-constants ]]=============================================*/
@@ -601,11 +618,16 @@ char        SHAPE_size              (char *a_size);
 
 /*===[[ petal_touch.c ]]============================================================*/ 
 /*---rc---- ---name----------- ---args----------------------------------------*/
-char        TOUCH_open         (void);
-char        TOUCH_normal       (void);
-char        TOUCH_check        (void);
+char        TOUCH__open             (char a_name [LEN_FULL], char a_dir, FILE **f);
+char        TOUCH__close            (FILE **f);
+char        TOUCH_normal            (void);
+char        TOUCH_check             (void);
+char        TOUCH__event_type       (int a_evtype, char *r_track, char r_desc [LEN_TERSE]);
+char        TOUCH__event_code       (int a_evtype, int a_evcode, char *b_track, char r_desc [LEN_TERSE]);
+char        TOUCH__single           (FILE *f, int *r_type, int *r_code, int *r_value, char *r_track, char a_out [LEN_FULL]);
 char        TOUCH_read         (void);
 char        TOUCH_close        (void);
+char        TOUCH_force_data        (char a_name [LEN_FULL], int a_type, int a_code, int a_value);
 
 /*===[[ petal_stroke.c ]]===========================================================*/ 
 /*---rc---- ---name----------- ---args----------------------------------------*/
@@ -656,6 +678,16 @@ char        LETTER_by_stroke        (char i, char o, char e);
 char        LETTER_to_stroke        (char a_all, char c, char *m, char *i, char *o, char *e);
 char        LETTER_by_mode          (char n);
 
+
+char        ARTSY_resize            (void);
+char        ARTSY_init              (void);
+char        ARTSY__center           (float a_radius, float a_depth, uint *b_dlist);
+char        ARTSY__inner            (float a_radius, float a_depth, uint *b_dlist);
+char        ARTSY__outer            (float a_radius, float a_depth, uint *b_dlist);
+char        ARTSY__edge             (float a_radius, float a_depth, uint *b_dlist);
+char        ARTSY__ball             (float a_radius, float a_depth, uint *b_dlist);
+char        ARTSY_draw              (void);
+char        ARTSY_show              (float a_wtop, float a_wlef, float a_wbot, float a_wrig);
 
 
 #endif

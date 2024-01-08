@@ -83,14 +83,14 @@ static void      o___PREINIT_________________o (void) {;}
  *>    char       *a           = NULL;          /+ current argument               +/   <* 
  *>    int         x_log       = '-';           /+ logging flag                   +/   <* 
  *>    int         x_len       = 0;                                                    <* 
- *>    char        x_prog      [LEN_STR];                                              <* 
+ *>    char        x_prog      [LEN_FULL];                                              <* 
  *>    /+---(default urgents)----------------+/                                        <* 
  *>    debug.logger   = -1;                                                            <* 
  *>    PROG_urgsmass ('-', 'y');   /+ turn everything off +/                           <* 
  *>    /+---(save prog name)-----------------+/                                        <* 
- *>    strlcpy (my.progname, a_argv [0], LEN_STR);                                     <* 
- *>    strlcpy (x_prog     , a_argv [0], LEN_STR);                                     <* 
- *>    x_len = strllen (x_prog, LEN_STR);                                              <* 
+ *>    strlcpy (my.progname, a_argv [0], LEN_FULL);                                     <* 
+ *>    strlcpy (x_prog     , a_argv [0], LEN_FULL);                                     <* 
+ *>    x_len = strllen (x_prog, LEN_FULL);                                              <* 
  *>    /+---(test for debug version)---------+/                                        <* 
  *>    if      (x_len > 6 && strstr (x_prog, "_debug") == NULL) {                      <* 
  *>       x_len -= 6;                                                                  <* 
@@ -340,6 +340,8 @@ PROG__init              (int argc, char *argv[])
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
+   my.save_png       = '-';
+   my.mask           = '-';
    DRAW_help  ("-");
    DRAW_color ("all");
    stroke.max        = -1;
@@ -350,12 +352,14 @@ PROG__init              (int argc, char *argv[])
    stroke.fth        = -1;
    ndot              =   0;
    stroke.small      = NOR;
-   strlcpy (my.win_title, "petal_writing", LEN_STR);
-   strlcpy (my.face_bg  , "coolvetica"   , LEN_STR);
-   /*> strlcpy (my.face_sm  , "courier"      , LEN_STR);                              <*/
-   strlcpy (my.face_sm  , "shrike"       , LEN_STR);
+   strlcpy (my.win_title, "petal_writing", LEN_FULL);
+   strlcpy (my.face_bg  , "coolvetica"   , LEN_FULL);
+   /*> strlcpy (my.face_sm  , "courier"      , LEN_FULL);                              <*/
+   strlcpy (my.face_sm  , "shrike"       , LEN_FULL);
    /*---(flags)--------------------------*/
    my.rptg_events    = '-';
+   my.ev_major       = 0xff;
+   my.ev_minor       = 0xff;
    my.rptg_dots      = '-';
    my.rptg_recog     = '-';
    my.loop_msec      =   1;
@@ -372,10 +376,11 @@ PROG__init              (int argc, char *argv[])
    shape.r_state     = -1;
    shape.r_debug     = '-';
    shape.r_prog      = 0.0;
+   my.show_balls = '-';
    DRAW_speed ("-");
    /*---(file names)---------------------*/
    DEBUG_PROG   yLOG_note    ("file names");
-   snprintf (my.name_event  , LEN_STR, "%s%s", DIR_INPUT, FILE_EVENT );
+   snprintf (my.n_event  , LEN_FULL, "%s%s", DIR_INPUT, FILE_EVENT );
    my.file_event     = NULL;
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
@@ -418,6 +423,18 @@ PROG__args              (int argc, char *argv[])
       else if (strncmp(a, "--events"  , 20) == 0)  my.rptg_events  = 'y';
       else if (strncmp(a, "--dots"    , 20) == 0)  my.rptg_dots    = 'y';
       else if (strncmp(a, "--recog"   , 20) == 0)  my.rptg_recog   = 'y';
+      else if (strncmp(a, "--evx"     , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x00; }
+      else if (strncmp(a, "--evy"     , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x01; }
+      else if (strncmp(a, "--evhard"  , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x18; }
+      else if (strncmp(a, "--evxtilt" , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x1a; }
+      else if (strncmp(a, "--evytilt" , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x1b; }
+      else if (strncmp(a, "--evhover" , 20) == 0)  { my.ev_major = 0x01; my.ev_minor = 0x40; }
+      else if (strncmp(a, "--evtouch" , 20) == 0)  { my.ev_major = 0x01; my.ev_minor = 0x4a; }
+      else if (strncmp(a, "--evbutton", 20) == 0)  { my.ev_major = 0x04; my.ev_minor = 0xff; }
+      else if (strncmp(a, "--balls"   , 20) == 0)  my.show_balls = 'y';
+      else if (strncmp(a, "--pngonly" , 20) == 0)  my.save_png   = 'y';
+      else if (strncmp(a, "--pngalso" , 20) == 0)  my.save_png   = '+';
+      else if (strncmp(a, "--mask"    , 20) == 0)  my.mask       = 'y';
    }
    return 0;
 }
@@ -441,9 +458,9 @@ PROG__begin             (void)
    else if (stroke.small == LRG) SHAPE_large  ();
    else if (stroke.small == HUG) SHAPE_huge   ();
    else                          SHAPE_giant  ();
-   /*> yX11_start (my.win_title, shape.sz_width, shape.sz_height, 'n', debug.prog, 'n');   <*/
+   /*> yX11_start (my.win_title, my.w_wide, my.w_tall, 'n', debug.prog, 'n');   <*/
    /*---(initialize)---------------------*/
-   TOUCH_open    ();
+   TOUCH__open (my.n_event, 'r', &(my.f_event));
    mouse_init    ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
@@ -502,7 +519,7 @@ PROG_dawn          (void)
    /*---(header)----------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(yvicurses config)---------------*/
-   rc = yVIOPENGL_init   (P_NAMESAKE, P_VERNUM, MODE_MAP, shape.sz_width, shape.sz_height);
+   rc = yVIOPENGL_init   (P_NAMESAKE, P_VERNUM, MODE_MAP, my.w_wide, my.w_tall);
    DEBUG_PROG   yLOG_value    ("yVIOPENGL" , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
@@ -514,7 +531,7 @@ PROG_dawn          (void)
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
-   rc = yVIEW_full     (YVIEW_MAIN , YVIEW_FLAT , YVIEW_BOTLEF, 1.0, 0, DRAW_main);
+   rc = yVIEW_full     (YVIEW_MAIN , YVIEW_FLAT , YVIEW_MIDCEN, 1.0, 0, DRAW_main);
    DEBUG_PROG   yLOG_value    ("yVIEW"     , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
@@ -568,6 +585,7 @@ PROG_dusk          (void)
       return rce;
    }
    displist_free ();
+   yVIOPENGL_wrap ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -585,7 +603,7 @@ PROG__end               (void)
 {
    /*---(shutdown)--------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
-   /*> TOUCH_close   ();                                                              <*/
+   TOUCH__close   (&(my.f_event));
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -612,11 +630,11 @@ static void      o___UNITTEST________________o (void) {;}
 char       /*----: set up program test file locations ------------------------*/
 PROG_testfiles     (void)
 {
-   /*> snprintf (my.name_root   , LEN_STR, "%s"    , DIR_TEST);                           <* 
-    *> snprintf (my.name_conf   , LEN_STR, "%s%s%s", DIR_TEST , DIR_ETC  , FILE_CONF );   <* 
-    *> snprintf (my.name_full   , LEN_STR, "%s%s%s", DIR_TEST , DIR_YHIST, FILE_FULL );   <* 
-    *> snprintf (my.name_summ   , LEN_STR, "%s%s%s", DIR_TEST , DIR_YHIST, FILE_SUMM );   <* 
-    *> snprintf (my.name_warn   , LEN_STR, "%s%s%s", DIR_TEST , DIR_YHIST, FILE_WARN );   <*/
+   /*> snprintf (my.name_root   , LEN_FULL, "%s"    , DIR_TEST);                           <* 
+    *> snprintf (my.name_conf   , LEN_FULL, "%s%s%s", DIR_TEST , DIR_ETC  , FILE_CONF );   <* 
+    *> snprintf (my.name_full   , LEN_FULL, "%s%s%s", DIR_TEST , DIR_YHIST, FILE_FULL );   <* 
+    *> snprintf (my.name_summ   , LEN_FULL, "%s%s%s", DIR_TEST , DIR_YHIST, FILE_SUMM );   <* 
+    *> snprintf (my.name_warn   , LEN_FULL, "%s%s%s", DIR_TEST , DIR_YHIST, FILE_WARN );   <*/
    return 0;
 }
 
