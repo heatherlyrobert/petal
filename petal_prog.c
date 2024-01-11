@@ -340,6 +340,7 @@ PROG__init              (int argc, char *argv[])
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
+   TOUCH_init ();
    my.save_png       = '-';
    my.mask           = '-';
    DRAW_help  ("-");
@@ -350,7 +351,7 @@ PROG__init              (int argc, char *argv[])
    stroke.snd        = -1;
    stroke.trd        = -1;
    stroke.fth        = -1;
-   ndot              =   0;
+   g_ndot            =   0;
    stroke.small      = NOR;
    strlcpy (my.win_title, "petal_writing", LEN_FULL);
    strlcpy (my.face_bg  , "coolvetica"   , LEN_FULL);
@@ -358,8 +359,8 @@ PROG__init              (int argc, char *argv[])
    strlcpy (my.face_sm  , "shrike"       , LEN_FULL);
    /*---(flags)--------------------------*/
    my.rptg_events    = '-';
-   my.ev_major       = 0xff;
-   my.ev_minor       = 0xff;
+   my.ev_major       = 0xee;
+   my.ev_minor       = 0xee;
    my.rptg_dots      = '-';
    my.rptg_recog     = '-';
    my.loop_msec      =   1;
@@ -423,14 +424,15 @@ PROG__args              (int argc, char *argv[])
       else if (strncmp(a, "--events"  , 20) == 0)  my.rptg_events  = 'y';
       else if (strncmp(a, "--dots"    , 20) == 0)  my.rptg_dots    = 'y';
       else if (strncmp(a, "--recog"   , 20) == 0)  my.rptg_recog   = 'y';
-      else if (strncmp(a, "--evx"     , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x00; }
-      else if (strncmp(a, "--evy"     , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x01; }
-      else if (strncmp(a, "--evhard"  , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x18; }
-      else if (strncmp(a, "--evxtilt" , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x1a; }
-      else if (strncmp(a, "--evytilt" , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x1b; }
-      else if (strncmp(a, "--evhover" , 20) == 0)  { my.ev_major = 0x01; my.ev_minor = 0x40; }
-      else if (strncmp(a, "--evtouch" , 20) == 0)  { my.ev_major = 0x01; my.ev_minor = 0x4a; }
-      else if (strncmp(a, "--evbutton", 20) == 0)  { my.ev_major = 0x04; my.ev_minor = 0xff; }
+      else if (strncmp(a, "--evall"   , 20) == 0)  { my.ev_major = 0xff; my.ev_minor = 0xff  ; }
+      else if (strncmp(a, "--evx"     , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x00  ; }
+      else if (strncmp(a, "--evy"     , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x01  ; }
+      else if (strncmp(a, "--evhard"  , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x18  ; }
+      else if (strncmp(a, "--evxtilt" , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x1a  ; }
+      else if (strncmp(a, "--evytilt" , 20) == 0)  { my.ev_major = 0x03; my.ev_minor = 0x1b  ; }
+      else if (strncmp(a, "--evhover" , 20) == 0)  { my.ev_major = 0x01; my.ev_minor = 0x0140; }
+      else if (strncmp(a, "--evtouch" , 20) == 0)  { my.ev_major = 0x01; my.ev_minor = 0x014a; }
+      else if (strncmp(a, "--evbutton", 20) == 0)  { my.ev_major = 0x04; my.ev_minor = 0xff  ; }
       else if (strncmp(a, "--balls"   , 20) == 0)  my.show_balls = 'y';
       else if (strncmp(a, "--pngonly" , 20) == 0)  my.save_png   = 'y';
       else if (strncmp(a, "--pngalso" , 20) == 0)  my.save_png   = '+';

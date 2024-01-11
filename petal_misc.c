@@ -34,8 +34,8 @@ const float  DEG2RAD = 3.1415927 / 180.0;
 int       curr_x;
 int       curr_y;
 float     curr_r;
-int       init_x       = 675;
-int       init_y       = 390;
+/*> int       init_x       = 675;                                                     <*/
+/*> int       init_y       = 390;                                                     <*/
 
 
 
@@ -334,14 +334,14 @@ char*
 unit_accessor(char *a_question, int a_num)
 {
    if        (strcmp(a_question, "dot")         == 0) {
-      if (ndot == 0) {
+      if (g_ndot == 0) {
          snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : there are no dots", a_num);
       } else if (a_num < 0) {
          snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : can not be negative", a_num);
-      } else if (a_num >= ndot) {
-         snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : out of range %3d to %3d", a_num, 0, ndot - 1);
+      } else if (a_num >= g_ndot) {
+         snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : out of range %3d to %3d", a_num, 0, g_ndot - 1);
       } else
-         snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : %4dx, %4dy, %4dc", a_num, dots[a_num].relx, dots[a_num].rely, ndot);
+         snprintf(unit_answer, LEN_RECD, "Dot Trace (%4d) : %4dx, %4dy, %4dc", a_num, g_dots [a_num].d_wx, g_dots [a_num].d_wy, g_ndot);
    } else if (strcmp(a_question, "current")     == 0) {
       if (stroke.outward) {
          snprintf(unit_answer, LEN_RECD, "Current   (fore) : 0=%2d, 1=%2d, 2=%2d, 3=%2d, m=%2d", stroke.zth, stroke.fst, stroke.snd, stroke.trd, stroke.max);

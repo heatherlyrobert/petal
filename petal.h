@@ -10,7 +10,7 @@
 #define     P_FOCUS     ""
 #define     P_NICHE     ""
 #define     P_SUBJECT   "artistic pen-based writing"
-#define     P_PURPOSE   ""
+#define     P_PURPOSE   "provide beautiful and efficient pen-based text input"
 
 #define     P_NAMESAKE  "khloris-nympha (flowering)"
 #define     P_HERITAGE  ""
@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "3.-- third major phase"
 #define     P_VERMINOR  "3.0- ramped the beauty way up ;)"
-#define     P_VERNUM    "3.0a"
-#define     P_VERTXT    "huge changes visually
+#define     P_VERNUM    "3.0b"
+#define     P_VERTXT    "rebuilt and unit tested dot-trail functions"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -225,14 +225,28 @@ struct cACCESSOR {
    int         t_topp;
    int         t_wide;
    int         t_tall;
+   int         t_x;
+   int         t_y;
    /*---(screen)---------------*/
+   int         s_left;
+   int         s_topp;
    int         s_wide;
    int         s_tall;
+   float       s_xratio;
+   float       s_yratio;
+   int         s_x;
+   int         s_y;
    /*---(window)---------------*/
    int         w_left;
    int         w_topp;
    int         w_wide;
    int         w_tall;
+   char        w_align;
+   char        w_valid;
+   char        w_touch;
+   int         w_x;
+   int         w_y;
+   int         w_r;
    /*---(opengl objects)-----------------*/
    uint        g_tex;                    /* task texture                      */
    uint        g_fbo;                    /* task fbo                          */
@@ -251,8 +265,8 @@ struct cACCESSOR {
    FILE       *file_event;             /* pointer to event device             */
    /*---(flags)----------------*/
    char        rptg_events;            /* request to dump events to screen    */
-   uchar       ev_major;               /* which ev_code to show               */
-   uchar       ev_minor;               /* which ev_code to show               */
+   int         ev_major;               /* which ev_code to show               */
+   int         ev_minor;               /* which ev_code to show               */
    char        rptg_dots;              /* request to dump dots to screen      */
    char        rptg_recog;             /* request to dump regcognition        */
    char        show_balls;
@@ -328,8 +342,6 @@ extern      tSTROKE     stroke;
 extern      int       curr_x;
 extern      int       curr_y;
 extern      float     curr_r;
-extern      int       init_x;
-extern      int       init_y;
 
 #define         TNY   0
 #define         SML   1
@@ -414,7 +426,7 @@ extern uint   locks [10];
 
 
 /*---(dot trace)------------------*/
-struct cDOTS {
+struct cDOTS_OLD {
    int         tries;         /* place in raw data stream                     */
    int         absx;          /* dots screen-absolute x-coordinate            */
    int         absy;          /* dots screen-absolute y-coordinate            */
@@ -423,10 +435,26 @@ struct cDOTS {
    float       delta;         /* change from last point                       */
    float       radius;        /* distance from center                         */
 };
+
+
 #define     MAX_DOTS    1000
 typedef     struct      cDOTS       tDOTS;
-extern      tDOTS       dots        [MAX_DOTS];
-extern      int         ndot;
+struct cDOTS {
+   char        d_place;       /* beg, end, or normal                          */
+   int         d_seq;         /* place in raw source data stream              */
+   int         d_tx;          /* tablet x, y   for debug, testing, etc        */
+   int         d_ty;
+   int         d_sx;          /* screen x, y   for debug, testing, etc        */
+   int         d_sy;
+   int         d_wx;          /* window x, y, r                               */
+   int         d_wy;
+   int         d_wr;
+   int         d_wd;          /* distance from last point                     */
+};
+extern      tDOTS       g_dots        [MAX_DOTS];
+extern      int         g_ndot;
+
+
 
 /*---(convienence typedefs)-------------------------------------*/
 typedef long   long      llong;
@@ -525,7 +553,8 @@ extern char          unit_answer [LEN_RECD];
 
 
 
-extern char g_letters[40];
+extern char *g_letters;
+
 extern char g_upper[40];
 extern char g_punct[40];
 extern char g_special[10];
@@ -605,7 +634,7 @@ char       DRAW_resize          (uint, uint);
 void       mouse_init           (void);
 
 /*===[[ petal_shape.c ]]============================================================*/ 
-/*---rc---- ---name----------- ---args----------------------------------------*/
+/*---rc---- ---name---------------- ---args----------------------------------------*/
 char        SHAPE_base         (float a_ratio);
 char        SHAPE_tiny         (void);
 char        SHAPE_small        (void);
@@ -617,23 +646,31 @@ char        SHAPE_giant        (void);
 char        SHAPE_size              (char *a_size);
 
 /*===[[ petal_touch.c ]]============================================================*/ 
-/*---rc---- ---name----------- ---args----------------------------------------*/
+/*---rc---- ---name---------------- ---args----------------------------------------*/
+char        TOUCH_reset             (void);
+char        TOUCH_init              (void);
 char        TOUCH__open             (char a_name [LEN_FULL], char a_dir, FILE **f);
 char        TOUCH__close            (FILE **f);
-char        TOUCH_normal            (void);
-char        TOUCH_check             (void);
+char        TOUCH__normal           (void);
+char        TOUCH__check            (void);
 char        TOUCH__event_type       (int a_evtype, char *r_track, char r_desc [LEN_TERSE]);
 char        TOUCH__event_code       (int a_evtype, int a_evcode, char *b_track, char r_desc [LEN_TERSE]);
 char        TOUCH__single           (FILE *f, int *r_type, int *r_code, int *r_value, char *r_track, char a_out [LEN_FULL]);
 char        TOUCH_read         (void);
 char        TOUCH_close        (void);
+/*---(unittest)-------------*/
 char        TOUCH_force_data        (char a_name [LEN_FULL], int a_type, int a_code, int a_value);
+char        TOUCH_force_tablet      (int a_left, int a_topp, int a_wide, int a_tall);
+char        TOUCH_force_screen      (int a_left, int a_topp, int a_wide, int a_tall);
+char        TOUCH_force_window      (int a_left, int a_topp, int a_wide, int a_tall, char a_align);
+char        TOUCH_point             (int x, int y);
+char*       TOUCH__unit             (char *a_question, int a_num);
+/*---(done)-----------------*/
+
+
 
 /*===[[ petal_stroke.c ]]===========================================================*/ 
 /*---rc---- ---name----------- ---args----------------------------------------*/
-char        DOT_beg            (int, int);
-char        DOT_add            (int, int, char);
-char        DOT_end            (int, int);
 
 
 char       STROKE_begin      (int, int, int);
@@ -679,6 +716,9 @@ char        LETTER_to_stroke        (char a_all, char c, char *m, char *i, char 
 char        LETTER_by_mode          (char n);
 
 
+
+/*===[[ PETAL_ARTSY.C ]]======================================================*/ 
+/*---rc---- ---name---------------- ---args-----------------------------------*/
 char        ARTSY_resize            (void);
 char        ARTSY_init              (void);
 char        ARTSY__center           (float a_radius, float a_depth, uint *b_dlist);
@@ -688,6 +728,28 @@ char        ARTSY__edge             (float a_radius, float a_depth, uint *b_dlis
 char        ARTSY__ball             (float a_radius, float a_depth, uint *b_dlist);
 char        ARTSY_draw              (void);
 char        ARTSY_show              (float a_wtop, float a_wlef, float a_wbot, float a_wrig);
+
+
+
+/*===[[ PETAL_DOT.C ]]========================================================*/ 
+/*---rc---- ---name---------------- ---args-----------------------------------*/
+/*---(program)--------------*/
+char        DOT_reset               (void);
+char        DOT_init                (void);
+/*---(worker)---------------*/
+char        DOT__add                (char a_func [LEN_LABEL], int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place);
+/*---(simplifier)-----------*/
+char        DOT_beg                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr);
+char        DOT_add                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place);
+char        DOT_end                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr);
+/*---(unittest)-------------*/
+char        DOT_force_point         (int x, int y);
+char        DOT_force_beg           (int a_wx, int a_wy);
+char        DOT_force_add           (int a_wx, int a_wy);
+char        DOT_force_end           (int a_wx, int a_wy);
+char*       DOT__unit               (char *a_question, int a_num);
+/*---(done)-----------------*/
+
 
 
 #endif

@@ -8,11 +8,11 @@ int       stroke_index [MAXWORD];
 ulong     stroke_keysym[MAXWORD];
 int       stroke_count;
 
-tDOTS       dots        [MAX_DOTS];
-int         ndot;
-int         s_tries     = 0;
-int         s_lastx     = 0;
-int         s_lasty     = 0;
+/*> tDOTS       dots        [MAX_DOTS];                                               <* 
+ *> int         ndot;                                                                 <* 
+ *> int         s_tries     = 0;                                                      <* 
+ *> int         s_lastx     = 0;                                                      <* 
+ *> int         s_lasty     = 0;                                                      <*/
 
 int last_ring  = -1;
 int last_petal = -1;
@@ -23,122 +23,122 @@ int last_petal = -1;
 static void      o___DOTS____________________o (void) {;}
 char garbage = 0;
 
-char         /*--> prepare for dot capture ---------------[ leaf   [ ------ ]-*/
-DOT_beg (int a_x, int a_y)
-{
-   /*---(locals)-----------+-----------+-*/
-   int         i           = 0;
-   RPTG_DOTS    printf ("\nbegin raw dot capture\n");
-   /*---(clear dot structure)------------*/
-   for (i = 0; i < MAX_DOTS; ++i) {
-      dots [i].tries  = 0;
-      dots [i].absx   = 0;
-      dots [i].absy   = 0;
-      dots [i].relx   = 0;
-      dots [i].rely   = 0;
-      dots [i].delta  = 0;
-      dots [i].radius = 0;
-   }
-   ndot    = 0;
-   /*---(initialize globals)-------------*/
-   s_tries = 0;
-   s_lastx = 0;
-   s_lasty = 0;
-   /*> init_x  = a_x + 1;                                                             <* 
-    *> init_y  = a_y + 1;                                                             <*/
-   curr_x  = 0;
-   curr_y  = 0;
-   curr_r  = 0;
-   s_lastx = 0;
-   s_lasty = 0;
-   garbage = 0;
-   /*---(add the first dot)--------------*/
-   char rc = DOT_add (a_x, a_y, 'b');
-   /*---(complete)-----------------------*/
-   return rc;
-}
+/*> char         /+--> prepare for dot capture ---------------[ leaf   [ ------ ]-+/            <* 
+ *> DOT_beg (int a_x, int a_y)                                                                  <* 
+ *> {                                                                                           <* 
+ *>    /+---(locals)-----------+-----------+-+/                                                 <* 
+ *>    int         i           = 0;                                                             <* 
+ *>    RPTG_DOTS    printf ("\nbegin raw dot capture\n");                                       <* 
+ *>    /+---(clear dot structure)------------+/                                                 <* 
+ *>    for (i = 0; i < MAX_DOTS; ++i) {                                                         <* 
+ *>       dots [i].tries  = 0;                                                                  <* 
+ *>       dots [i].absx   = 0;                                                                  <* 
+ *>       dots [i].absy   = 0;                                                                  <* 
+ *>       dots [i].relx   = 0;                                                                  <* 
+ *>       dots [i].rely   = 0;                                                                  <* 
+ *>       dots [i].delta  = 0;                                                                  <* 
+ *>       dots [i].radius = 0;                                                                  <* 
+ *>    }                                                                                        <* 
+ *>    ndot    = 0;                                                                             <* 
+ *>    /+---(initialize globals)-------------+/                                                 <* 
+ *>    s_tries = 0;                                                                             <* 
+ *>    s_lastx = 0;                                                                             <* 
+ *>    s_lasty = 0;                                                                             <* 
+ *>    /+> init_x  = a_x + 1;                                                             <*    <* 
+ *>     *> init_y  = a_y + 1;                                                             <+/   <* 
+ *>    curr_x  = 0;                                                                             <* 
+ *>    curr_y  = 0;                                                                             <* 
+ *>    curr_r  = 0;                                                                             <* 
+ *>    s_lastx = 0;                                                                             <* 
+ *>    s_lasty = 0;                                                                             <* 
+ *>    garbage = 0;                                                                             <* 
+ *>    /+---(add the first dot)--------------+/                                                 <* 
+ *>    char rc = DOT_add (a_x, a_y, 'b');                                                       <* 
+ *>    /+---(complete)-----------------------+/                                                 <* 
+ *>    return rc;                                                                               <* 
+ *> }                                                                                           <*/
 
-char
-DOT_add (int a_x, int a_y, char a_place)
-{
-   /*---(locals)-----------+-----------+-*/
-   int         x           = 0;
-   int         y           = 0;
-   float       r           = 0.0f;
-   /*---(headers and line breaks)--------*/
-   if ((s_tries % 15) == 0) {
-      RPTG_DOTS    printf ("\ntry-  absx  absy  relx  rely  movx  movy  movr  radii  ---evaluation------------ --#--\n");
-   }
-   if ((s_tries %  3) == 0) {
-      RPTG_DOTS    printf ("\n");
-   }
-   ++s_tries;
-   /*---(print values)-------------------*/
-   x   = a_x;
-   y   = a_y;
-   RPTG_DOTS    printf ("%4d  %4d  %4d  ", s_tries, x, y);
-   dots [ndot].tries  = s_tries;
-   dots [ndot].absx   = x;
-   dots [ndot].absy   = y;
-   /*---(filter)-------------------------*/
-   if (garbage == 1)  {
-      RPTG_DOTS    printf ("----  ----  ----  ----  ----  -----  rejected, garbage on         --\n");
-      return -1;
-   }
-   if (ndot >= MAX_DOTS) {
-      RPTG_DOTS    printf ("----  ----  ----  ----  ----  -----  rejected, too many dots      --\n");
-      return -3;
-   }
-   /*---(calculate relatives)------------*/
-   x  -= init_x;
-   y  -= init_y;
-   RPTG_DOTS    printf ("%4d  %4d  ", x, y);
-   dots [ndot].relx = x;
-   dots [ndot].rely = y;
-   x  -= s_lastx;
-   y  -= s_lasty;
-   r   = sqrt((x * x) + (y * y));
-   RPTG_DOTS    printf ("%4d  %4d  %4.1f  ", x, y, r);
-   /*---(filter)-------------------------*/
-   if (ndot > 0 && r <  3.0 && a_place != 'e') {
-      RPTG_DOTS    printf ("-----  rejected, too close          --\n");
-      return -4;
-   }
-   if (r > 30.0 && ndot > 0) {
-      RPTG_DOTS    printf ("-----  rejected, moved too far      --\n");
-      garbage = 1;
-      return -5;
-   }
-   dots [ndot].delta = r;
-   /*---(save old values)----------------*/
-   s_lastx = dots [ndot].relx;
-   s_lasty = dots [ndot].rely;
-   curr_x = a_x - init_x;
-   curr_y = a_y - init_y;
-   /*---(calculate distance)-------------*/
-   curr_r = sqrt((curr_x * curr_x) + (curr_y * curr_y));
-   dots [ndot].radius = curr_r;
-   /*---(accept)-------------------------*/
-   if (a_place == 'e') {
-      RPTG_DOTS    printf ("%5.1f  accepted, last dot        %5d\n", curr_r, ndot);
-   } else {
-      RPTG_DOTS    printf ("%5.1f  accepted                  %5d\n", curr_r, ndot);
-   }
-   ++ndot;
-   /*---(complete)-----------------------*/
-   return 0;
-}
+/*> char                                                                                                                        <* 
+ *> DOT_add (int a_x, int a_y, char a_place)                                                                                    <* 
+ *> {                                                                                                                           <* 
+ *>    /+---(locals)-----------+-----------+-+/                                                                                 <* 
+ *>    int         x           = 0;                                                                                             <* 
+ *>    int         y           = 0;                                                                                             <* 
+ *>    float       r           = 0.0f;                                                                                          <* 
+ *>    /+---(headers and line breaks)--------+/                                                                                 <* 
+ *>    if ((s_tries % 15) == 0) {                                                                                               <* 
+ *>       RPTG_DOTS    printf ("\ntry-  absx  absy  relx  rely  movx  movy  movr  radii  ---evaluation------------ --#--\n");   <* 
+ *>    }                                                                                                                        <* 
+ *>    if ((s_tries %  3) == 0) {                                                                                               <* 
+ *>       RPTG_DOTS    printf ("\n");                                                                                           <* 
+ *>    }                                                                                                                        <* 
+ *>    ++s_tries;                                                                                                               <* 
+ *>    /+---(print values)-------------------+/                                                                                 <* 
+ *>    x   = a_x;                                                                                                               <* 
+ *>    y   = a_y;                                                                                                               <* 
+ *>    RPTG_DOTS    printf ("%4d  %4d  %4d  ", s_tries, x, y);                                                                  <* 
+ *>    dots [ndot].tries  = s_tries;                                                                                            <* 
+ *>    dots [ndot].absx   = x;                                                                                                  <* 
+ *>    dots [ndot].absy   = y;                                                                                                  <* 
+ *>    /+---(filter)-------------------------+/                                                                                 <* 
+ *>    if (garbage == 1)  {                                                                                                     <* 
+ *>       RPTG_DOTS    printf ("----  ----  ----  ----  ----  -----  rejected, garbage on         --\n");                       <* 
+ *>       return -1;                                                                                                            <* 
+ *>    }                                                                                                                        <* 
+ *>    if (ndot >= MAX_DOTS) {                                                                                                  <* 
+ *>       RPTG_DOTS    printf ("----  ----  ----  ----  ----  -----  rejected, too many dots      --\n");                       <* 
+ *>       return -3;                                                                                                            <* 
+ *>    }                                                                                                                        <* 
+ *>    /+---(calculate relatives)------------+/                                                                                 <* 
+ *>    x  -= init_x;                                                                                                            <* 
+ *>    y  -= init_y;                                                                                                            <* 
+ *>    RPTG_DOTS    printf ("%4d  %4d  ", x, y);                                                                                <* 
+ *>    dots [ndot].relx = x;                                                                                                    <* 
+ *>    dots [ndot].rely = y;                                                                                                    <* 
+ *>    x  -= s_lastx;                                                                                                           <* 
+ *>    y  -= s_lasty;                                                                                                           <* 
+ *>    r   = sqrt((x * x) + (y * y));                                                                                           <* 
+ *>    RPTG_DOTS    printf ("%4d  %4d  %4.1f  ", x, y, r);                                                                      <* 
+ *>    /+---(filter)-------------------------+/                                                                                 <* 
+ *>    if (ndot > 0 && r <  3.0 && a_place != 'e') {                                                                            <* 
+ *>       RPTG_DOTS    printf ("-----  rejected, too close          --\n");                                                     <* 
+ *>       return -4;                                                                                                            <* 
+ *>    }                                                                                                                        <* 
+ *>    if (r > 30.0 && ndot > 0) {                                                                                              <* 
+ *>       RPTG_DOTS    printf ("-----  rejected, moved too far      --\n");                                                     <* 
+ *>       garbage = 1;                                                                                                          <* 
+ *>       return -5;                                                                                                            <* 
+ *>    }                                                                                                                        <* 
+ *>    dots [ndot].delta = r;                                                                                                   <* 
+ *>    /+---(save old values)----------------+/                                                                                 <* 
+ *>    s_lastx = dots [ndot].relx;                                                                                              <* 
+ *>    s_lasty = dots [ndot].rely;                                                                                              <* 
+ *>    curr_x = a_x - init_x;                                                                                                   <* 
+ *>    curr_y = a_y - init_y;                                                                                                   <* 
+ *>    /+---(calculate distance)-------------+/                                                                                 <* 
+ *>    curr_r = sqrt((curr_x * curr_x) + (curr_y * curr_y));                                                                    <* 
+ *>    dots [ndot].radius = curr_r;                                                                                             <* 
+ *>    /+---(accept)-------------------------+/                                                                                 <* 
+ *>    if (a_place == 'e') {                                                                                                    <* 
+ *>       RPTG_DOTS    printf ("%5.1f  accepted, last dot        %5d\n", curr_r, ndot);                                         <* 
+ *>    } else {                                                                                                                 <* 
+ *>       RPTG_DOTS    printf ("%5.1f  accepted                  %5d\n", curr_r, ndot);                                         <* 
+ *>    }                                                                                                                        <* 
+ *>    ++ndot;                                                                                                                  <* 
+ *>    /+---(complete)-----------------------+/                                                                                 <* 
+ *>    return 0;                                                                                                                <* 
+ *> }                                                                                                                           <*/
 
-char
-DOT_end (int a_x, int a_y)
-{
-   /*> if (a_x == curr_x && a_y == curr_y) return -1;                                 <*/
-   /*> curr_x = 1000;                                                                 <* 
-    *> curr_y = 1000;                                                                 <*/
-   char rc = DOT_add (a_x, a_y, 'e');
-   RPTG_DOTS    printf ("done for this stroke\n");
-   return rc;
-}
+/*> char                                                                                        <* 
+ *> DOT_end (int a_x, int a_y)                                                                  <* 
+ *> {                                                                                           <* 
+ *>    /+> if (a_x == curr_x && a_y == curr_y) return -1;                                 <+/   <* 
+ *>    /+> curr_x = 1000;                                                                 <*    <* 
+ *>     *> curr_y = 1000;                                                                 <+/   <* 
+ *>    char rc = DOT_add (a_x, a_y, 'e');                                                       <* 
+ *>    RPTG_DOTS    printf ("done for this stroke\n");                                          <* 
+ *>    return rc;                                                                               <* 
+ *> }                                                                                           <*/
 
 
 
@@ -156,7 +156,7 @@ STROKE_begin       (int a_x, int a_y, int a_r)
    /*---(header)-------------------------*/
    RPTG_RECOG   printf ("\nbegin stroke recognition\n");
    /*---(add dot)------------------------*/
-   rc = DOT_beg (a_x, a_y);
+   /*> rc = DOT_beg (a_x, a_y);                                                       <*/
    if (rc < 0) return -1;
    /*---(reset flags)---------------------------*/
    letter_init();
@@ -190,7 +190,7 @@ stroke_next (int a_x, int a_y, int a_r)
    char        rc          = 0;
    /*> RPTG_RECOG   printf("   - stroke_continue (%4dx, %4dy, %4dw)...\n", a_x, a_y, a_r);   <*/
    /*---(add dot)------------------------*/
-   rc = DOT_add (a_x, a_y, 'a');
+   /*> rc = DOT_add (a_x, a_y, 'a');                                                  <*/
    if (rc < 0) return -1;
    /*---(check for wave offs)-------------------*/
    if (stroke.done   == 1) return 0;
@@ -320,7 +320,7 @@ stroke_next (int a_x, int a_y, int a_r)
 char
 STROKE_end         (int a_x, int a_y, int a_r)
 {
-   char rc = DOT_end (a_x, a_y);
+   /*> char rc = DOT_end (a_x, a_y);                                                  <*/
    char x_rc = 0;                               /* local return code          */
    char x_before[MAXWORD] = "";
    /*---(process immediately)-------------------*/

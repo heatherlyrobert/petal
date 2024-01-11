@@ -339,11 +339,11 @@ ARTSY__edge             (float a_radius, float a_depth, uint *b_dlist)
    glLineWidth (1.0);
    /*---(draw)------------------------------*/
    glColor4f   (1.00, 1.00, 1.00, 1.00);
-   ARTSY__bezier ('p', r * 0.95, r * 1.00, r * 1.15, 50.0,-10.0, a_depth    ,  0.0);
+   ARTSY__bezier ('p', r * 0.95, r * 1.00, r * 1.00, 50.0,  0.0, a_depth    ,  0.0);
    glColor4f   (0.00, 0.50, 0.75, 0.30);
-   ARTSY__bezier ('p', r * 0.95, r * 1.00, r * 1.15, 50.0,-10.0, a_depth + 2,  0.0);
+   ARTSY__bezier ('p', r * 0.95, r * 1.00, r * 1.00, 50.0,  0.0, a_depth + 2,  0.0);
    glColor4f   (0.00, 0.00, 0.00, 1.00);
-   ARTSY__bezier ('l', r * 0.95, r * 1.00, r * 1.15, 50.0,-10.0, a_depth + 4,  0.0);
+   ARTSY__bezier ('l', r * 0.95, r * 1.00, r * 1.00, 50.0,  0.0, a_depth + 4,  0.0);
    /*---(end)-------------------------------*/
    glEndList();
    /*---(save-back)-------------------------*/
@@ -462,7 +462,7 @@ ARTSY__ring             (float a_radius, float a_depth, uint *b_dlist)
       glVertex3f( 0, 0, a_depth);
       for (d =  -7.5; d <=  7.5; d += 1) {
          rad = d * DEG2RAD;
-         r   =  a_radius - 10 + 10 * cos ((d * 24) * DEG2RAD);
+         r   =  a_radius - 35 + 10 * cos ((d * 24) * DEG2RAD);
          x   =  r * cos(rad);
          y   =  r * sin(rad);
          DEBUG_GRAF   yLOG_complex ("point"     , "%7.2fd, %7.2frad, %7.2fr, %7.2fx, %7.2fy", d, rad, r, x, y);
@@ -477,7 +477,7 @@ ARTSY__ring             (float a_radius, float a_depth, uint *b_dlist)
       for (d = 0; d <= 360; d += 5) {
          glVertex3f( 0, 0, a_depth + 2);
          rad = d * DEG2RAD;
-         r   =  a_radius - 10 + 10 * cos ((d * 24) * DEG2RAD);
+         r   =  a_radius - 35 + 10 * cos ((d * 24) * DEG2RAD);
          x   =  r * cos(rad);
          y   =  r * sin(rad);
          glVertex3f( x, y, a_depth + 2);
@@ -488,7 +488,7 @@ ARTSY__ring             (float a_radius, float a_depth, uint *b_dlist)
    glBegin(GL_LINE_STRIP); {
       for (d = -7.5; d <= 7.5; d += 1) {
          rad = d * DEG2RAD;
-         r   =  a_radius - 10 + 10 * cos ((d * 24) * DEG2RAD);
+         r   =  a_radius - 35 + 10 * cos ((d * 24) * DEG2RAD);
          x   =  r * cos(rad);
          y   =  r * sin(rad);
          DEBUG_GRAF   yLOG_complex ("point"     , "%7.2fd, %7.2frad, %7.2fr, %7.2fx, %7.2fy", d, rad, r, x, y);
@@ -497,7 +497,7 @@ ARTSY__ring             (float a_radius, float a_depth, uint *b_dlist)
    } glEnd();
    /*---(ring)------------------------------*/
    glLineWidth (10.0);
-   r = 398;
+   r = 378;
    glColor4f   (1.00, 0.00, 0.00, 0.50);
    glBegin(GL_LINE_STRIP); {
       for (d = 0; d <= 360; d += 1) {
@@ -764,7 +764,7 @@ ARTSY_mask              (void)
    XSetForeground (YX_DISP, gc, 0);
    XFillRectangle (YX_DISP, bounds, gc, 0, 0, my.w_wide, my.w_tall);
    XSetForeground (YX_DISP, gc, 1);
-   XFillArc (YX_DISP, bounds, gc,    0.0,    0.0, my.w_wide, my.w_tall, 0.0 * 64.0, 360.0 * 64.0);
+   XFillArc (YX_DISP, bounds, gc,   15.0,   15.0, my.w_wide - 30, my.w_tall - 30, 0.0 * 64.0, 360.0 * 64.0);
    XShapeCombineMask (YX_DISP, YX_BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
    /*---(free)---------------------------*/
    XFreePixmap (YX_DISP, bounds);

@@ -58,16 +58,85 @@ uint   locks [10];
  *
  */
 
-char g_letters[40] = {
+
+char g_mapping [LEN_FULL] = {
+   /*--- 0 ---------*/
+   0              , 0              , 0              , 0              ,
+   0              , 0              , 0              , 0              ,
+   0              , 0              , 0              , 0              ,
+   0              , 0              , 0              , 0              ,
+   /*--- 1 ---------*/
+   0              , 0              , 0              , 0              ,
+   0              , 0              , 0              , 0              ,
+   0              , 0              , 0              , 0              ,
+   0              , 0              , 0              , 0              ,
+   /*--- 2 ---------*/
+   XK_space       , XK_exclam      , XK_quotedbl    , XK_numbersign  ,
+   XK_dollar      , XK_percent     , XK_ampersand   , XK_apostrophe  ,
+   XK_parenleft   , XK_parenright  , XK_asterisk    , XK_plus        ,
+   XK_comma       , XK_minus       , XK_period      , XK_slash       ,
+   /*--- 3 ---------*/
+   XK_0           , XK_1           , XK_2           , XK_3           ,
+   XK_4           , XK_5           , XK_6           , XK_7           ,
+   XK_8           , XK_9           , XK_colon       , XK_semicolon   ,
+   XK_less        , XK_equal       , XK_greater     , XK_question    ,
+   /*--- 4 ---------*/
+   XK_at          , XK_A           , XK_B           , XK_C           ,
+   XK_D           , XK_E           , XK_F           , XK_G           ,
+   XK_H           , XK_I           , XK_J           , XK_K           ,
+   XK_L           , XK_M           , XK_N           , XK_O           ,
+   /*--- 5 ---------*/
+   XK_P           , XK_Q           , XK_R           , XK_S           ,
+   XK_T           , XK_U           , XK_V           , XK_W           ,
+   XK_X           , XK_Y           , XK_Z           , XK_bracketleft ,
+   XK_backslash   , XK_bracketright, XK_asciicircum , XK_grave       ,
+   /*--- 6 ---------*/
+   XK_at          , XK_a           , XK_b           , XK_c           ,
+   XK_d           , XK_e           , XK_f           , XK_g           ,
+   XK_h           , XK_i           , XK_j           , XK_k           ,
+   XK_l           , XK_m           , XK_n           , XK_o           ,
+   /*--- 7 ---------*/
+   XK_p           , XK_q           , XK_r           , XK_s           ,
+   XK_t           , XK_u           , XK_v           , XK_w           ,
+   XK_x           , XK_y           , XK_z           , XK_braceleft   ,
+   XK_bar         , XK_braceright  , XK_asciitilde  , -1             ,
+};
+
+char g_letters_OLD  [40] = {
    't' , 'm' , '[' , 'c' , '\"',   /* N    */
    'n' , 'f' , '_' , 'r' , 'x' ,   /* NE   */
-   '·' , 'u' , '.' , 'p' , ',' ,   /* E    */
+   '¼' , 'u' , '.' , 'p' , ',' ,   /* E    */
    'i' , 'l' , 'q' , 'd' , 'b' ,   /* SE   */
    'e' , 'h' , '\'', 's' , ']' ,   /* S    */
    'o' , 'g' , 'z' , 'w' , ')' ,   /* SW   */
-   '¿' , 'j' , ';' , 'k' , ':' ,   /* W    */
+   '½' , 'j' , ';' , 'k' , ':' ,   /* W    */
    'a' , 'y' , '(' , 'v' , '-' ,   /* NW   */
 };
+
+char g_letters_NEW [40] = {
+   'e' , 'g' , '\\', 'f' , '/' ,   /* N  Ï */
+   'a' , 'd' , 'b' , 'c' , 'v' ,   /* NE Ï */
+   '¼' , ',' , ';' , '.' , ':' ,   /* E  Ï */
+   't' , 's' , 'u' , 'r' , '_' ,   /* SE Ï */
+   'o' , 'q' , '"' , 'p' , '\'',   /* S  Ï */
+   'n' , 'm' , '´' , 'l' , '´' ,   /* SW Ï */
+   '½' , 'y' , 'z' , 'w' , 'x' ,   /* W  Ï */
+   'i' , 'k' , 'j' , 'h' , '´' ,   /* NW Ï */
+};
+
+char g_letters_LATE [40] = {
+   'e' , 'g' , '´' , 'f' , '´' ,   /* N  Ï */
+   'a' , 'd' , 'b' , 'c' , '´' ,   /* NE Ï */
+   '¼' , 'u' , '´' , 'v' , '´' ,   /* E  Ï */
+   't' , 's' , '´' , 'r' , '´' ,   /* SE Ï */
+   'o' , 'q' , '´' , 'p' , '´' ,   /* S  Ï */
+   'n' , 'm' , '´' , 'l' , '´' ,   /* SW Ï */
+   '½' , 'y' , 'z' , 'w' , 'x' ,   /* W  Ï */
+   'i' , 'k' , 'j' , 'h' , '´' ,   /* NW Ï */
+};
+
+char *g_letters = g_letters_LATE;
+
 char g_upper[40] = {
    'T' , 'M' , '[' , 'C' , '~' ,   /* N    */
    'N' , 'F' , '_' , 'R' , 'X' ,   /* NE   */
@@ -78,6 +147,18 @@ char g_upper[40] = {
    '¿' , 'J' , ';' , 'K' , ':' ,   /* W */
    'A' , 'Y' , '(' , 'V' , '-' ,   /* NW   */
 };
+
+int  g_akeysyms_OLD [40] = {
+   XK_t         , XK_m           , XK_bracketleft, XK_c       , XK_quotedbl    ,
+   XK_n         , XK_f           , XK_underscore , XK_r       , XK_x           ,
+   XK_space     , XK_u           , XK_period     , XK_p       , XK_comma       ,
+   XK_i         , XK_l           , XK_q          , XK_d       , XK_b           ,
+   XK_e         , XK_h           , XK_apostrophe , XK_s       , XK_bracketright,
+   XK_o         , XK_g           , XK_z          , XK_w       , XK_parenright  ,
+   XK_BackSpace , XK_j           , XK_semicolon  , XK_k       , XK_colon       ,
+   XK_a         , XK_y           , XK_parenleft  , XK_v       , XK_minus       ,
+};
+
 int  g_akeysyms[40] = {
    XK_t         , XK_m           , XK_bracketleft, XK_c       , XK_quotedbl    ,
    XK_n         , XK_f           , XK_underscore , XK_r       , XK_x           ,
@@ -88,6 +169,7 @@ int  g_akeysyms[40] = {
    XK_BackSpace , XK_j           , XK_semicolon  , XK_k       , XK_colon       ,
    XK_a         , XK_y           , XK_parenleft  , XK_v       , XK_minus       ,
 };
+
 char g_punct[40] = {
    '0' , '|' , '[' , '2' , '\"',   /* N   % ^ | @ $ _ & # : \ */
    '=' , '3' , '_' , '4' , '$' ,   /* NE   |{}[]  & _<>$   */
@@ -119,7 +201,7 @@ int  g_akeysyms_punct[40] = {
  *>    XK_slash     , XK_backslash   , XK_4          , XK_colon       , XK_at         ,   <* 
  *> };                                                                                    <*/
 
-char g_special[10]          = { 'S', 'M', 'T', 'H', 'N', 'A', 'E', 'C', };
+char g_special[10]          = { 'S', 'M', 'T', 'H', '¦', 'A', '¥', 'C', };
 int  g_akeysyms_special[10] = {
    XK_Shift_L  , XK_Mode_switch, XK_Tab      , 1000000       ,
    XK_Return   , XK_Alt_L      , XK_Escape   , XK_Control_L  ,

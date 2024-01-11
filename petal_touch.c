@@ -33,22 +33,59 @@ static struct {
    int         c_seen;
 } s_code [LEN_DESC] = {
    /*---(syn)----------------------------*/
-   {     0,     0, "all     ", 0    },  
+   {     0,     0  , "all     ", 0    },  
    /*---(abs)----------------------------*/
-   {     3,  0x00, "abs_x   ", 0    },  
-   {     3,  0x01, "abs_y   ", 0    },  
-   {     3,  0x04, "button  ", 0    },  
-   {     3,  0x18, "hardnes ", 0    },  
-   {     3,  0x1a, "tilt_x  ", 0    },  
-   {     3,  0x1b, "tilt_y  ", 0    },  
-   {     3,  0x2f, "slot    ", 0    },  
-   {     3,  0x35, "eps_X   ", 0    },  
-   {     3,  0x36, "eps_Y   ", 0    },  
-   {     3,  0x39, "id      ", 0    },  
+   {     3,  0x00  , "abs_x   ", 0    },  
+   {     3,  0x01  , "abs_y   ", 0    },  
+   {     3,  0x04  , "button  ", 0    },  
+   {     3,  0x18  , "hardnes ", 0    },  
+   {     3,  0x1a  , "tilt_x  ", 0    },  
+   {     3,  0x1b  , "tilt_y  ", 0    },  
+   {     3,  0x2f  , "slot    ", 0    },  
+   {     3,  0x35  , "eps_X   ", 0    },  
+   {     3,  0x36  , "eps_Y   ", 0    },  
+   {     3,  0x39  , "id      ", 0    },  
+   {     1,  0x0140, "hover   ", 0    },  
+   {     1,  0x014a, "touch   ", 0    },  
    /*---(end)----------------------------*/
-   {    -1,    -1, ""        , 0    },  
+   {    -1,    -1  , ""        , 0    },  
    /*---(done)---------------------------*/
 };
+
+
+static char s_sync        = '-';
+
+static int  s_xpos        = -6666;
+static int  s_ypos        = -6666;
+
+static int  s_xsav        = -6666;
+static int  s_ysav        = -6666;
+
+
+
+
+char
+TOUCH_reset             (void)
+{
+   my.t_x    = my.t_y    = -6666;
+   my.s_x    = my.s_y    = -6666;
+   my.w_x    = my.w_y    = my.w_r    = -6666;
+   my.w_valid  = '·';
+   return 0;
+}
+
+char
+TOUCH_init              (void)
+{
+   my.t_left = my.t_topp = my.t_wide = my.t_tall = -6666;
+   my.s_left = my.s_topp = my.s_wide = my.s_tall = -6666;
+   my.w_left = my.w_topp = my.w_wide = my.w_tall = -6666;
+   my.w_align = YGLTEX_MIDCEN;
+   my.s_xratio = my.s_yratio = 0.00;
+   my.w_touch  = '·';
+   TOUCH_reset ();
+   return 0;
+}
 
 char         /*--> open touch device event file ----------[ leaf   [ ------ ]-*/
 TOUCH__open             (char a_name [LEN_FULL], char a_dir, FILE **f)
@@ -134,14 +171,14 @@ TOUCH__close       (FILE **f)
 }
 
 char         /*--> open touch device event file ----------[ leaf   [ ------ ]-*/
-TOUCH_normal       (void)
+TOUCH__normal      (void)
 {
    fcntl  (s_fileno, F_SETFL, s_flags);
    return 0;
 }
 
 char         /*--> open touch device event file ----------[ leaf   [ ------ ]-*/
-TOUCH_check        (void)
+TOUCH__check       (void)
 {
    /*---(locals)-----------*-------------*/
    char        rce         = -10;           /* return code for errors         */
@@ -163,7 +200,7 @@ TOUCH_check        (void)
    DEBUG_TOUCH  yLOG_sint    (x_ch);
    --rce;  if (x_ch < 0) {
       DEBUG_TOUCH  yLOG_snote   ("nothing in queue");
-      TOUCH_normal ();
+      TOUCH__normal ();
       DEBUG_TOUCH  yLOG_sexit   (__FUNCTION__);
       return rce;
    }
@@ -171,7 +208,7 @@ TOUCH_check        (void)
    rc = ungetc (x_ch, my.f_event);
    --rce;  if (rc != x_ch) {
       DEBUG_TOUCH  yLOG_snote   ("could not unget");
-      TOUCH_normal ();
+      TOUCH__normal ();
       DEBUG_TOUCH  yLOG_sexit   (__FUNCTION__);
       return rce;
    }
@@ -205,6 +242,7 @@ TOUCH__event_type       (int a_evtype, char *r_track, char r_desc [LEN_TERSE])
       if (s_type [i].t_val != a_evtype)  continue;
       /*---(handle)----------------------*/
       DEBUG_TOUCH  yLOG_snote   ("FOUND");
+      DEBUG_TOUCH  yLOG_snote   (s_type [i].t_desc);
       ++(s_type [i].t_seen);
       if (r_desc != NULL)  strcpy (r_desc, s_type [i].t_desc);
       /*---(track)--------------------------*/
@@ -215,6 +253,11 @@ TOUCH__event_type       (int a_evtype, char *r_track, char r_desc [LEN_TERSE])
          }
       } else {
          DEBUG_TOUCH  yLOG_snote   ("silent");
+      }
+      /*---(sync)---------------------------*/
+      if (a_evtype == 0) {
+         /*> printf ("SYNC NOW\n");                                                   <*/
+         s_sync = 'y';
       }
       /*---(complete)--------------------*/
       DEBUG_TOUCH  yLOG_sexit   (__FUNCTION__);
@@ -260,6 +303,7 @@ TOUCH__event_code       (int a_evtype, int a_evcode, char *b_track, char r_desc 
       if (s_code [i].c_val  != a_evcode)  continue;
       /*---(handle)----------------------*/
       DEBUG_TOUCH  yLOG_snote   ("FOUND");
+      DEBUG_TOUCH  yLOG_snote   (s_code [i].c_desc);
       ++(s_code [i].c_seen);
       if (r_desc != NULL)  strcpy (r_desc, s_code [i].c_desc);
       /*---(track)--------------------------*/
@@ -352,6 +396,18 @@ TOUCH__single           (FILE *f, int *r_type, int *r_code, int *r_value, char *
       strcat  (x_out, t);
       break;
    }
+   /*---(report)-------------------------*/
+   DEBUG_TOUCH  yLOG_info    ("x_out"     , x_out);
+   /*---(global)-------------------------*/
+   if (x_type == 0x03 && x_code == 0x00)  s_xpos = x_value;
+   if (x_type == 0x03 && x_code == 0x01)  s_ypos = x_value;
+   if (x_type == 0x01) {
+      if (x_code == 0x0140 && x_value == 0)  my.w_touch = '·';
+      if (x_code == 0x0140 && x_value == 1)  my.w_touch = 'h';
+      if (x_code == 0x014a && x_value == 0)  my.w_touch = 'h';
+      if (x_code == 0x014a && x_value == 1)  my.w_touch = 'T';
+      /*> printf ("handled %4x with %4x result %c\n", x_code, x_value, my.w_touch);   <*/
+   }
    /*---(save-back)----------------------*/
    if (r_type  != NULL)  *r_type   = x_type;
    if (r_code  != NULL)  *r_code   = x_code;
@@ -378,18 +434,19 @@ TOUCH_read         (void)
    int    ev_type  = 0;
    int    ev_code  = 0;
    int    ev_value = 0;
-   char        t           [LEN_LABEL] = "";
    char        x_track     =  '·';
    float       x           = 0.0;
    float       y           = 0.0;
+   char        t           [LEN_DESC]  = "    ·x      ·y      ·w      ·t";
+   char        s           [LEN_DESC]  = "    ·x      ·y";
+   char        r           [LEN_DESC]  = "       ··         ··";
+   char        x_ready     = '-';
+   /*---(quick-out)----------------------*/
+   rc = TOUCH__check  ();
+   if (rc < 0)  return 0;
+   else         x_ready = 'y';
    /*---(header)-------------------------*/
    DEBUG_TOUCH  yLOG_enter   (__FUNCTION__);
-   /*---(check)--------------------------*/
-   rc = TOUCH_check  ();
-   --rce;  if (rc < 0) {
-      DEBUG_TOUCH  yLOG_exit    (__FUNCTION__);
-      return rce;
-   }
    /*---(headers and line breaks)--------*/
    if (s_line == 0 || (s_rptg != s_last && (s_rptg % 25) == 0)) {
       RPTG_EVENTS  printf ("\n-- -- -- -- -- -- -- --   -- -- -- -- -- -- -- --   -- -- typ   -- -- code-   -- -- -- -- value-----\n");
@@ -402,7 +459,41 @@ TOUCH_read         (void)
    /*---(prepare)------------------------*/
    x_count = 0;
    /*> strcpy  (output, "");                                                          <*/
-   rc = TOUCH__single (my.f_event, &ev_type, &ev_code, &ev_value, &x_track, output);
+   while (x_ready == 'y') {
+      rc = TOUCH__single (my.f_event, &ev_type, &ev_code, &ev_value, &x_track, output);
+      DEBUG_TOUCH  yLOG_complex ("single"    , "%3d %3d %6d, %c, %-20.20s", ev_type, ev_code, ev_value, x_track, output);
+      if (x_track == 'y')  printf ("%s\n", output);
+      if (s_sync  == 'y') {
+         /*> printf ("sync'ing\n");                                                   <*/
+         /*> if (s_xpos != s_xsav || s_ypos != s_ysav) {                                 <*/
+         rc = TOUCH_point  (s_xpos, s_ypos);
+         /*> if (my.t_wide != -6666 && my.t_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.t_left, my.t_topp, my.t_wide, my.t_tall);   <* 
+          *> if (my.t_x    != -6666 && my.t_y    != -6666)  sprintf (s, "%5dx  %5dy", my.t_x, my.t_y);                                           <* 
+          *> printf ("  tablet : %s    %s     ·  %s\n", t, r, s);                                                                                <*/
+         /*> if (my.s_wide != -6666 && my.s_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.s_left, my.s_topp, my.s_wide, my.s_tall);   <* 
+          *> if (my.s_wide != -6666 && my.s_tall != -6666)  sprintf (r, "%8.6fx  %8.6fy", my.s_xratio, my.s_yratio);                             <* 
+          *> if (my.s_x    != -6666 && my.s_y    != -6666)  sprintf (s, "%5dx  %5dy", my.s_x, my.s_y);                                           <* 
+          *> printf ("  screen : %s    %s     ·  %s\n", t, r, s);                                                                                <*/
+         /*> if (my.w_wide != -6666 && my.w_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.w_left, my.w_topp, my.w_wide, my.w_tall);   <* 
+          *> if (my.w_x    != -6666 && my.w_y    != -6666)  sprintf (s, "%5dx  %5dy", my.w_x, my.w_y);                                           <* 
+          *> if (rc == 1)  printf ("  window : %s    %s    %2d  %s  %4d\n", t, r, my.w_align, s, my.w_r);                                        <* 
+          *> else          printf ("  window : %s    %s    %2d  MISS\n", t, r, my.w_align);                                                      <*/
+         s_xsav = s_xpos;
+         s_ysav = s_ypos;
+         /*> }                                                                           <*/
+         s_sync = '-';
+      }
+      x_ready = '-';
+      rc = TOUCH__check  ();
+      if (rc >= 0) x_ready = 'y';
+   }
+
+
+   DEBUG_TOUCH  yLOG_exit    (__FUNCTION__);
+   return 0;
+
+
+
    /*> while (1) {                                                                                        <* 
     *>    /+---(get and format character)----+/                                                           <* 
     *>    ++x_count;                                                                                      <* 
@@ -474,39 +565,39 @@ TOUCH_read         (void)
     *>    /+---(x-value)---------------------+/                                                           <* 
     *>    if (ev_type == 3 && ev_code == 0x35)  {                                                         <* 
     *>       x     = ((float) ev_value / 1800.0);                                                         <* 
-    *>       s_new_x = (1366.0 * (1 - x));                                                                <* 
-    *>       s_new_y = 0;                                                                                 <* 
-    *>    }                                                                                               <* 
-    *>    /+---(y-value)---------------------+/                                                           <* 
-    *>    if (ev_type == 3 && ev_code == 0x36)  {                                                         <* 
-    *>       y     = ((float) ev_value / 1800.0);                                                         <* 
-    *>       s_new_y = (768.0 * y);                                                                       <* 
-    *>       s_new_r = sqrt((s_new_x * s_new_x) + (s_new_y * s_new_y));                                   <* 
-    *>       if (ndot == 0) rc = STROKE_begin (s_new_x, s_new_y, s_new_r);                                <* 
-    *>       else           rc = stroke_next  (s_new_x, s_new_y, s_new_r);                                <* 
-    *>    }                                                                                               <* 
-    *>    /+---(done)------------------------+/                                                           <* 
-    *>    break;                                                                                          <* 
-    *> }                                                                                                  <*/
+   *>       s_new_x = (1366.0 * (1 - x));                                                                <* 
+      *>       s_new_y = 0;                                                                                 <* 
+      *>    }                                                                                               <* 
+      *>    /+---(y-value)---------------------+/                                                           <* 
+      *>    if (ev_type == 3 && ev_code == 0x36)  {                                                         <* 
+         *>       y     = ((float) ev_value / 1800.0);                                                         <* 
+            *>       s_new_y = (768.0 * y);                                                                       <* 
+            *>       s_new_r = sqrt((s_new_x * s_new_x) + (s_new_y * s_new_y));                                   <* 
+            *>       if (ndot == 0) rc = STROKE_begin (s_new_x, s_new_y, s_new_r);                                <* 
+            *>       else           rc = stroke_next  (s_new_x, s_new_y, s_new_r);                                <* 
+            *>    }                                                                                               <* 
+            *>    /+---(done)------------------------+/                                                           <* 
+            *>    break;                                                                                          <* 
+            *> }                                                                                                  <*/
 
-   if (my.ev_major == 0x04 && (ev_type == 0x00 || ev_type == 0x01 || ev_type == 0x04)) {
-      RPTG_EVENTS  printf ("%s\n", output);
-      ++s_rptg;
-   }
-   else if (my.ev_major == ev_type && (my.ev_minor == 0xff || my.ev_minor == ev_code)) {
-      RPTG_EVENTS  printf ("%s\n", output);
-      ++s_rptg;
-   }
-   else if (my.ev_major == 0xff) {
-      RPTG_EVENTS  printf ("%s\n", output);
-      ++s_rptg;
-   }
+            if (my.ev_major == 0x04 && (ev_type == 0x00 || ev_type == 0x01 || ev_type == 0x04)) {
+               RPTG_EVENTS  printf ("%s\n", output);
+               ++s_rptg;
+            }
+            else if (my.ev_major == ev_type && (my.ev_minor == 0xff || my.ev_minor == ev_code)) {
+               RPTG_EVENTS  printf ("%s\n", output);
+               ++s_rptg;
+            }
+            else if (my.ev_major == 0xff) {
+               RPTG_EVENTS  printf ("%s\n", output);
+               ++s_rptg;
+            }
 
    /*---(finger touch)----------------*/
    if (ev_type == 3 && ev_code == 0x39 && ev_value >= 0)  {
       stroke.channel = ev_value;
       stroke.beg     = timestamp ();
-      ndot = 0;
+      g_ndot = 0;
    }
    /*---(finger lift)-----------------*/
    if (ev_type == 3 && ev_code == 0x39 && ev_value <  0)  {
@@ -525,14 +616,132 @@ TOUCH_read         (void)
       y     = ((float) ev_value / 1800.0);
       s_new_y = (768.0 * y);
       s_new_r = sqrt((s_new_x * s_new_x) + (s_new_y * s_new_y));
-      if (ndot == 0) rc = STROKE_begin (s_new_x, s_new_y, s_new_r);
-      else           rc = stroke_next  (s_new_x, s_new_y, s_new_r);
+      if (g_ndot == 0) rc = STROKE_begin (s_new_x, s_new_y, s_new_r);
+      else             rc = stroke_next  (s_new_x, s_new_y, s_new_r);
    }
 
-   TOUCH_normal ();
+   TOUCH__normal ();
    /*---(complete)-------------------------*/
    return rc;
 }
+
+char
+TOUCH_point             (int x, int y)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   int         wx          = -6666;
+   int         wy          = -6666;
+   int         wr          = -6666;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   DEBUG_DATA   yLOG_complex ("args"      , "%5dx, %5dy", x, y);
+   /*---(reset)--------------------------*/
+   TOUCH_reset ();
+   /*---(defense)------------------------*/
+   --rce;  if (my.t_wide == -6666) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (my.s_wide == -6666) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (my.w_wide == -6666) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(save tablet)--------------------*/
+   my.t_x  = x;
+   my.t_y  = y;
+   DEBUG_DATA   yLOG_complex ("tablet"    , "%5dx, %5dy", my.t_x, my.t_y);
+   /*---(save screen)--------------------*/
+   my.s_x  = (x - my.s_left) * my.s_xratio;
+   my.s_y  = (y - my.s_topp) * my.s_yratio;
+   DEBUG_DATA   yLOG_complex ("screen"    , "%5dx, %5dy", my.s_x, my.s_y);
+   /*---(set xpos)-----------------------*/
+   DEBUG_DATA   yLOG_value   ("w_align"   , my.w_align);
+   if        (my.s_x < my.w_left) {
+      DEBUG_DATA   yLOG_note    ("too far left");
+   } else if (my.s_x > my.w_left + my.w_wide) {
+      DEBUG_DATA   yLOG_note    ("too far right");
+   } else {
+      DEBUG_DATA   yLOG_note    ("in x-range");
+      switch (my.w_align) {
+      case YGLTEX_TOPLEF : case YGLTEX_MIDLEF : case YGLTEX_BOTLEF :
+         DEBUG_DATA   yLOG_note    ("handle lefts");
+         wx = my.s_x - my.w_left;
+         break;
+      case YGLTEX_TOPCEN : case YGLTEX_MIDCEN : case YGLTEX_BOTCEN :
+         DEBUG_DATA   yLOG_note    ("handle centers");
+         wx = my.s_x - (my.w_left + (my.w_wide / 2.0));
+         break;
+      case YGLTEX_TOPRIG : case YGLTEX_MIDRIG : case YGLTEX_BOTRIG :
+         DEBUG_DATA   yLOG_note    ("handle rights");
+         wx = my.s_x - (my.w_left + my.w_wide);
+         break;
+      }
+   }
+   DEBUG_DATA   yLOG_value   ("wx"        , wx);
+   /*---(set ypos)-----------------------*/
+   if        (my.s_y < my.w_topp) {
+      DEBUG_DATA   yLOG_note    ("too far up");
+   } else if (my.s_y > my.w_topp + my.w_tall) {
+      DEBUG_DATA   yLOG_note    ("too far down");
+   } else {
+      DEBUG_DATA   yLOG_note    ("in y-range");
+      switch (my.w_align) {
+      case YGLTEX_TOPLEF : case YGLTEX_TOPCEN : case YGLTEX_TOPRIG :
+         DEBUG_DATA   yLOG_note    ("handle tops");
+         wy = my.w_topp - my.s_y;
+         break;
+      case YGLTEX_MIDLEF : case YGLTEX_MIDCEN : case YGLTEX_MIDRIG :
+         DEBUG_DATA   yLOG_note    ("handle middles");
+         wy = (my.w_topp + (my.w_tall / 2.0)) - my.s_y ;
+         break;
+      case YGLTEX_BOTLEF : case YGLTEX_BOTCEN : case YGLTEX_BOTRIG :
+         DEBUG_DATA   yLOG_note    ("handle bottoms");
+         wy = (my.w_topp + my.w_tall) - my.s_y;
+         break;
+      }
+   }
+   DEBUG_DATA   yLOG_value   ("wy"        , wy);
+   /*---(radius)-------------------------*/
+   if      (wx == -6666)      ;
+   else if (wy == -6666)      ;
+   else {
+      wr = sqrt ((wx * wx) + (wy * wy));
+   }
+   DEBUG_DATA   yLOG_value   ("wr"        , wr);
+   DEBUG_DATA   yLOG_value   ("r_edge"    , shape.r_edge);
+   DEBUG_DATA   yLOG_value   ("r_max"     , shape.r_max);
+   /*---(save back)----------------------*/
+   if      (wx == -6666)                ;
+   else if (wy == -6666)                ;
+   else if (wr >  shape.r_edge * 1.10)  ;
+   else {
+      DEBUG_DATA   yLOG_note    ("x, y, and r in range");
+      DEBUG_DATA   yLOG_note    ("HIT");
+      my.w_x     = wx;
+      my.w_y     = wy;
+      my.w_r     = wr;
+      my.w_valid = 'y';
+      DEBUG_DATA   yLOG_complex ("window"    , "%5dx, %5dy, %5dr", my.w_x, my.w_y, my.w_r);
+      DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+      return 1;
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_note    ("MISS");
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+
+
+/*============================--------------------============================*/
+/*===----                         unit testing                         ----===*/
+/*============================--------------------============================*/
+static void      o___UNITTEST________________o (void) {;}
 
 char
 TOUCH_force_data        (char a_name [LEN_FULL], int a_type, int a_code, int a_value)
@@ -599,5 +808,72 @@ TOUCH_force_data        (char a_name [LEN_FULL], int a_type, int a_code, int a_v
    DEBUG_TOUCH  yLOG_exit    (__FUNCTION__);
    return 0;
 }
+
+char
+TOUCH_force_tablet      (int a_left, int a_topp, int a_wide, int a_tall)
+{
+   my.t_left   = a_left;
+   my.t_topp   = a_topp;
+   my.t_wide   = a_wide;
+   my.t_tall   = a_tall;
+   return 0;
+}
+
+char
+TOUCH_force_screen      (int a_left, int a_topp, int a_wide, int a_tall)
+{
+   char        rce         =  -10;
+   --rce;  if (my.t_wide == -6666)  return rce;
+   my.s_left   = a_left;
+   my.s_topp   = a_topp;
+   my.s_wide   = a_wide;
+   my.s_tall   = a_tall;
+   my.s_xratio = (float) my.s_wide / (float) my.t_wide;
+   my.s_yratio = (float) my.s_tall / (float) my.t_tall;
+   return 0;
+}
+
+char
+TOUCH_force_window      (int a_left, int a_topp, int a_wide, int a_tall, char a_align)
+{
+   char        rce         =  -10;
+   --rce;  if (my.s_wide == -6666)  return rce;
+   my.w_left   = a_left;
+   my.w_topp   = a_topp;
+   my.w_wide   = a_wide;
+   my.w_tall   = a_tall;
+   my.w_align  = a_align;
+   return 0;
+}
+
+/*> char                                                                              <* 
+ *> TOUCH_set_window        (int a_x, int a_y, int *r_x, int *r_x)                    <* 
+ *> {                                                                                 <* 
+ *> }                                                                                 <*/
+
+char*
+TOUCH__unit             (char *a_question, int a_num)
+{
+   char        t           [LEN_DESC]  = "    ·x      ·y      ·w      ·t";
+   char        s           [LEN_DESC]  = "    ·x      ·y";
+   char        r           [LEN_DESC]  = "       ··         ··";
+   if        (strcmp (a_question, "tablet")         == 0) {
+      if (my.t_wide != -6666 && my.t_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.t_left, my.t_topp, my.t_wide, my.t_tall);
+      if (my.t_x    != -6666 && my.t_y    != -6666)  sprintf (s, "%5dx  %5dy", my.t_x, my.t_y);
+      snprintf(unit_answer, LEN_RECD, "TOUCH tablet     : %s    %s     ·  %s", t, r, s);
+   } else if (strcmp (a_question, "screen")         == 0) {
+      if (my.s_wide != -6666 && my.s_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.s_left, my.s_topp, my.s_wide, my.s_tall);
+      if (my.s_wide != -6666 && my.s_tall != -6666)  sprintf (r, "%8.6fx  %8.6fy", my.s_xratio, my.s_yratio);
+      if (my.s_x    != -6666 && my.s_y    != -6666)  sprintf (s, "%5dx  %5dy", my.s_x, my.s_y);
+      snprintf(unit_answer, LEN_RECD, "TOUCH screen     : %s    %s     ·  %s", t, r, s);
+   } else if (strcmp (a_question, "window")         == 0) {
+      if (my.w_wide != -6666 && my.w_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.w_left, my.w_topp, my.w_wide, my.w_tall);
+      if (my.w_x    != -6666 && my.w_y    != -6666)  sprintf (s, "%5dx  %5dy", my.w_x, my.w_y);
+      snprintf(unit_answer, LEN_RECD, "TOUCH window     : %s    %s    %2d  %s", t, r, my.w_align, s);
+   }
+   return unit_answer;
+}
+
+
 
 /*============================[[ end-of-code ]]===============================*/

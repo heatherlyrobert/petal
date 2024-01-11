@@ -5,8 +5,8 @@
 
 #define  HELP_ONLY    if (stroke.help > 0 && stroke.help < 10 && stroke.help != i + 1)   continue
 
-#define  YSTR_PETAL   "tm[c¶nf_rx·u.p,ilqdbeh's]ogzw)¿j;k:ay(v-"
-#define  YSTR_INNER   "tn·ieo¿a"
+#define  YSTR_PETAL   "tm[c¶nf_rx¼u.p,ilqdbeh's]ogzw)½j;k:ay(v-"
+#define  YSTR_INNER   "tn¼ieo½a"
 #define  YSTR_OUTER   "cfrupldhsgwjkyvm"
 #define  YSTR_EDGE    "_¶.xq,'bz];)(:[-"
 
@@ -605,11 +605,19 @@ DRAW_main          (void)
    float       x_mid, x_cen;
    float       z;
    char        i;
-   float       x_prog      = 0.0;
+   float       x_prog      =  0.0;
+   char        d;
+   int         x, y, w, t;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(gather data)-----------------------*/
+   TOUCH_force_tablet (0, 0, 32767, 32767);
    rc = yX11_screensize (&(my.s_wide), &(my.s_tall), NULL);
+   DEBUG_GRAF   yLOG_complex ("screen"    , "%4dw %4dt", my.s_wide, my.s_tall);
+   TOUCH_force_screen (0, 0, 1366, 768);
+   rc = yX11_win_where (YX_BASE, &d, &x, &y, &w, &t);
+   DEBUG_GRAF   yLOG_complex ("window"    , "%d  %4dx %4dy %4dw %4dt", d, x, y, w, t);
+   TOUCH_force_window (x - 1366, y, w, t, YGLTEX_MIDCEN);
    /*---(center)----------------------------*/
    x_mid  = shape.sz_nav + (my.w_tall - shape.sz_nav) / 2.0;
    x_cen  = my.w_wide / 2.0;
@@ -617,9 +625,29 @@ DRAW_main          (void)
 
 
    ARTSY_show (my.w_tall / 2.0, -my.w_wide / 2.0, -my.w_tall / 2.0, my.w_wide / 2.0);
+
+   glPushMatrix(); {
+      DRAW_labels  ();
+   } glPopMatrix();
+
+   if (my.w_valid == 'y' && my.w_touch != '·') {
+      glPointSize (10.0);
+      switch (my.w_touch) {
+      case 'h' : glColor4f  (0.0f, 0.0f, 1.0f, 1.0f);  break;
+      case '·' : glColor4f  (1.0f, 0.0f, 0.0f, 1.0f);  break;
+      case 'T' : glColor4f  (0.0f, 1.0f, 0.0f, 1.0f);  break;
+      }
+      glBegin    (GL_POINTS); {
+         glVertex3f (my.w_x, my.w_y, 50.0);
+      } glEnd();
+   } else {
+      glColor4f  (1.0f, 0.0f, 0.0f, 1.0f);
+   }
+
+
+
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
-
-
 
    /*---(start)--------------------------*/
    long  x_start, x_stop;
@@ -730,8 +758,8 @@ DRAW_dots          (void)
    glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
    glLineWidth(shape.r_dots);
    glBegin(GL_LINE_STRIP);
-   for (i = 0; i < ndot; i += 1) {
-      glVertex3f( dots[i].relx, dots[i].rely,   4.00f);
+   for (i = 0; i < g_ndot; i += 1) {
+      glVertex3f( g_dots [i].d_wx, g_dots [i].d_wy,   4.00f);
    }
    glEnd();
    glLineWidth(0.8);
@@ -987,7 +1015,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
    case 1 :
       DEBUG_GRAF   yLOG_snote   ("inner      ");
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
-      r     = shape.r_inner * 0.90;
+      r     = shape.r_inner * 0.75;
       d     = a_pos * 45;
       x_pos = a_pos * 5;
       c     = x_labels [x_pos];
@@ -995,7 +1023,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
    case 2 :
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
       DEBUG_GRAF   yLOG_snote   ("outer left ");
-      r     = shape.r_outer * 0.91;
+      r     = shape.r_outer * 0.75;
       d     = a_pos * 45 - 12;
       x_pos = (a_pos * 5) + 1;
       c     = x_labels [x_pos];
@@ -1003,7 +1031,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
    case 3 :
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
       DEBUG_GRAF   yLOG_snote   ("edge left  ");
-      r     = shape.r_edge  * 1.00;
+      r     = shape.r_edge  * 0.85;
       d     = a_pos * 45 - 35;
       x_pos = (a_pos * 5) + 2;
       c     = x_labels [x_pos];
@@ -1011,7 +1039,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
    case 4 :
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
       DEBUG_GRAF   yLOG_snote   ("outer right");
-      r     = shape.r_outer * 0.91;
+      r     = shape.r_outer * 0.75;
       d     = a_pos * 45 + 12;
       x_pos = (a_pos * 5) + 3;
       c     = x_labels [x_pos];
@@ -1019,15 +1047,15 @@ DRAW_label_one          (char a_lvl, char a_pos)
    case 5 :
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
       DEBUG_GRAF   yLOG_snote   ("edge right ");
-      r     = shape.r_edge  * 1.00;
+      r     = shape.r_edge  * 0.85;
       d     = a_pos * 45 + 35;
       x_pos = (a_pos * 5) + 4;
       c     = x_labels [x_pos];
       break;
    case 6 :
       DEBUG_GRAF   yLOG_snote   ("special    ");
-      glColor4f (1.0f, 0.0f, 0.0f, 0.7f);
-      r     = shape.r_edge  * 1.05;
+      glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
+      r     = shape.r_edge  * 1.00;
       d     = a_pos * 45;
       x_pos = a_pos;
       c     = g_special [a_pos];
