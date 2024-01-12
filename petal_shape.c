@@ -56,6 +56,12 @@ SHAPE_base         (float a_ratio)
    shape.r_outer       =  75.0 * a_ratio;
    shape.r_edge        =  85.0 * a_ratio;
    shape.r_max         = 100.0 * a_ratio;
+   /*---(guides)-------------------------*/
+   shape.g_center      =  shape.r_center * 0.50;
+   shape.g_ring        =  shape.r_ring   * 0.99;
+   shape.g_inner       =  shape.r_inner  * 0.95;
+   shape.g_outer       =  shape.r_outer  * 0.90;
+   shape.g_edge        =  shape.r_edge   * 1.03;
    /*---(drawing sizes)------------------*/
    shape.r_lines       =   0.8 * a_ratio;
    shape.r_dots        =   5.0 * a_ratio;

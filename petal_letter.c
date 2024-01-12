@@ -4,6 +4,17 @@
 uint   states[10];
 uint   locks [10];
 
+
+char   g_lower    [MAX_LETTER];
+char   g_upper    [MAX_LETTER];
+char   g_greek    [MAX_LETTER];
+char   g_arith    [MAX_LETTER];
+char   g_logic    [MAX_LETTER];
+char   g_boxdr    [MAX_LETTER];
+char   g_macro    [MAX_LETTER];
+char   g_punct    [MAX_LETTER];
+
+
 /*
  *
  *   INNER is six (6) letters and space/backspace
@@ -135,9 +146,22 @@ char g_letters_LATE [40] = {
    'i' , 'k' , 'j' , 'h' , '´' ,   /* NW Ï */
 };
 
-char *g_letters = g_letters_LATE;
+char g_letters_EASY [40] = {
+   'g' , 'i' , '´' , 'h' , '´' ,   /* N  Ï */
+   'd' , 'f' , '´' , 'e' , '´' ,   /* NE Ï */
+   'a' , 'c' , '´' , 'b' , '´' ,   /* E  Ï */
+   'v' , 'y' , 'z' , 'w' , 'x' ,   /* SE Ï */
+   's' , 'u' , '´' , 't' , '´' ,   /* S  Ï */
+   'p' , 'r' , '´' , 'q' , '´' ,   /* SW Ï */
+   'm' , 'o' , '´' , 'n' , '´' ,   /* W  Ï */
+   'j' , 'l' , '´' , 'k' , '´' ,   /* NW Ï */
+};
 
-char g_upper[40] = {
+char g_letters_CONF [40];
+
+char *g_letters = g_letters_CONF;
+
+char g_upper [40] = {
    'T' , 'M' , '[' , 'C' , '~' ,   /* N    */
    'N' , 'F' , '_' , 'R' , 'X' ,   /* NE   */
    '·' , 'U' , '!' , 'P' , '?' ,   /* E    */
@@ -147,6 +171,7 @@ char g_upper[40] = {
    '¿' , 'J' , ';' , 'K' , ':' ,   /* W */
    'A' , 'Y' , '(' , 'V' , '-' ,   /* NW   */
 };
+
 
 int  g_akeysyms_OLD [40] = {
    XK_t         , XK_m           , XK_bracketleft, XK_c       , XK_quotedbl    ,
@@ -170,16 +195,16 @@ int  g_akeysyms[40] = {
    XK_a         , XK_y           , XK_parenleft  , XK_v       , XK_minus       ,
 };
 
-char g_punct[40] = {
-   '0' , '|' , '[' , '2' , '\"',   /* N   % ^ | @ $ _ & # : \ */
-   '=' , '3' , '_' , '4' , '$' ,   /* NE   |{}[]  & _<>$   */
-   '·' , '5' , '.' , '6' , ',' ,   /* E   % ;/-0 :\ 1()= ^ */
-   '+' , '7' , '@' , '8' , '^' ,   /* SE  @ 8642 +* 3579   */
-   '1' , '9' , '\'', '#' , ']' ,   /* S    */
-   '*' , '>' , '%' , '<' , ')' ,   /* SW   */
-   '¿' , '}' , ';' , '{' , ':' ,   /* W    */
-   '/' , '\\', '(' , '&' , '-' ,   /* NW   */
-};
+/*> char g_punct[40] = {                                                              <* 
+ *>    '0' , '|' , '[' , '2' , '\"',   /+ N   % ^ | @ $ _ & # : \ +/                  <* 
+ *>    '=' , '3' , '_' , '4' , '$' ,   /+ NE   |{}[]  & _<>$   +/                     <* 
+ *>    '·' , '5' , '.' , '6' , ',' ,   /+ E   % ;/-0 :\ 1()= ^ +/                     <* 
+ *>    '+' , '7' , '@' , '8' , '^' ,   /+ SE  @ 8642 +* 3579   +/                     <* 
+ *>    '1' , '9' , '\'', '#' , ']' ,   /+ S    +/                                     <* 
+ *>    '*' , '>' , '%' , '<' , ')' ,   /+ SW   +/                                     <* 
+ *>    '¿' , '}' , ';' , '{' , ':' ,   /+ W    +/                                     <* 
+ *>    '/' , '\\', '(' , '&' , '-' ,   /+ NW   +/                                     <* 
+ *> };                                                                                <*/
 int  g_akeysyms_punct[40] = {
    XK_0         , XK_bar         , XK_bracketleft, XK_2           , XK_quotedbl    ,
    XK_equal     , XK_3           , XK_underscore , XK_4           , XK_dollar      ,
@@ -644,13 +669,13 @@ letter_interpret()
    if (keysym > 0 && keysym < 1000000) {
       DEBUG_INPT   printf(", so recording\n");
       if (states[MYHUBLIN]) letter = toupper(letter);
-      stroke_letter[stroke_count]     = letter;
-      stroke_letter[stroke_count + 1] = '\0';
-      stroke_keysym[stroke_count]     = keysym;
-      stroke_index [stroke_count]     = stroke.ndx;
-      ++stroke_count;
-      DEBUG_INPT  printf("   - stroke adds \"%c\" so <<%s>> and %d long\n", letter, stroke_letter, stroke_count);
-      sprintf(stroke.text, "%c", letter);
+      /*> stroke_letter[stroke_count]     = letter;                                   <*/
+      /*> stroke_letter[stroke_count + 1] = '\0';                                     <*/
+      /*> stroke_keysym[stroke_count]     = keysym;                                   <*/
+      /*> stroke_index [stroke_count]     = stroke.ndx;                               <*/
+      /*> ++stroke_count;                                                             <*/
+      /*> DEBUG_INPT  printf("   - stroke adds \"%c\" so <<%s>> and %d long\n", letter, stroke_letter, stroke_count);   <*/
+      /*> sprintf (stroke.text, "%c", letter);                                        <*/
       DRAW_main();
    } else {
       DEBUG_INPT   printf(", NOT SENT\n");

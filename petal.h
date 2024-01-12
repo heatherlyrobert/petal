@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "3.-- third major phase"
 #define     P_VERMINOR  "3.0- ramped the beauty way up ;)"
-#define     P_VERNUM    "3.0b"
-#define     P_VERTXT    "rebuilt and unit tested dot-trail functions"
+#define     P_VERNUM    "3.0c"
+#define     P_VERTXT    "petal identification, rough conf file loading, extra graphics"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -188,6 +188,7 @@
 #include    <yX11.h>         /* CUSTOM  heatherly xlib/glx setup/teardown     */
 #include    <yFONT.h>        /* CUSTOM  heatherly texture-mapped fonts        */
 #include    <yGLTEX.h>       /* CUSTOM  heatherly texture handling            */
+#include    <yPARSE.h>
 #include    <yCOLOR.h>
 
 
@@ -272,6 +273,7 @@ struct cACCESSOR {
    char        show_balls;
    char        save_png;
    char        mask;     
+   char        guides;
    /*---(arguments)-------------*/
    long        loop_msec;              /* wait time in milliseconds           */
    /*---(done)------------------*/
@@ -289,12 +291,14 @@ extern      tACCESSOR   my;
 /*---(file names)-------------------------------*/
 /*> #define     FILE_EVENT       "event16"                                            <*/
 #define     FILE_EVENT       "event7"
+#define     FILE_CONF        "/etc/petal.conf"
 
 
 /*===[[ drawing semi-constants ]]=============================================*/
 /* values are established in petal.c                                          */
 
 extern const float  DEG2RAD;
+extern const float  RAD2DEG;
 
 typedef     struct cSTROKE tSTROKE;
 struct cSTROKE {
@@ -343,6 +347,20 @@ extern      int       curr_x;
 extern      int       curr_y;
 extern      float     curr_r;
 
+
+typedef     struct cPETAL  tPETAL;
+struct cPETAL {
+   int         x, y, r, d;
+   char        n, p;
+};
+
+extern tPETAL  g_petals [LEN_TERSE];
+
+
+
+
+
+
 #define         TNY   0
 #define         SML   1
 #define         MED   2
@@ -385,6 +403,12 @@ struct cSHAPES {
    int         sz_bar;
    int         sz_ctl;
    int         sz_nav;
+   /*---(guides)-------------*/
+   int         g_center;          /* center ring radius                  */
+   int         g_ring;            /* inner petal foregiveness radius     */
+   int         g_inner;           /* radius of inner petals              */
+   int         g_outer;           /* radius of outer petals              */
+   int         g_edge;            /* radius of final edge petals         */
    /*---(radius)-------------*/
    float       r_center;          /* center ring radius                  */
    float       r_ring;            /* inner petal foregiveness radius     */
@@ -551,12 +575,19 @@ extern char          unit_answer [LEN_RECD];
 /*> #define     DEBUG_RECOG         if (debug.recog     == 'y')                       <*/
 
 
-
+#define   MAX_LETTER   40
 
 extern char *g_letters;
 
-extern char g_upper[40];
-extern char g_punct[40];
+extern char   g_lower    [MAX_LETTER];
+extern char   g_upper    [MAX_LETTER];
+extern char   g_greek    [MAX_LETTER];
+extern char   g_arith    [MAX_LETTER];
+extern char   g_logic    [MAX_LETTER];
+extern char   g_boxdr    [MAX_LETTER];
+extern char   g_macro    [MAX_LETTER];
+extern char   g_punct    [MAX_LETTER];
+
 extern char g_special[10];
 extern int  g_akeysyms[40];
 extern int  g_akeysyms_punct[40];
@@ -615,6 +646,8 @@ char       DRAW_debug               (void);
 char       DRAW_main         (void);
 char       draw_delete       (void);
 char       DRAW_back          (void);
+char       DRAW__guides            (int r, int z);
+char       DRAW__petals            (int n, int z);
 char       DRAW_image        (void);
 char       DRAW_labels       (void);
 char       DRAW_context      (void);
@@ -669,13 +702,28 @@ char*       TOUCH__unit             (char *a_question, int a_num);
 
 
 
-/*===[[ petal_stroke.c ]]===========================================================*/ 
-/*---rc---- ---name----------- ---args----------------------------------------*/
+/*===[[ PETAL_PETAL.C ]]======================================================*/ 
+/*---rc---- ---name---------------- ---args-----------------------------------*/
+/*---(program)--------------*/
+char        PETAL__reset            (void);
+char        PETAL_init              (void);
+/*---(worker)---------------*/
+char        PETAL__data             (int x, int y, int r, int *d, char *n, char *i, char *o);
+char        PETAL__check            (int x, int y, int r);
+/*---(simplifier)-----------*/
+char        PETAL_beg               (int x, int y, int r);
+char        PETAL_add               (int x, int y, int r);
+char        PETAL_end               (int x, int y, int r);
+
+/*---(unitetest)------------*/
+char*       PETAL__unit             (char *a_question, int a_num);
+/*---(done)-----------------*/
 
 
-char       STROKE_begin      (int, int, int);
-char       stroke_next       (int, int, int);
-char       STROKE_end        (int, int, int);
+char        STROKE_begin      (int, int, int);
+char        stroke_next       (int, int, int);
+char        STROKE_end        (int, int, int);
+/*---(done)-----------------*/
 
 
 
@@ -734,13 +782,13 @@ char        ARTSY_show              (float a_wtop, float a_wlef, float a_wbot, f
 /*===[[ PETAL_DOT.C ]]========================================================*/ 
 /*---rc---- ---name---------------- ---args-----------------------------------*/
 /*---(program)--------------*/
-char        DOT_reset               (void);
+char        DOT__reset              (void);
 char        DOT_init                (void);
 /*---(worker)---------------*/
-char        DOT__add                (char a_func [LEN_LABEL], int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place);
+char        DOT__add                (char a_tst, char a_func [LEN_LABEL], int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place);
 /*---(simplifier)-----------*/
 char        DOT_beg                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr);
-char        DOT_add                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place);
+char        DOT_add                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr);
 char        DOT_end                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr);
 /*---(unittest)-------------*/
 char        DOT_force_point         (int x, int y);
@@ -750,6 +798,20 @@ char        DOT_force_end           (int a_wx, int a_wy);
 char*       DOT__unit               (char *a_question, int a_num);
 /*---(done)-----------------*/
 
+
+/*===[[ PETAL_CONF.C ]]=======================================================*/ 
+/*---rc---- ---name---------------- ---args-----------------------------------*/
+/*---(program)--------------*/
+char        CONF_purge              (void);
+char        CONF_init               (void);
+/*---(parse)----------------*/
+char        CONF__default           (int n, uchar a_verb [LEN_TERSE]);
+char        CONF__mapping           (int n, uchar a_verb [LEN_TERSE]);
+char        CONF__handler           (int n, uchar a_verb [LEN_TERSE], char a_exist, void *a_handler);
+char        CONF_pull               (cchar a_file [LEN_PATH]);
+/*---(unittest)-------------*/
+char*       CONF__unit              (char *a_question, int a_num);
+/*---(done)-----------------*/
 
 
 #endif

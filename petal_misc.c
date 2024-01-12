@@ -24,6 +24,7 @@ FILE   *f = NULL;
 enum tSTATES eSTATES;
 
 const float  DEG2RAD = 3.1415927 / 180.0;
+const float  RAD2DEG = 180.0 / 3.1415927;
 
 
 /*============================--------------------============================*/
@@ -106,7 +107,7 @@ mouse_init (void)            /* initialize mouse usage before program starts  */
 {
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
-   stroke_count  = 0;
+   /*> stroke_count  = 0;                                                             <*/
    strncpy(stroke_letter, "", 20);
    letter_init();
    /*---(complete)-----------------------*/

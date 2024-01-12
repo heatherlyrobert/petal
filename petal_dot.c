@@ -4,7 +4,7 @@
 
 
 tDOTS       g_dots        [MAX_DOTS];
-int         g_ndot;
+int         g_ndot      = 0;
 
 static int  s_tries     = 0;
 
@@ -22,7 +22,7 @@ static char s_lock      = '-';
 static void      o___PROGRAM____________o (void) {;}
 
 char
-DOT_reset               (void)
+DOT__reset              (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rc          =    0;
@@ -56,7 +56,7 @@ DOT_reset               (void)
 char
 DOT_init                (void)
 {
-   return DOT_reset ();
+   return DOT__reset ();
 }
 
 
@@ -67,7 +67,7 @@ DOT_init                (void)
 static void      o___WORKER_____________o (void) {;}
 
 char
-DOT__add                (char a_func [LEN_LABEL], int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place)
+DOT__add                (char a_tst, char a_func [LEN_LABEL], int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -83,7 +83,9 @@ DOT__add                (char a_func [LEN_LABEL], int a_tx, int a_ty, int a_sx, 
    }
    /*---(update tries)-------------------*/
    ++s_tries;
+   DEBUG_DATA   yLOG_value   ("s_tries"   , s_tries);
    /*---(defense)------------------------*/
+   DEBUG_DATA   yLOG_value   ("g_ndot"    , g_ndot);
    --rce;  if (g_ndot >= MAX_DOTS) {
       DEBUG_DATA   yLOG_exitr   (a_func, rce);
       return rce;
@@ -95,15 +97,16 @@ DOT__add                (char a_func [LEN_LABEL], int a_tx, int a_ty, int a_sx, 
    /*---(prepare)------------------------*/
    x   = a_wx - s_lastx;
    y   = a_wy - s_lasty;
-   r   = sqrt ((x * x) + (y * y));
-   DEBUG_DATA   yLOG_complex ("rel pos"   "%4d#, %4dx, %4dy, %4.0fr", s_tries, x, y, r);
+   if (x == 0 && y == 0)  r = 0;
+   else                   r   = sqrt ((x * x) + (y * y));
+   DEBUG_DATA   yLOG_complex ("rel pos"   , "%4d#, %4dx, %4dy, %4.0fr", s_tries, x, y, r);
    /*---(quick-out)----------------------*/
    if (g_ndot > 0 && r <  1.0 && a_place != 'e') {
       DEBUG_DATA   yLOG_note    ("too close to previous point");
       DEBUG_DATA   yLOG_exit    (a_func);
       return 0;
    }
-   --rce;  if (g_ndot > 0 && r > 10.0) {
+   --rce;  if (a_tst != 'y' && g_ndot > 0 && r > 10.0) {
       DEBUG_DATA   yLOG_note    ("too far from previous point (FATAL)");
       DEBUG_DATA   yLOG_exitr   (a_func, rce);
       return rce;
@@ -138,20 +141,20 @@ static void      o___SIMPLIFIER_________o (void) {;}
 char
 DOT_beg                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr)
 {
-   DOT_reset ();
-   return DOT__add (__FUNCTION__, a_tx, a_ty, a_sx, a_sy, a_wx, a_wy, a_wr, 'b');
+   DOT__reset ();
+   return DOT__add ('-', __FUNCTION__, a_tx, a_ty, a_sx, a_sy, a_wx, a_wy, a_wr, 'b');
 }
 
 char
-DOT_add                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place)
+DOT_add                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr)
 {
-   return DOT__add (__FUNCTION__, a_tx, a_ty, a_sx, a_sy, a_wx, a_wy,  a_wr, '´');
+   return DOT__add ('-', __FUNCTION__, a_tx, a_ty, a_sx, a_sy, a_wx, a_wy,  a_wr, '´');
 }
 
 char
 DOT_end                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr)
 {
-   return DOT__add (__FUNCTION__, a_tx, a_ty, a_sx, a_sy, a_wx, a_wy,  a_wr, 'e');
+   return DOT__add ('-', __FUNCTION__, a_tx, a_ty, a_sx, a_sy, a_wx, a_wy,  a_wr, 'e');
 }
 
 
@@ -170,6 +173,7 @@ DOT_force_point         (int x, int y)
    int         sy          =   0;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   DEBUG_DATA   yLOG_complex ("args"      , "%4dx %4dy", x, y);
    /*---(set xpos)-----------------------*/
    DEBUG_DATA   yLOG_value   ("w_align"   , my.w_align);
    switch (my.w_align) {
@@ -215,9 +219,11 @@ char
 DOT_force_beg           (int a_wx, int a_wy)
 {
    char        rc          =    0;
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   DOT__reset ();
    rc = DOT_force_point (a_wx, a_wy);
-   /*> rc = TOUCH_point ((float) (my.w_left + a_wx) / my.s_xratio, (float) (my.w_topp + a_wy) / my.s_yratio);   <*/
-   if (rc >= 0)  rc = DOT_beg     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
+   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r, 'b');
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return rc;
 }
 
@@ -225,9 +231,10 @@ char
 DOT_force_add           (int a_wx, int a_wy)
 {
    char        rc          =    0;
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    rc = DOT_force_point (a_wx, a_wy);
-   /*> rc = TOUCH_point ((float) (my.w_left + a_wx) / my.s_xratio, (float) (my.w_topp + a_wy) / my.s_yratio);   <*/
-   if (rc >= 0)  rc = DOT_add     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r, '-');
+   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r, '´');
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return rc;
 }
 
@@ -235,9 +242,10 @@ char
 DOT_force_end           (int a_wx, int a_wy)
 {
    char        rc          =    0;
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    rc = DOT_force_point (a_wx, a_wy);
-   /*> rc = TOUCH_point ((float) (my.w_left + a_wx) / my.s_xratio, (float) (my.w_topp + a_wy) / my.s_yratio);   <*/
-   if (rc >= 0)  rc = DOT_end     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
+   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r, 'e');
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return rc;
 }
 

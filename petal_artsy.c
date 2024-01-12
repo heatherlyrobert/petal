@@ -8,6 +8,7 @@ static    float   s_mid      = 400.0;
 static    float   s_bar      =  40.0;
 
 static    float   r_ball     =  20.0;
+static    float   r_fast     =  80.0;
 static    float   r_center   = 100.0;
 static    float   r_inner    = 200.0;
 static    float   r_outer    = 300.0;
@@ -15,6 +16,7 @@ static    float   r_edge     = 340.0;
 
 static    uint    dl_ball    = 0;
 static    uint    dl_center  = 0;
+static    uint    dl_fast    = 0;
 static    uint    dl_inner   = 0;
 static    uint    dl_outer   = 0;
 static    uint    dl_edge    = 0;
@@ -420,6 +422,82 @@ ARTSY__ball             (float a_radius, float a_depth, uint *b_dlist)
 }
 
 char
+ARTSY__fast             (float a_radius, float a_depth, uint *b_dlist)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   uint        x_dlist     =   -1;
+   float       r           = a_radius;
+   float       d;
+   float       rad;
+   float       x, y;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   DEBUG_GRAF   yLOG_complex ("args"      , "%7.2fr, %7.2fd", a_radius, a_depth);
+   /*---(defense)---------------------------*/
+   DEBUG_GRAF   yLOG_point   ("b_dlist"   , b_dlist);
+   --rce;  if (b_dlist == NULL) {
+      DEBUG_GRAF   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(create list)-----------------------*/
+   x_dlist = *b_dlist;
+   DEBUG_GRAF   yLOG_point   ("x_dlist"   , x_dlist);
+   if (x_dlist != NULL) {
+      DEBUG_GRAF   yLOG_note    ("must delete existing list");
+      glDeleteLists (x_dlist , 1);
+      x_dlist = NULL;
+   } else {
+      DEBUG_GRAF   yLOG_note    ("list not yet created");
+   }
+   x_dlist = glGenLists (1);
+   DEBUG_GRAF   yLOG_point   ("x_dlist"   , x_dlist);
+   --rce;  if (x_dlist == NULL) {
+      DEBUG_GRAF   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(begin)-----------------------------*/
+   glNewList (x_dlist, GL_COMPILE);
+   glLineWidth (1.0);
+   /*---(interior)--------------------------*/
+   glBegin(GL_POLYGON); {
+      for (d =  0; d <= 90; d += 1) {
+         rad = d * DEG2RAD;
+         x   =  r * 1.10 * cos(rad);
+         y   =  r * 1.10 * sin(rad);
+         glVertex3f( x, y, a_depth);
+      }
+      for (d = 90; d >=  0; d -= 1) {
+         rad = d * DEG2RAD;
+         x   =  r * 0.90 * cos(rad);
+         y   =  r * 0.90 * sin(rad);
+         glVertex3f( x, y, a_depth);
+      }
+      rad = 0.0 * DEG2RAD;
+      x   =  r * 1.10 * cos(rad);
+      y   =  r * 1.10 * sin(rad);
+      glVertex3f( x, y, a_depth);
+   } glEnd();
+   /*---(line)------------------------------*/
+   /*> glColor4f   (0.00f, 0.00f, 0.00f, 0.50f);                                      <* 
+    *> glBegin(GL_LINE_STRIP); {                                                      <* 
+    *>    for (d = 0; d <= 360; d += 10) {                                            <* 
+    *>       rad = d * DEG2RAD;                                                       <* 
+    *>       x   =  r * cos(rad);                                                     <* 
+    *>       y   =  r * sin(rad);                                                     <* 
+    *>       glVertex3f( x, y, a_depth + 2);                                          <* 
+    *>    }                                                                           <* 
+    *> } glEnd();                                                                     <*/
+   /*---(end)-------------------------------*/
+   glEndList();
+   /*---(save-back)-------------------------*/
+   *b_dlist = x_dlist;
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
 ARTSY__ring             (float a_radius, float a_depth, uint *b_dlist)
 {
    /*---(locals)-----------+-----+-----+-*/
@@ -575,6 +653,27 @@ ARTSY__finish           (void)
 }
 
 char
+ARTSY__draw_fasts        (void)
+{
+   int       i;
+   glPushMatrix();
+   for (i = 0; i < 8; i += 1) {
+      if (my.show_balls == 'y') {
+         glPushMatrix(); {
+            glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
+            glTranslatef (r_fast, 0.0f, 0.0f);
+            glColor4f (1.00, 1.00, 1.00, 1.00);
+            glCallList   (dl_ball);
+            glColor4f (0.00, 0.00, 0.50, 0.50);
+            glCallList   (dl_ball);
+         } glPopMatrix();
+      }
+   }
+   glPopMatrix();
+   return 0;
+}
+
+char
 ARTSY__draw_inners       (void)
 {
    /*---(locals)-------------------------*/
@@ -681,6 +780,8 @@ ARTSY_draw               (void)
    /*--(prepare dlists)-------------------*/
    rc = ARTSY__center (r_center, 20.0, &dl_center);
    DEBUG_GRAF   yLOG_value    ("center"    , rc);
+   rc = ARTSY__fast   (r_fast  , 25.0, &dl_fast );
+   DEBUG_GRAF   yLOG_value    ("fast"      , rc);
    rc = ARTSY__inner  (r_inner , 15.0, &dl_inner);
    DEBUG_GRAF   yLOG_value    ("inner"     , rc);
    rc = ARTSY__outer  (r_outer , 10.0, &dl_outer);
@@ -714,6 +815,7 @@ ARTSY_draw               (void)
    ARTSY__draw_edges  ();
    ARTSY__draw_outers ();
    ARTSY__draw_inners ();
+   ARTSY__draw_fasts  ();
    glCallList   (dl_center);
    glPushMatrix    (); {
       glTranslatef (0.0f, 0.0f, 25.0f);

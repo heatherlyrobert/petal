@@ -608,6 +608,7 @@ DRAW_main          (void)
    float       x_prog      =  0.0;
    char        d;
    int         x, y, w, t;
+   char        x_help      =    0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(gather data)-----------------------*/
@@ -622,12 +623,24 @@ DRAW_main          (void)
    x_mid  = shape.sz_nav + (my.w_tall - shape.sz_nav) / 2.0;
    x_cen  = my.w_wide / 2.0;
    z      =   20.0;
+   x_help = stroke.help;
 
 
    ARTSY_show (my.w_tall / 2.0, -my.w_wide / 2.0, -my.w_tall / 2.0, my.w_wide / 2.0);
 
    glPushMatrix(); {
+      DRAW__petals (3             ,  25);
+      DRAW__petals (2             ,  25);
+      DRAW__petals (1             ,  25);
+      DRAW__petals (9             ,  25);
+      DRAW__petals (0             ,  25);
       DRAW_labels  ();
+      DRAW_dots    ();
+      DRAW__guides (shape.g_center,  50);
+      DRAW__guides (shape.g_ring  ,  50);
+      DRAW__guides (shape.g_inner ,  50);
+      DRAW__guides (shape.g_outer ,  50);
+      DRAW__guides (shape.g_edge  ,  50);
    } glPopMatrix();
 
    if (my.w_valid == 'y' && my.w_touch != '·') {
@@ -645,6 +658,8 @@ DRAW_main          (void)
    }
 
 
+
+   stroke.help = x_help;
 
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -695,6 +710,84 @@ DRAW_main          (void)
    DEBUG_GRAF   yLOG_llong   ("elapsed"   , x_stop - x_start);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+DRAW__guides            (int r, int z)
+{
+   int         x, y, d;
+   float       rad;
+   if (my.guides != 'y')  return 0;
+   glEnable      (GL_LINE_STIPPLE);
+   glLineStipple (1, 0x3333);
+   glColor4f  (0.0f, 0.0f, 0.0f, 1.0f);
+   glBegin(GL_LINE_STRIP); {
+      for (d = 0; d <= 360; d += 1) {
+         rad = d * DEG2RAD;
+         x   =  r * cos(rad);
+         y   =  r * sin(rad);
+         glVertex3f( x, y, z);
+      }
+   } glEnd();
+   glDisable(GL_LINE_STIPPLE);
+   return 0;
+}
+
+char
+DRAW__petals            (int n, int z)
+{
+   int         x, y, d;
+   float       rad;
+   int         i           =    0;
+   char        p           =    0;
+   if (g_petals [n].n < 0)  return 0;
+   p = g_petals [n].p;
+   if (n == 0) {
+      glCallList (shape.dl_center);
+   }
+   else if (n == 1) {
+      i = p / 2;
+      glPushMatrix(); {
+         glRotatef    (i * 45, 0.0f, 0.0f, 1.0f);
+         glCallList   (shape.dl_inner);
+      } glPopMatrix();
+      switch (i) {
+      case  0 :  DRAW_help ("EE");  break;
+      case  1 :  DRAW_help ("NE");  break;
+      case  2 :  DRAW_help ("NN");  break;
+      case  3 :  DRAW_help ("NW");  break;
+      case  4 :  DRAW_help ("WW");  break;
+      case  5 :  DRAW_help ("SW");  break;
+      case  6 :  DRAW_help ("SS");  break;
+      case  7 :  DRAW_help ("SE");  break;
+      }
+   }
+   else if (n == 2) {
+      i = (p - 1) / 2;
+      glPushMatrix(); {
+         glRotatef    ((i * 45) + 22.5, 0.0f, 0.0f, 1.0f);
+         glCallList   (shape.dl_outer);
+      } glPopMatrix();
+   }
+   else if (n == 3) {
+      i = p / 2;
+      glPushMatrix(); {
+         glRotatef    (i * 45, 0.0f, 0.0f, 1.0f);
+         glCallList   (shape.dl_edge);
+      } glPopMatrix();
+   }
+   else if (n == 9 && g_petals [1].n < 0) {
+      i = p / 2;
+      glPushMatrix(); {
+         glRotatef    (i * 45, 0.0f, 0.0f, 1.0f);
+         glTranslatef (shape.g_ring * 0.75, 0.0f, 0.0f);
+         glColor4f (1.00, 1.00, 1.00, 1.00);
+         glCallList   (shape.dl_balls);
+         glColor4f (0.00, 0.00, 0.50, 0.50);
+         glCallList   (shape.dl_balls);
+      } glPopMatrix();
+   }
    return 0;
 }
 
@@ -759,7 +852,7 @@ DRAW_dots          (void)
    glLineWidth(shape.r_dots);
    glBegin(GL_LINE_STRIP);
    for (i = 0; i < g_ndot; i += 1) {
-      glVertex3f( g_dots [i].d_wx, g_dots [i].d_wy,   4.00f);
+      glVertex3f( g_dots [i].d_wx, g_dots [i].d_wy,  50.00f);
    }
    glEnd();
    glLineWidth(0.8);

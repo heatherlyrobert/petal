@@ -67,16 +67,19 @@ static int  s_ysav        = -6666;
 char
 TOUCH_reset             (void)
 {
+   DEBUG_TOUCH  yLOG_enter   (__FUNCTION__);
    my.t_x    = my.t_y    = -6666;
    my.s_x    = my.s_y    = -6666;
    my.w_x    = my.w_y    = my.w_r    = -6666;
    my.w_valid  = '·';
+   DEBUG_TOUCH  yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
 TOUCH_init              (void)
 {
+   DEBUG_TOUCH  yLOG_enter   (__FUNCTION__);
    my.t_left = my.t_topp = my.t_wide = my.t_tall = -6666;
    my.s_left = my.s_topp = my.s_wide = my.s_tall = -6666;
    my.w_left = my.w_topp = my.w_wide = my.w_tall = -6666;
@@ -84,6 +87,7 @@ TOUCH_init              (void)
    my.s_xratio = my.s_yratio = 0.00;
    my.w_touch  = '·';
    TOUCH_reset ();
+   DEBUG_TOUCH  yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
@@ -463,24 +467,30 @@ TOUCH_read         (void)
       rc = TOUCH__single (my.f_event, &ev_type, &ev_code, &ev_value, &x_track, output);
       DEBUG_TOUCH  yLOG_complex ("single"    , "%3d %3d %6d, %c, %-20.20s", ev_type, ev_code, ev_value, x_track, output);
       if (x_track == 'y')  printf ("%s\n", output);
-      if (s_sync  == 'y') {
-         /*> printf ("sync'ing\n");                                                   <*/
-         /*> if (s_xpos != s_xsav || s_ypos != s_ysav) {                                 <*/
+      if (ev_type == 0x01) {
+         if (ev_code == 0x014a) {
+            switch (ev_value) {
+            case 1 :
+               rc = TOUCH_point (s_xpos, s_ypos);
+               rc = DOT_beg     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
+               rc = PETAL_beg   (my.w_x, my.w_y, my.w_r);
+               break;
+            case 0 :
+               rc = TOUCH_point (s_xpos, s_ypos);
+               rc = DOT_end     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
+               rc = PETAL_end   (my.w_x, my.w_y, my.w_r);
+               break;
+            }
+         }
+      }
+      else if (s_sync  == 'y') {
          rc = TOUCH_point  (s_xpos, s_ypos);
-         /*> if (my.t_wide != -6666 && my.t_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.t_left, my.t_topp, my.t_wide, my.t_tall);   <* 
-          *> if (my.t_x    != -6666 && my.t_y    != -6666)  sprintf (s, "%5dx  %5dy", my.t_x, my.t_y);                                           <* 
-          *> printf ("  tablet : %s    %s     ·  %s\n", t, r, s);                                                                                <*/
-         /*> if (my.s_wide != -6666 && my.s_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.s_left, my.s_topp, my.s_wide, my.s_tall);   <* 
-          *> if (my.s_wide != -6666 && my.s_tall != -6666)  sprintf (r, "%8.6fx  %8.6fy", my.s_xratio, my.s_yratio);                             <* 
-          *> if (my.s_x    != -6666 && my.s_y    != -6666)  sprintf (s, "%5dx  %5dy", my.s_x, my.s_y);                                           <* 
-          *> printf ("  screen : %s    %s     ·  %s\n", t, r, s);                                                                                <*/
-         /*> if (my.w_wide != -6666 && my.w_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.w_left, my.w_topp, my.w_wide, my.w_tall);   <* 
-          *> if (my.w_x    != -6666 && my.w_y    != -6666)  sprintf (s, "%5dx  %5dy", my.w_x, my.w_y);                                           <* 
-          *> if (rc == 1)  printf ("  window : %s    %s    %2d  %s  %4d\n", t, r, my.w_align, s, my.w_r);                                        <* 
-          *> else          printf ("  window : %s    %s    %2d  MISS\n", t, r, my.w_align);                                                      <*/
+         if (my.w_touch == 'T') {
+            rc = DOT_add     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
+            rc = PETAL_add   (my.w_x, my.w_y, my.w_r);
+         }
          s_xsav = s_xpos;
          s_ysav = s_ypos;
-         /*> }                                                                           <*/
          s_sync = '-';
       }
       x_ready = '-';
@@ -493,105 +503,6 @@ TOUCH_read         (void)
    return 0;
 
 
-
-   /*> while (1) {                                                                                        <* 
-    *>    /+---(get and format character)----+/                                                           <* 
-    *>    ++x_count;                                                                                      <* 
-    *>    ch = fgetc (my.file_event);                                                                     <* 
-    *>    x_ch = ch;                                                                                      <* 
-    *>    sprintf (next  , "%02x ", x_ch);                                                                <* 
-    *>    strcat  (output, next);                                                                         <* 
-    *>    /+---(check for columns breaks)----+/                                                           <* 
-    *>    if (x_count ==  8)   { strcat (output, "  ");        continue; }                                <* 
-    *>    if (x_count == 16)   { strcat (output, "  ");        continue; }                                <* 
-    *>    /+---(filter certain columns)------+/                                                           <* 
-    *>    if (x_count <  17)                                   continue;                                  <* 
-    *>    /+---(event types)-----------------+/                                                           <* 
-    *>    if (x_count == 17)   { ev_type   = x_ch;             continue; }                                <* 
-    *>    if (x_count == 18) {                                                                            <* 
-    *>       ev_type += x_ch * 256;                                                                       <* 
-    *>       TOUCH__event_type (ev_type, &x_track, t);                                                    <* 
-    *>       strcat (output, t);                                                                          <* 
-    *>       continue;                                                                                    <* 
-    *>    }                                                                                               <* 
-    *>    /+---(event codes)-----------------+/                                                           <* 
-    *>    if (x_count == 19)   { ev_code   = x_ch;             continue; }                                <* 
-    *>    if (x_count == 20) {                                                                            <* 
-    *>       ev_code += x_ch * 256;                                                                       <* 
-    *>       TOUCH__event_code (ev_type, ev_code, &x_track, t);                                           <* 
-    *>       strcat (output, t);                                                                          <* 
-    *>       continue;                                                                                    <* 
-    *>    }                                                                                               <* 
-    *>    /+---(event value)-----------------+/                                                           <* 
-    *>    if (x_count == 21)   { x_button = ev_value  = x_ch;      continue; }                            <* 
-    *>    if (x_count == 22)   { ev_value += x_ch * 256;           continue; }                            <* 
-    *>    if (x_count == 23)   { ev_value += x_ch * (256 * 256);   continue; }                            <* 
-    *>    /+---(last value)------------------+/                                                           <* 
-    *>    if (x_count == 24) {                                                                            <* 
-    *>       /+---(format value)-------------+/                                                           <* 
-    *>       ev_value += x_ch * (256 * 256 * 256);                                                        <* 
-    *>       if (ev_type == 0x04 && ev_code == 0x04)  sprintf (next, "%10d  %02x", ev_value, x_button);   <* 
-    *>       else                                     sprintf (next, "%10d", ev_value);                   <* 
-    *>       /+---(print final line)---------+/                                                           <* 
-    *>       strcat  (output, next);                                                                      <* 
-    *>       if (my.ev_major == 0x04 && (ev_type == 0x00 || ev_type == 0x01 || ev_type == 0x04)) {        <* 
-    *>          RPTG_EVENTS  printf ("%s\n", output);                                                     <* 
-    *>          ++s_rptg;                                                                                 <* 
-    *>       }                                                                                            <* 
-    *>       else if (my.ev_major == ev_type && (my.ev_minor == 0xff || my.ev_minor == ev_code)) {        <* 
-    *>          RPTG_EVENTS  printf ("%s\n", output);                                                     <* 
-    *>          ++s_rptg;                                                                                 <* 
-    *>       }                                                                                            <* 
-    *>       else if (my.ev_major == 0xff) {                                                              <* 
-    *>          RPTG_EVENTS  printf ("%s\n", output);                                                     <* 
-    *>          ++s_rptg;                                                                                 <* 
-    *>       }                                                                                            <* 
-    *>       /+---(reset values)-------------+/                                                           <* 
-    *>       strcpy (output, "");                                                                         <* 
-    *>       x_count = 0;                                                                                 <* 
-    *>    }                                                                                               <* 
-    *>    /+---(finger touch)----------------+/                                                           <* 
-    *>    if (ev_type == 3 && ev_code == 0x39 && ev_value >= 0)  {                                        <* 
-    *>       stroke.channel = ev_value;                                                                   <* 
-    *>       stroke.beg     = timestamp ();                                                               <* 
-    *>       ndot = 0;                                                                                    <* 
-    *>    }                                                                                               <* 
-    *>    /+---(finger lift)-----------------+/                                                           <* 
-    *>    if (ev_type == 3 && ev_code == 0x39 && ev_value <  0)  {                                        <* 
-    *>       stroke.end   = timestamp ();                                                                 <* 
-    *>       stroke.diff  = stroke.end - stroke.beg;                                                      <* 
-    *>       rc = STROKE_end (s_new_x, s_new_y, s_new_r);                                                 <* 
-    *>    }                                                                                               <* 
-    *>    /+---(x-value)---------------------+/                                                           <* 
-    *>    if (ev_type == 3 && ev_code == 0x35)  {                                                         <* 
-    *>       x     = ((float) ev_value / 1800.0);                                                         <* 
-   *>       s_new_x = (1366.0 * (1 - x));                                                                <* 
-      *>       s_new_y = 0;                                                                                 <* 
-      *>    }                                                                                               <* 
-      *>    /+---(y-value)---------------------+/                                                           <* 
-      *>    if (ev_type == 3 && ev_code == 0x36)  {                                                         <* 
-         *>       y     = ((float) ev_value / 1800.0);                                                         <* 
-            *>       s_new_y = (768.0 * y);                                                                       <* 
-            *>       s_new_r = sqrt((s_new_x * s_new_x) + (s_new_y * s_new_y));                                   <* 
-            *>       if (ndot == 0) rc = STROKE_begin (s_new_x, s_new_y, s_new_r);                                <* 
-            *>       else           rc = stroke_next  (s_new_x, s_new_y, s_new_r);                                <* 
-            *>    }                                                                                               <* 
-            *>    /+---(done)------------------------+/                                                           <* 
-            *>    break;                                                                                          <* 
-            *> }                                                                                                  <*/
-
-            if (my.ev_major == 0x04 && (ev_type == 0x00 || ev_type == 0x01 || ev_type == 0x04)) {
-               RPTG_EVENTS  printf ("%s\n", output);
-               ++s_rptg;
-            }
-            else if (my.ev_major == ev_type && (my.ev_minor == 0xff || my.ev_minor == ev_code)) {
-               RPTG_EVENTS  printf ("%s\n", output);
-               ++s_rptg;
-            }
-            else if (my.ev_major == 0xff) {
-               RPTG_EVENTS  printf ("%s\n", output);
-               ++s_rptg;
-            }
 
    /*---(finger touch)----------------*/
    if (ev_type == 3 && ev_code == 0x39 && ev_value >= 0)  {

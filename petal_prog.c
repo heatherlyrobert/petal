@@ -340,9 +340,12 @@ PROG__init              (int argc, char *argv[])
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
-   TOUCH_init ();
+   TOUCH_init  ();
+   PETAL_init  ();
+   CONF_init   ();
    my.save_png       = '-';
    my.mask           = '-';
+   my.guides         = '-';
    DRAW_help  ("-");
    DRAW_color ("all");
    stroke.max        = -1;
@@ -437,6 +440,7 @@ PROG__args              (int argc, char *argv[])
       else if (strncmp(a, "--pngonly" , 20) == 0)  my.save_png   = 'y';
       else if (strncmp(a, "--pngalso" , 20) == 0)  my.save_png   = '+';
       else if (strncmp(a, "--mask"    , 20) == 0)  my.mask       = 'y';
+      else if (strncmp(a, "--guides"  , 20) == 0)  my.guides     = 'y';
    }
    return 0;
 }
@@ -566,6 +570,8 @@ PROG_dawn          (void)
    DEBUG_PROG   yLOG_value   ("press"     , rc);
    rc = yCMD_add (YVIHUB_M_CONFIG, "debug"       , ""    , "s"    , DRAW_debug_set       , "configure showing completed text"                            );
    DEBUG_PROG   yLOG_value   ("debug"     , rc);
+   /*---(yPARSE)-------------------------*/
+   rc = CONF_pull (FILE_CONF);
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -653,8 +659,8 @@ PROG_unit_quiet    (void)
 char       /*----: set up program urgents/debugging --------------------------*/
 PROG_unit_loud     (void)
 {
-   char        x_carg      = 2;
-   char       *x_args [2]  = { "petal_unit", "@@kitchen"    };
+   char        x_carg      = 3;
+   char       *x_args [3]  = { "petal_unit", "@@kitchen"   , "@@touch"    };
    PROG_urgents   (x_carg, x_args);
    PROG_startup   (x_carg, x_args);
    return 0;
