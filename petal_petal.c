@@ -207,7 +207,7 @@ PETAL__reset_one        (char i)
 }
 
 char
-PETAL__reset            (void)
+PETAL_reset             (void)
 {
    int         i           =    0;
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
@@ -222,7 +222,7 @@ PETAL__reset            (void)
 char
 PETAL_init              (void)
 {
-   return PETAL__reset ();
+   return PETAL_reset ();
 }
 
 
@@ -334,7 +334,12 @@ PETAL__check            (int x, int y, int r)
    case 3  :  g_petals [n].p = i;  break;
    case 9  :  g_petals [n].p = i;  break;
    }
-   /*---(fixes)---------------------------------*/
+   /*---(if 1, clear fast)----------------------*/
+   if (n == 1) {
+      DEBUG_DATA   yLOG_note    ("reset petal 9");
+      PETAL__reset_one (9);
+   }
+   /*---(if 1 matches 3, clear 2)---------------*/
    if (n == 3) {
       DEBUG_DATA   yLOG_complex ("line"      , "%2d ? %2d", g_petals [1].p, g_petals [3].p);
       if (g_petals [1].p == g_petals [3].p) {
@@ -362,7 +367,7 @@ PETAL_beg               (int x, int y, int r)
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    /*---(handle)-------------------------*/
-   PETAL__reset ();
+   PETAL_reset ();
    rc = PETAL__check (x, y, r);
    /*> if (a_r <= shape.r_center)  stroke.outward = TRUE;                             <* 
     *> else                        stroke.outward = FALSE;                            <* 
@@ -409,7 +414,7 @@ char
 STROKE_begin       (int a_x, int a_y, int a_r)
 {
    char        rc          = 0;
-   PETAL__reset ();
+   PETAL_reset ();
    if (a_r <= shape.r_center)  stroke.outward = TRUE;
    else                        stroke.outward = FALSE;
    g_npetal = 0;

@@ -10,6 +10,8 @@ CONF_init               (void)
    /*---(locals)-----------+-----------+-*/
    char        rce         =  -10;
    int         rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_CONF  yLOG_enter   (__FUNCTION__);
    /*---(configuration)------------------*/
    rc = yPARSE_config (YPARSE_MANUAL, NULL, YPARSE_ONETIME, YPARSE_FIELD, YPARSE_FILL);
    DEBUG_PROG   yLOG_value   ("yparse"    , rc);
@@ -64,7 +66,7 @@ CONF__default           (int n, uchar a_verb [LEN_TERSE])
 }
 
 char
-CONF__load              (char a_dir [LEN_TERSE], char a_seq, char a_field [LEN_LABEL])
+CONF__load              (char a_dir [LEN_TERSE], char a_seq, char a_field [LEN_LABEL], char a_bases [LEN_TITLE])
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -97,7 +99,7 @@ CONF__load              (char a_dir [LEN_TERSE], char a_seq, char a_field [LEN_L
    }
    l = strlen (a_field);
    DEBUG_CONF  yLOG_value   ("l"         , l);
-   --rce;  if (l != 15) {
+   --rce;  if (a_seq != 5 && l != 15) {
       DEBUG_CONF  yLOG_exit    (__FUNCTION__);
       return rce;
    }
@@ -132,14 +134,30 @@ CONF__load              (char a_dir [LEN_TERSE], char a_seq, char a_field [LEN_L
    n = a * 5 + a_seq;
    DEBUG_CONF  yLOG_value   ("n"         , n);
    /*---(load)---------------------------*/
-   g_lower [n] = a_field [ 0];
-   g_upper [n] = a_field [ 2];
-   g_greek [n] = a_field [ 4];
-   g_arith [n] = a_field [ 6];
-   g_logic [n] = a_field [ 8];
-   g_boxdr [n] = a_field [10];
-   g_macro [n] = a_field [12];
-   g_punct [n] = a_field [14];
+   if (a_seq != 5) {
+      g_lower [n] = (a_field [ 0] == ' ') ? '²' : a_field [ 0];
+      g_upper [n] = (a_field [ 2] == ' ') ? '²' : a_field [ 2];
+      g_greek [n] = (a_field [ 4] == ' ') ? '²' : a_field [ 4];
+      g_arith [n] = (a_field [ 6] == ' ') ? '²' : a_field [ 6];
+      g_logic [n] = (a_field [ 8] == ' ') ? '²' : a_field [ 8];
+      g_boxdr [n] = (a_field [10] == ' ') ? '²' : a_field [10];
+      g_macro [n] = (a_field [12] == ' ') ? '²' : a_field [12];
+      g_punct [n] = (a_field [14] == ' ') ? '²' : a_field [14];
+   } else if (a_seq == 5) {
+      g_layer [a] = a_field [ 0];
+      if (a_bases != NULL) {
+         switch (a) {
+         case 0 :  ystrlcpy (g_ariths, a_bases, LEN_TITLE);  break;
+         case 1 :  ystrlcpy (g_puncts, a_bases, LEN_TITLE);  break;
+         case 2 :  ystrlcpy (g_uppers, a_bases, LEN_TITLE);  break;
+         case 3 :  ystrlcpy (g_boxdrs, a_bases, LEN_TITLE);  break;
+         case 4 :  ystrlcpy (g_greeks, a_bases, LEN_TITLE);  break;
+         case 5 :  ystrlcpy (g_macros, a_bases, LEN_TITLE);  break;
+         case 6 :  ystrlcpy (g_lowers, a_bases, LEN_TITLE);  break;
+         case 7 :  ystrlcpy (g_logics, a_bases, LEN_TITLE);  break;
+         }
+      }
+   }
    /*---(complete)-----------------------*/
    DEBUG_CONF  yLOG_exit    (__FUNCTION__);
    return 0;
@@ -154,11 +172,13 @@ CONF__mapping           (int n, uchar a_verb [LEN_TERSE])
    char        x_name      [LEN_TERSE] = "";
    char        x_1st       [LEN_LABEL] = "";
    char        x_dir       [LEN_LABEL] = "";
+   char        x_fast      [LEN_LABEL] = "";
    char        x_CW2nd     [LEN_LABEL] = "";
    char        x_CW3rd     [LEN_LABEL] = "";
    char        x_CCW2nd    [LEN_LABEL] = "";
    char        x_CCW3rd    [LEN_LABEL] = "";
    char        x_4th       [LEN_LABEL] = "";
+   char        x_bases     [LEN_TITLE] = "";
    /*---(header)-------------------------*/
    DEBUG_CONF  yLOG_enter   (__FUNCTION__);
    /*---(defense)------------------------*/
@@ -173,7 +193,7 @@ CONF__mapping           (int n, uchar a_verb [LEN_TERSE])
       return rce;
    }
    /*---(read details)-------------------*/
-   rc = yPARSE_scanf (a_verb, "TTLLLLLL"  , x_name, x_dir, x_1st, x_CW2nd, x_CW3rd, x_CCW2nd, x_CCW3rd, x_4th);
+   rc = yPARSE_scanf (a_verb, "TTTLLLLLL3"  , x_name, x_dir, x_fast, x_1st, x_CW2nd, x_CW3rd, x_CCW2nd, x_CCW3rd, x_4th, x_bases);
    DEBUG_CONF  yLOG_value   ("scanf"      , rc);
    if (rc < 0) {
       DEBUG_PROG  yLOG_exitr   (__FUNCTION__, rce);
@@ -186,16 +206,17 @@ CONF__mapping           (int n, uchar a_verb [LEN_TERSE])
       return 0;
    }
    /*---(save)---------------------------*/
-   printf ("%-10.10s  %-2.2s  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ\n",
-         x_name, x_dir, x_1st,
+   printf ("%-10.10s  %-2.2s  å%-10.10sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%sæ\n",
+         x_name, x_dir, x_fast, x_1st,
          x_CW2nd , x_CW3rd ,
          x_CCW2nd, x_CCW3rd,
-         x_4th);
-   CONF__load (x_dir, 0, x_1st);
-   CONF__load (x_dir, 1, x_CW2nd);
-   CONF__load (x_dir, 2, x_CW3rd);
-   CONF__load (x_dir, 3, x_CCW2nd);
-   CONF__load (x_dir, 4, x_CCW3rd);
+         x_4th, x_bases);
+   CONF__load (x_dir, 0, x_1st    , NULL);
+   CONF__load (x_dir, 1, x_CW2nd  , NULL);
+   CONF__load (x_dir, 2, x_CW3rd  , NULL);
+   CONF__load (x_dir, 3, x_CCW2nd , NULL);
+   CONF__load (x_dir, 4, x_CCW3rd , NULL);
+   CONF__load (x_dir, 5, x_4th    , x_bases);
    /*---(complete)-----------------------*/
    DEBUG_CONF  yLOG_exit    (__FUNCTION__);
    return 1;
@@ -265,6 +286,7 @@ CONF_pull               (cchar a_file [LEN_PATH])
       DEBUG_CONF  yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   printf ("å%sæ\n", g_bases);
    /*---(complete)-----------------------*/
    DEBUG_CONF  yLOG_exit    (__FUNCTION__);
    return 0;

@@ -107,19 +107,17 @@ DRAW_help          (char *a_help)
    case 'm'  : stroke.help = 13;        break;
    case 't'  : stroke.help = 14;        break;
    case 'N'  :
-               if      (a_help [1] == 'N')  stroke.help =  1;
-               else if (a_help [1] == 'W')  stroke.help =  8;
+               if      (a_help [1] == 'N')  stroke.help =  3;
+               else if (a_help [1] == 'W')  stroke.help =  4;
                else if (a_help [1] == 'E')  stroke.help =  2;
-               else                         stroke.help =  1;
                break;
-   case 'E'  : stroke.help =  3;        break;
+   case 'E'  : stroke.help =  1;        break;
    case 'S'  : 
-               if      (a_help [1] == 'S')  stroke.help =  5;
+               if      (a_help [1] == 'S')  stroke.help =  7;
                else if (a_help [1] == 'W')  stroke.help =  6;
-               else if (a_help [1] == 'E')  stroke.help =  4;
-               else                         stroke.help =  5;
+               else if (a_help [1] == 'E')  stroke.help =  8;
                break;
-   case 'W'  : stroke.help =  7;        break;
+   case 'W'  : stroke.help =  5;        break;
    case '!'  : stroke.help = 20;        break;
    default   : stroke.help = -1;        break;
    }
@@ -246,7 +244,7 @@ DRAW_seq           (char a_mode, char *a_text)
       case MODE   :  strlcat (shape.r_seq, "M", LEN_RECD);  break;
       }
       /*---(add letter)------------------*/
-      sprintf (t, "%c", g_letters [rc]);
+      sprintf (t, "%c", g_shown [rc]);
       strlcat (shape.r_seq, t, LEN_RECD);
       /*---(done)------------------------*/
    }
@@ -1065,7 +1063,6 @@ char
 DRAW_label_one          (char a_lvl, char a_pos)
 {
    /*---(locals)-----------+-----+-----+-*/
-   char       *x_labels    = NULL;
    float       r, d;
    char        c;
    float       x, y;
@@ -1092,17 +1089,6 @@ DRAW_label_one          (char a_lvl, char a_pos)
       DEBUG_GRAF   yLOG_sexit   (__FUNCTION__);
       return 0;
    }
-   /*---(check for label adjustments)----*/
-   if      (states [MODE]) {
-      DEBUG_GRAF   yLOG_snote   ("mode");
-      x_labels = g_punct;
-   } else if (states [SHIFT]) {
-      DEBUG_GRAF   yLOG_snote   ("shift");
-      x_labels = g_upper;
-   } else {
-      DEBUG_GRAF   yLOG_snote   ("normal");
-      x_labels = g_letters;
-   }
    /*---(settings)-----------------------*/
    switch (a_lvl) {
    case 1 :
@@ -1111,7 +1097,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
       r     = shape.r_inner * 0.75;
       d     = a_pos * 45;
       x_pos = a_pos * 5;
-      c     = x_labels [x_pos];
+      c     = g_shown [x_pos];
       break;
    case 2 :
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
@@ -1119,7 +1105,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
       r     = shape.r_outer * 0.75;
       d     = a_pos * 45 - 12;
       x_pos = (a_pos * 5) + 1;
-      c     = x_labels [x_pos];
+      c     = g_shown [x_pos];
       break;
    case 3 :
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
@@ -1127,7 +1113,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
       r     = shape.r_edge  * 0.85;
       d     = a_pos * 45 - 35;
       x_pos = (a_pos * 5) + 2;
-      c     = x_labels [x_pos];
+      c     = g_shown [x_pos];
       break;
    case 4 :
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
@@ -1135,7 +1121,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
       r     = shape.r_outer * 0.75;
       d     = a_pos * 45 + 12;
       x_pos = (a_pos * 5) + 3;
-      c     = x_labels [x_pos];
+      c     = g_shown [x_pos];
       break;
    case 5 :
       glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
@@ -1143,15 +1129,16 @@ DRAW_label_one          (char a_lvl, char a_pos)
       r     = shape.r_edge  * 0.85;
       d     = a_pos * 45 + 35;
       x_pos = (a_pos * 5) + 4;
-      c     = x_labels [x_pos];
+      c     = g_shown [x_pos];
       break;
    case 6 :
       DEBUG_GRAF   yLOG_snote   ("special    ");
-      glColor4f (0.0f, 0.0f, 0.0f, 0.7f);
+      glColor4f (1.0f, 1.0f, 1.0f, 0.7f);
       r     = shape.r_edge  * 1.00;
-      d     = a_pos * 45;
+      d     = a_pos * 45 +  5;
       x_pos = a_pos;
-      c     = g_special [a_pos];
+      /*> c     = g_special [a_pos];                                                  <*/
+      c     = g_layer [a_pos];
       break;
    }
    DEBUG_GRAF   yLOG_schar   (c);
@@ -1162,7 +1149,7 @@ DRAW_label_one          (char a_lvl, char a_pos)
       }
    }
    /*---(position)-----------------------*/
-   rad = (d / 360.0) * (2 * 3.1415927);
+   rad = ((90 - d) / 360.0) * (2 * 3.1415927);
    x   = (r * sin (rad));
    y   = (r * cos (rad));
    DEBUG_GRAF   yLOG_svalue  ("x", x);
@@ -1172,6 +1159,9 @@ DRAW_label_one          (char a_lvl, char a_pos)
       snprintf     (t , 2, "%c", c);
       DEBUG_GRAF   yLOG_snote   (t);
       glTranslatef (  x,  y,   75.0);
+      if      (a_lvl == 6)                   glColor4f (1.0, 1.0, 1.0, 1.0);
+      else if (strchr (g_bases, c) != NULL)  glColor4f (0.0, 0.0, 0.0, 1.0);
+      else                                   glColor4f (0.0, 0.0, 1.0, 1.0);
       yFONT_print  (my.txf_sm, my.size_norm, YF_MIDCEN, t );
    } glPopMatrix();
    /*---(complete)-----------------------*/
@@ -1216,14 +1206,14 @@ DRAW_labels             (void)
    /*---(edges)----------------------------*/
    if (stroke.help < 10 || stroke.help == 12 || stroke.help == 20) {
       r = shape.r_edge * 1.02;
-      for (i = 0; i < 8; i += 1)  DRAW_label_one (3, i);
       for (i = 0; i < 8; i += 1)  DRAW_label_one (5, i);
+      for (i = 0; i < 8; i += 1)  DRAW_label_one (3, i);
    }
    /*---(outer)----------------------------*/
    if (stroke.help < 10 || stroke.help == 11 || stroke.help == 14 || stroke.help == 20) {
       r = shape.r_outer  * 0.91;
-      for (i = 0; i < 8; i += 1)  DRAW_label_one (2, i);
       for (i = 0; i < 8; i += 1)  DRAW_label_one (4, i);
+      for (i = 0; i < 8; i += 1)  DRAW_label_one (2, i);
    }
    /*---(inner)----------------------------*/
    if (stroke.help < 10 || stroke.help == 10 || stroke.help == 14 || stroke.help == 20) {

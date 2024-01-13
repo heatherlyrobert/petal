@@ -5,6 +5,9 @@ uint   states[10];
 uint   locks [10];
 
 
+char *g_letters = g_lower;
+
+
 char   g_lower    [MAX_LETTER];
 char   g_upper    [MAX_LETTER];
 char   g_greek    [MAX_LETTER];
@@ -14,6 +17,20 @@ char   g_boxdr    [MAX_LETTER];
 char   g_macro    [MAX_LETTER];
 char   g_punct    [MAX_LETTER];
 
+char   g_fasts    [LEN_TERSE];
+char   g_layer    [LEN_TERSE];
+
+char   g_lowers   [LEN_TITLE];
+char   g_uppers   [LEN_TITLE];
+char   g_greeks   [LEN_TITLE];
+char   g_ariths   [LEN_TITLE];
+char   g_logics   [LEN_TITLE];
+char   g_boxdrs   [LEN_TITLE];
+char   g_macros   [LEN_TITLE];
+char   g_puncts   [LEN_TITLE];
+
+char  *g_shown   = g_lower;
+char  *g_bases   = g_lowers;
 
 /*
  *
@@ -158,8 +175,6 @@ char g_letters_EASY [40] = {
 };
 
 char g_letters_CONF [40];
-
-char *g_letters = g_letters_CONF;
 
 char g_upper [40] = {
    'T' , 'M' , '[' , 'C' , '~' ,   /* N    */
@@ -338,7 +353,7 @@ LETTER_by_index         (char n)
 }
 
 char
-LETTER_by_stroke        (char i, char o, char e)
+LETTER_by_stroke_OLD    (char i, char o, char e)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -420,6 +435,76 @@ LETTER_by_stroke        (char i, char o, char e)
    /*---(complete)-----------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return n;
+}
+
+char
+LETTER__layer           (char f, char i, char o, char e)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        n           =   -1;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   /*---(quick-out)----------------------*/
+   DEBUG_GRAF   yLOG_complex ("args"      , "%2df  %2di  %2do  %2de", f, i, o, e);
+   if (f >= 0) {
+      DEBUG_INPT   yLOG_note    ("fast set, can not be a layer");
+      DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   if (o >= 0) {
+      DEBUG_INPT   yLOG_note    ("outer set, can not be a layer");
+      DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   if (i != e) {
+      DEBUG_INPT   yLOG_note    ("inner and edge don't match, can not be a layer");
+      DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   if (i < 0 || i > 15) {
+      DEBUG_INPT   yLOG_note    ("petal number not 0-15, can not be a layer");
+      DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   if (i % 2 != 0) {
+      DEBUG_INPT   yLOG_note    ("not an even petal number, can not be a layer");
+      DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   /*---(prepare)------------------------*/
+   n = i / 2;
+   /*---(set)----------------------------*/
+   switch (n) {
+   case  0 : g_shown = g_arith;  g_bases = g_ariths;  break;
+   case  1 : g_shown = g_punct;  g_bases = g_puncts;  break;
+   case  2 : g_shown = g_upper;  g_bases = g_uppers;  break;
+   case  3 : g_shown = g_boxdr;  g_bases = g_boxdrs;  break;
+   case  4 : g_shown = g_greek;  g_bases = g_greeks;  break;
+   case  5 : g_shown = g_macro;  g_bases = g_macros;  break;
+   case  6 : g_shown = g_lower;  g_bases = g_lowers;  break;
+   case  7 : g_shown = g_logic;  g_bases = g_logics;  break;
+   }
+   /*---(reset image)--------------------*/
+   PETAL_reset ();
+   DOT_reset   ();
+   /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return 1;
+}
+
+char
+LETTER_by_stroke        (char f, char i, char o, char e)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   /*---(handle)-------------------------*/
+   rc = LETTER__layer (f, i, o, e);
+   /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return 0;
 }
 
 char

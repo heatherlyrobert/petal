@@ -479,6 +479,7 @@ TOUCH_read         (void)
                rc = TOUCH_point (s_xpos, s_ypos);
                rc = DOT_end     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
                rc = PETAL_end   (my.w_x, my.w_y, my.w_r);
+               rc = LETTER_by_stroke (g_petals [9].p, g_petals [1].p, g_petals [2].p, g_petals [3].p);
                break;
             }
          }

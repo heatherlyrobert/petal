@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "3.-- third major phase"
 #define     P_VERMINOR  "3.0- ramped the beauty way up ;)"
-#define     P_VERNUM    "3.0c"
-#define     P_VERTXT    "petal identification, rough conf file loading, extra graphics"
+#define     P_VERNUM    "3.0d"
+#define     P_VERTXT    "handles layers, configuration, and display"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -44,10 +44,9 @@
 /*===[[ END_HEADER ]]=========================================================*/
 
 #define     P_DEFINE    \
-   "petal is a fast on-screen text input system meant to greatly improve upon¦" \
-   "other pen-based methods in speed, sustainability, and elegance by fronting¦" \
-   "an entire set of short-cuts to the most common words in english.¦"
-
+   "petal is a potentially fast on-screen text input system for when i am¦" \
+   "working on a pen-based system, or using a pen-based application and¦" \
+   "need to enter text as well (without slowing down).¦"
 
 
 /*===[[ HEADER ]]=============================================================#
@@ -577,7 +576,6 @@ extern char          unit_answer [LEN_RECD];
 
 #define   MAX_LETTER   40
 
-extern char *g_letters;
 
 extern char   g_lower    [MAX_LETTER];
 extern char   g_upper    [MAX_LETTER];
@@ -587,6 +585,22 @@ extern char   g_logic    [MAX_LETTER];
 extern char   g_boxdr    [MAX_LETTER];
 extern char   g_macro    [MAX_LETTER];
 extern char   g_punct    [MAX_LETTER];
+
+extern char   g_fasts    [LEN_TERSE];
+extern char   g_layer    [LEN_TERSE];
+
+extern char   g_lowers   [LEN_TITLE];
+extern char   g_uppers   [LEN_TITLE];
+extern char   g_greeks   [LEN_TITLE];
+extern char   g_ariths   [LEN_TITLE];
+extern char   g_logics   [LEN_TITLE];
+extern char   g_boxdrs   [LEN_TITLE];
+extern char   g_macros   [LEN_TITLE];
+extern char   g_puncts   [LEN_TITLE];
+
+extern char  *g_shown;
+extern char  *g_bases;
+extern char  *g_letters;
 
 extern char g_special[10];
 extern int  g_akeysyms[40];
@@ -705,7 +719,7 @@ char*       TOUCH__unit             (char *a_question, int a_num);
 /*===[[ PETAL_PETAL.C ]]======================================================*/ 
 /*---rc---- ---name---------------- ---args-----------------------------------*/
 /*---(program)--------------*/
-char        PETAL__reset            (void);
+char        PETAL_reset             (void);
 char        PETAL_init              (void);
 /*---(worker)---------------*/
 char        PETAL__data             (int x, int y, int r, int *d, char *n, char *i, char *o);
@@ -759,7 +773,7 @@ char        api_ymap_done           (void);
 
 
 char        LETTER_by_index         (char n);
-char        LETTER_by_stroke        (char i, char o, char e);
+char        LETTER_by_stroke        (char f, char i, char o, char e);
 char        LETTER_to_stroke        (char a_all, char c, char *m, char *i, char *o, char *e);
 char        LETTER_by_mode          (char n);
 
@@ -782,7 +796,7 @@ char        ARTSY_show              (float a_wtop, float a_wlef, float a_wbot, f
 /*===[[ PETAL_DOT.C ]]========================================================*/ 
 /*---rc---- ---name---------------- ---args-----------------------------------*/
 /*---(program)--------------*/
-char        DOT__reset              (void);
+char        DOT_reset               (void);
 char        DOT_init                (void);
 /*---(worker)---------------*/
 char        DOT__add                (char a_tst, char a_func [LEN_LABEL], int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr, char a_place);

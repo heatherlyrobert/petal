@@ -22,7 +22,7 @@ static char s_lock      = '-';
 static void      o___PROGRAM____________o (void) {;}
 
 char
-DOT__reset              (void)
+DOT_reset               (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rc          =    0;
@@ -56,7 +56,7 @@ DOT__reset              (void)
 char
 DOT_init                (void)
 {
-   return DOT__reset ();
+   return DOT_reset ();
 }
 
 
@@ -141,7 +141,7 @@ static void      o___SIMPLIFIER_________o (void) {;}
 char
 DOT_beg                 (int a_tx, int a_ty, int a_sx, int a_sy, int a_wx, int a_wy, int a_wr)
 {
-   DOT__reset ();
+   DOT_reset ();
    return DOT__add ('-', __FUNCTION__, a_tx, a_ty, a_sx, a_sy, a_wx, a_wy, a_wr, 'b');
 }
 
@@ -220,7 +220,7 @@ DOT_force_beg           (int a_wx, int a_wy)
 {
    char        rc          =    0;
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
-   DOT__reset ();
+   DOT_reset ();
    rc = DOT_force_point (a_wx, a_wy);
    if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r, 'b');
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
