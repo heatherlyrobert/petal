@@ -4,6 +4,13 @@
 
 static char  s_name  [LEN_TERSE] = "";
 
+
+
+/*============================--------------------============================*/
+/*===----                       program level                          ----===*/
+/*============================--------------------============================*/
+static void      o___PROGRAM____________o (void) {;}
+
 char
 CONF_init               (void)
 {
@@ -12,8 +19,10 @@ CONF_init               (void)
    int         rc          =    0;
    /*---(header)-------------------------*/
    DEBUG_CONF  yLOG_enter   (__FUNCTION__);
+   /*---(clear)--------------------------*/
+   CONF_purge ();
    /*---(configuration)------------------*/
-   rc = yPARSE_config (YPARSE_MANUAL, NULL, YPARSE_ONETIME, YPARSE_FIELD, YPARSE_FILL);
+   rc = yPARSE_config (YPARSE_MANUAL, NULL, YPARSE_ONETIME, YPARSE_TRADITION, YPARSE_FILL);
    DEBUG_PROG   yLOG_value   ("yparse"    , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
@@ -27,8 +36,30 @@ CONF_init               (void)
 char
 CONF_purge              (void)
 {
+   int         i           =    0;
+   for (i = 0; i < MAX_LETTER; ++i) {
+      g_lower [i] = g_upper [i] = g_greek [i] = g_arith [i] = '·';
+      g_logic [i] = g_boxdr [i] = g_macro [i] = g_punct [i] = '·';
+   }
+   strcpy (g_lowers, "");
+   strcpy (g_uppers, "");
+   strcpy (g_greeks, "");
+   strcpy (g_ariths, "");
+   strcpy (g_logics, "");
+   strcpy (g_boxdrs, "");
+   strcpy (g_macros, "");
+   strcpy (g_puncts, "");
+   g_shown = g_lower;
+   g_bases = g_lowers;
    return 0;
 }
+
+
+
+/*============================--------------------============================*/
+/*===----                       detailed handlers                      ----===*/
+/*============================--------------------============================*/
+static void      o___DETAIL_____________o (void) {;}
 
 char
 CONF__default           (int n, uchar a_verb [LEN_TERSE])
@@ -66,7 +97,7 @@ CONF__default           (int n, uchar a_verb [LEN_TERSE])
 }
 
 char
-CONF__load              (char a_dir [LEN_TERSE], char a_seq, char a_field [LEN_LABEL], char a_bases [LEN_TITLE])
+CONF__load              (char a_dir [LEN_TERSE], char a_desc [LEN_TERSE], char a_seq, char a_field [LEN_LABEL], char a_bases [LEN_TITLE])
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -169,6 +200,7 @@ CONF__mapping           (int n, uchar a_verb [LEN_TERSE])
    /*---(locals)-----------+-----------+-*/
    char        rce         =  -10;
    int         rc          =    0;
+   int         c           =    0;
    char        x_name      [LEN_TERSE] = "";
    char        x_1st       [LEN_LABEL] = "";
    char        x_dir       [LEN_LABEL] = "";
@@ -177,25 +209,47 @@ CONF__mapping           (int n, uchar a_verb [LEN_TERSE])
    char        x_CW3rd     [LEN_LABEL] = "";
    char        x_CCW2nd    [LEN_LABEL] = "";
    char        x_CCW3rd    [LEN_LABEL] = "";
-   char        x_4th       [LEN_LABEL] = "";
+   char        x_layers    [LEN_LABEL] = "";
    char        x_bases     [LEN_TITLE] = "";
    /*---(header)-------------------------*/
    DEBUG_CONF  yLOG_enter   (__FUNCTION__);
    /*---(defense)------------------------*/
    DEBUG_CONF  yLOG_point   ("a_verb"     , a_verb);
    --rce;  if (a_verb == NULL) {
+      yURG_err ('f', "%4d, verb null", n);
       DEBUG_PROG  yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
    DEBUG_CONF  yLOG_info    ("a_verb"     , a_verb);
    --rce;  if (strcmp (a_verb, "MAP") != 0) {
+      yURG_err ('f', "%4d, verb å%-8.8sæ incorrectly called MAP handler", n, a_verb);
       DEBUG_PROG  yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   /*---(field count)--------------------*/
+   rc = yPARSE_ready (&c);
+   DEBUG_INPT   yLOG_char    ("ready"     , rc);
+   --rce;  if (rc != 'y') {
+      yURG_err ('f', "%4d, verb å%-8.8sæ, yPARSE not ready", n, a_verb);
+      DEBUG_INPT  yLOG_exit    (__FUNCTION__);
+      return rce;
+   }
+   DEBUG_INPT   yLOG_value   ("fields"    , c);
+   --rce; if (c < 1) {
+      yURG_err ('f', "%4d, verb å%-8.8sæ, yPARSE no fields found", n, a_verb);
+      DEBUG_INPT  yLOG_exit    (__FUNCTION__);
+      return rce;
+   }
+   --rce; if (c != 11) {
+      yURG_err ('f', "%4d, verb å%-8.8sæ, yPARSE not using current eleven (11) field format", n, a_verb);
+      DEBUG_INPT  yLOG_exit    (__FUNCTION__);
+      return rce;
+   }
    /*---(read details)-------------------*/
-   rc = yPARSE_scanf (a_verb, "TTTLLLLLL3"  , x_name, x_dir, x_fast, x_1st, x_CW2nd, x_CW3rd, x_CCW2nd, x_CCW3rd, x_4th, x_bases);
+   rc = yPARSE_scanf (a_verb, "TTTLLLLLL3"  , x_name, x_dir, x_fast, x_1st, x_CW2nd, x_CW3rd, x_CCW2nd, x_CCW3rd, x_layers, x_bases);
    DEBUG_CONF  yLOG_value   ("scanf"      , rc);
    if (rc < 0) {
+      yURG_err ('f', "%4d, verb å%-8.8sæ, %d fields, yPARSE_scanf failed (%d)", n, a_verb, c, rc);
       DEBUG_PROG  yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
@@ -210,17 +264,24 @@ CONF__mapping           (int n, uchar a_verb [LEN_TERSE])
          x_name, x_dir, x_fast, x_1st,
          x_CW2nd , x_CW3rd ,
          x_CCW2nd, x_CCW3rd,
-         x_4th, x_bases);
-   CONF__load (x_dir, 0, x_1st    , NULL);
-   CONF__load (x_dir, 1, x_CW2nd  , NULL);
-   CONF__load (x_dir, 2, x_CW3rd  , NULL);
-   CONF__load (x_dir, 3, x_CCW2nd , NULL);
-   CONF__load (x_dir, 4, x_CCW3rd , NULL);
-   CONF__load (x_dir, 5, x_4th    , x_bases);
+         x_layers, x_bases);
+   rc = CONF__load (x_dir, "inner"    , 0, x_1st    , NULL);
+   rc = CONF__load (x_dir, "outer·cw" , 1, x_CW2nd  , NULL);
+   rc = CONF__load (x_dir, "edge·cw"  , 2, x_CW3rd  , NULL);
+   rc = CONF__load (x_dir, "outer·ccw", 3, x_CCW2nd , NULL);
+   rc = CONF__load (x_dir, "edge·ccw" , 4, x_CCW3rd , NULL);
+   rc = CONF__load (x_dir, "layers"   , 5, x_layers , x_bases);
    /*---(complete)-----------------------*/
    DEBUG_CONF  yLOG_exit    (__FUNCTION__);
    return 1;
 }
+
+
+
+/*============================--------------------============================*/
+/*===----                        pull driver                           ----===*/
+/*============================--------------------============================*/
+static void      o___DRIVER_____________o (void) {;}
 
 char
 CONF__handler           (int n, uchar a_verb [LEN_TERSE], char a_exist, void *a_handler)
@@ -286,7 +347,7 @@ CONF_pull               (cchar a_file [LEN_PATH])
       DEBUG_CONF  yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   printf ("å%sæ\n", g_bases);
+   /*> printf ("å%sæ\n", g_bases);                                                    <*/
    /*---(complete)-----------------------*/
    DEBUG_CONF  yLOG_exit    (__FUNCTION__);
    return 0;

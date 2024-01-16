@@ -342,12 +342,13 @@ PROG__init              (int argc, char *argv[])
    /*---(initialize)---------------------*/
    TOUCH_init  ();
    PETAL_init  ();
-   CONF_init   ();
+   CONF_purge  ();
    my.save_png       = '-';
    my.mask           = '-';
    my.guides         = '-';
+   my.audit          = '-';
    DRAW_help  ("-");
-   DRAW_color ("all");
+   /*> DRAW_color ("all");                                                            <*/
    stroke.max        = -1;
    stroke.zth        = -1;
    stroke.fst        = -1;
@@ -416,7 +417,7 @@ PROG__args              (int argc, char *argv[])
       else if (strncmp(a, "--edge"    , 20) == 0)  DRAW_help ("edge");
       else if (strncmp(a, "--mode"    , 20) == 0)  DRAW_help ("mode");
       else if (strncmp(a, "--two"     , 20) == 0)  DRAW_help ("two");
-      else if (strncmp(a, "--color"   , 20) == 0)  DRAW_color ("a");
+      /*> else if (strncmp(a, "--color"   , 20) == 0)  DRAW_color ("a");              <*/
       else if (strncmp(a, "--tiny"    , 20) == 0)  stroke.small    = TNY;
       else if (strncmp(a, "--small"   , 20) == 0)  stroke.small    = SML;
       else if (strncmp(a, "--med"     , 20) == 0)  stroke.small    = MED;
@@ -436,11 +437,12 @@ PROG__args              (int argc, char *argv[])
       else if (strncmp(a, "--evhover" , 20) == 0)  { my.ev_major = 0x01; my.ev_minor = 0x0140; }
       else if (strncmp(a, "--evtouch" , 20) == 0)  { my.ev_major = 0x01; my.ev_minor = 0x014a; }
       else if (strncmp(a, "--evbutton", 20) == 0)  { my.ev_major = 0x04; my.ev_minor = 0xff  ; }
-      else if (strncmp(a, "--balls"   , 20) == 0)  my.show_balls = 'y';
-      else if (strncmp(a, "--pngonly" , 20) == 0)  my.save_png   = 'y';
-      else if (strncmp(a, "--pngalso" , 20) == 0)  my.save_png   = '+';
-      else if (strncmp(a, "--mask"    , 20) == 0)  my.mask       = 'y';
-      else if (strncmp(a, "--guides"  , 20) == 0)  my.guides     = 'y';
+      else if (strncmp(a, "--balls"   , 20) == 0)  my.show_balls   = 'y';
+      else if (strncmp(a, "--pngonly" , 20) == 0)  my.save_png     = 'y';
+      else if (strncmp(a, "--pngalso" , 20) == 0)  my.save_png     = '+';
+      else if (strncmp(a, "--mask"    , 20) == 0)  my.mask         = 'y';
+      else if (strncmp(a, "--guides"  , 20) == 0)  my.guides       = 'y';
+      else if (strcmp (a, "--vcheck"      ) == 0)  my.audit        = 'y';
    }
    return 0;
 }
@@ -465,6 +467,10 @@ PROG__begin             (void)
    else if (stroke.small == HUG) SHAPE_huge   ();
    else                          SHAPE_giant  ();
    /*> yX11_start (my.win_title, my.w_wide, my.w_tall, 'n', debug.prog, 'n');   <*/
+   if (my.audit == 'y') {
+      yURG_msg_live ();
+      yURG_err_live ();
+   }
    /*---(initialize)---------------------*/
    TOUCH__open (my.n_event, 'r', &(my.f_event));
    mouse_init    ();
@@ -525,6 +531,7 @@ PROG_dawn          (void)
    /*---(header)----------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(yvicurses config)---------------*/
+   DEBUG_PROG   yLOG_complex ("size"      , "%4dw %4dt", my.w_wide, my.w_tall);
    rc = yVIOPENGL_init   (P_NAMESAKE, P_VERNUM, MODE_MAP, my.w_wide, my.w_tall);
    DEBUG_PROG   yLOG_value    ("yVIOPENGL" , rc);
    --rce;  if (rc < 0) {
@@ -543,7 +550,30 @@ PROG_dawn          (void)
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
+   rc = yVIEW_full     (YVIEW_RIBBON, YVIEW_FLAT , YVIEW_TOPLEF, 1.0, 0, DRAW_ribbon);
+   DEBUG_PROG   yLOG_value    ("yVIEW"     , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    yCMD_direct (":layout min");
+   /*> yCMD_direct (":command show");                                                 <*/
+   /*> yCMD_direct (":keys show");                                                    <*/
+   yCMD_direct (":ribbon show");
+   yCMD_direct (":float 5");
+   yCMD_direct (":menus 1");
+   yCMD_direct (":title    disable");
+   yCMD_direct (":version  disable");
+   yCMD_direct (":universe disable");
+   yCMD_direct (":formula  disable");
+   yCMD_direct (":nav      disable");
+   yCMD_direct (":alt      disable");
+   yCMD_direct (":progress disable");
+   yCMD_direct (":command  disable");
+   yCMD_direct (":keys     disable");
+   yCMD_direct (":status   disable");
+   yCMD_direct (":modes    disable");
+   yCMD_direct (":history  disable");
    /*---(dawn)---------------------------*/
    rc = yVIOPENGL_dawn ();
    DEBUG_PROG   yLOG_value    ("dawn"      , rc);
@@ -556,21 +586,24 @@ PROG_dawn          (void)
    /*---(commands)-----------------------*/
    rc = yCMD_add (YVIHUB_M_CONFIG, "label"       , ""    , "s"    , DRAW_help            , "configure the help labels"                                   );
    DEBUG_PROG   yLOG_value   ("label"     , rc);
-   rc = yCMD_add (YVIHUB_M_CONFIG, "pad"         , ""    , "s"    , DRAW_color           , "configure the help colors"                                   );
-   DEBUG_PROG   yLOG_value   ("pad"       , rc);
+   /*> rc = yCMD_add (YVIHUB_M_CONFIG, "pad"         , ""    , "s"    , DRAW_color           , "configure the help colors"                                   );   <*/
+   /*> DEBUG_PROG   yLOG_value   ("pad"       , rc);                                  <*/
    rc = yCMD_add (YVIHUB_M_CONFIG, "speed"       , ""    , "s"    , DRAW_speed           , "configure the help colors"                                   );
    DEBUG_PROG   yLOG_value   ("speed"     , rc);
    rc = yCMD_add (YVIHUB_M_CONFIG, "seq"         , ""    , "cs"   , DRAW_seq             , "configure the help colors"                                   );
    DEBUG_PROG   yLOG_value   ("seq"       , rc);
    rc = yCMD_add (YVIHUB_M_CONFIG, "size"        , ""    , "s"    , SHAPE_size           , "configure the help colors"                                   );
    DEBUG_PROG   yLOG_value   ("size"      , rc);
-   rc = yCMD_add (YVIHUB_M_CONFIG, "done"        , ""    , "s"    , DRAW_done_show       , "configure showing completed text"                            );
-   DEBUG_PROG   yLOG_value   ("done"      , rc);
+   /*> rc = yCMD_add (YVIHUB_M_CONFIG, "done"        , ""    , "s"    , DRAW_done_show       , "configure showing completed text"                            );   <*/
+   /*> DEBUG_PROG   yLOG_value   ("done"      , rc);                                  <*/
    rc = yCMD_add (YVIHUB_M_CONFIG, "press"       , ""    , "s"    , DRAW_press           , "configure showing completed text"                            );
    DEBUG_PROG   yLOG_value   ("press"     , rc);
-   rc = yCMD_add (YVIHUB_M_CONFIG, "debug"       , ""    , "s"    , DRAW_debug_set       , "configure showing completed text"                            );
-   DEBUG_PROG   yLOG_value   ("debug"     , rc);
+   /*> rc = yCMD_add (YVIHUB_M_CONFIG, "debug"       , ""    , "s"    , DRAW_debug_set       , "configure showing completed text"                            );   <*/
+   /*> DEBUG_PROG   yLOG_value   ("debug"     , rc);                                  <*/
+   rc = yCMD_add (YVIHUB_M_CONFIG, "rings"       , ""    , "s"    , SHAPE_guides         , "configure showing completed text"                            );
+   DEBUG_PROG   yLOG_value   ("rings"     , rc);
    /*---(yPARSE)-------------------------*/
+   CONF_init   ();
    rc = CONF_pull (FILE_CONF);
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);

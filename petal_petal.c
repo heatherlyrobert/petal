@@ -335,10 +335,10 @@ PETAL__check            (int x, int y, int r)
    case 9  :  g_petals [n].p = i;  break;
    }
    /*---(if 1, clear fast)----------------------*/
-   if (n == 1) {
-      DEBUG_DATA   yLOG_note    ("reset petal 9");
-      PETAL__reset_one (9);
-   }
+   /*> if (n == 1) {                                                                  <* 
+    *>    DEBUG_DATA   yLOG_note    ("reset petal 9");                                <* 
+    *>    PETAL__reset_one (9);                                                       <* 
+    *> }                                                                              <*/
    /*---(if 1 matches 3, clear 2)---------------*/
    if (n == 3) {
       DEBUG_DATA   yLOG_complex ("line"      , "%2d ? %2d", g_petals [1].p, g_petals [3].p);
@@ -400,6 +400,13 @@ PETAL_end               (int x, int y, int r)
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    /*---(handle)-------------------------*/
    rc = PETAL__check (x, y, r);
+   /*---(check on 9)---------------------*/
+   if (g_petals [1].p >= 0)  {
+      DEBUG_DATA   yLOG_note    ("reset petal 9");
+      PETAL__reset_one (9);
+   }
+   /*---(clear pen trail)----------------*/
+   DOT_reset ();
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return rc;

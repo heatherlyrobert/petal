@@ -70,8 +70,8 @@ TOUCH_reset             (void)
    DEBUG_TOUCH  yLOG_enter   (__FUNCTION__);
    my.t_x    = my.t_y    = -6666;
    my.s_x    = my.s_y    = -6666;
-   my.w_x    = my.w_y    = my.w_r    = -6666;
-   my.w_valid  = '·';
+   my.m_x    = my.m_y    = my.m_r    = -6666;
+   my.m_valid  = '·';
    DEBUG_TOUCH  yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -83,9 +83,9 @@ TOUCH_init              (void)
    my.t_left = my.t_topp = my.t_wide = my.t_tall = -6666;
    my.s_left = my.s_topp = my.s_wide = my.s_tall = -6666;
    my.w_left = my.w_topp = my.w_wide = my.w_tall = -6666;
-   my.w_align = YGLTEX_MIDCEN;
+   my.m_align = YGLTEX_MIDCEN;
    my.s_xratio = my.s_yratio = 0.00;
-   my.w_touch  = '·';
+   my.m_touch  = '·';
    TOUCH_reset ();
    DEBUG_TOUCH  yLOG_exit    (__FUNCTION__);
    return 0;
@@ -406,11 +406,11 @@ TOUCH__single           (FILE *f, int *r_type, int *r_code, int *r_value, char *
    if (x_type == 0x03 && x_code == 0x00)  s_xpos = x_value;
    if (x_type == 0x03 && x_code == 0x01)  s_ypos = x_value;
    if (x_type == 0x01) {
-      if (x_code == 0x0140 && x_value == 0)  my.w_touch = '·';
-      if (x_code == 0x0140 && x_value == 1)  my.w_touch = 'h';
-      if (x_code == 0x014a && x_value == 0)  my.w_touch = 'h';
-      if (x_code == 0x014a && x_value == 1)  my.w_touch = 'T';
-      /*> printf ("handled %4x with %4x result %c\n", x_code, x_value, my.w_touch);   <*/
+      if (x_code == 0x0140 && x_value == 0)  my.m_touch = '·';
+      if (x_code == 0x0140 && x_value == 1)  my.m_touch = 'h';
+      if (x_code == 0x014a && x_value == 0)  my.m_touch = 'h';
+      if (x_code == 0x014a && x_value == 1)  my.m_touch = 'T';
+      /*> printf ("handled %4x with %4x result %c\n", x_code, x_value, my.m_touch);   <*/
    }
    /*---(save-back)----------------------*/
    if (r_type  != NULL)  *r_type   = x_type;
@@ -472,13 +472,13 @@ TOUCH_read         (void)
             switch (ev_value) {
             case 1 :
                rc = TOUCH_point (s_xpos, s_ypos);
-               rc = DOT_beg     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
-               rc = PETAL_beg   (my.w_x, my.w_y, my.w_r);
+               rc = DOT_beg     (my.t_x, my.t_y, my.s_x, my.s_y, my.m_x, my.m_y, my.m_r);
+               rc = PETAL_beg   (my.m_x, my.m_y, my.m_r);
                break;
             case 0 :
                rc = TOUCH_point (s_xpos, s_ypos);
-               rc = DOT_end     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
-               rc = PETAL_end   (my.w_x, my.w_y, my.w_r);
+               rc = DOT_end     (my.t_x, my.t_y, my.s_x, my.s_y, my.m_x, my.m_y, my.m_r);
+               rc = PETAL_end   (my.m_x, my.m_y, my.m_r);
                rc = LETTER_by_stroke (g_petals [9].p, g_petals [1].p, g_petals [2].p, g_petals [3].p);
                break;
             }
@@ -486,9 +486,9 @@ TOUCH_read         (void)
       }
       else if (s_sync  == 'y') {
          rc = TOUCH_point  (s_xpos, s_ypos);
-         if (my.w_touch == 'T') {
-            rc = DOT_add     (my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
-            rc = PETAL_add   (my.w_x, my.w_y, my.w_r);
+         if (my.m_touch == 'T') {
+            rc = DOT_add     (my.t_x, my.t_y, my.s_x, my.s_y, my.m_x, my.m_y, my.m_r);
+            rc = PETAL_add   (my.m_x, my.m_y, my.m_r);
          }
          s_xsav = s_xpos;
          s_ysav = s_ypos;
@@ -538,6 +538,20 @@ TOUCH_read         (void)
 }
 
 char
+TOUCH__ribbon           (int a_sx, int a_sy)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   int         wx          = -6666;
+   int         wy          = -6666;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   DEBUG_DATA   yLOG_complex ("args"      , "%5dx, %5dy", a_wx, a_wy);
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
 TOUCH_point             (int x, int y)
 {
    /*---(locals)-----------+-----+-----+-*/
@@ -572,14 +586,19 @@ TOUCH_point             (int x, int y)
    my.s_y  = (y - my.s_topp) * my.s_yratio;
    DEBUG_DATA   yLOG_complex ("screen"    , "%5dx, %5dy", my.s_x, my.s_y);
    /*---(set xpos)-----------------------*/
-   DEBUG_DATA   yLOG_value   ("w_align"   , my.w_align);
+   DEBUG_DATA   yLOG_value   ("m_align"   , my.m_align);
    if        (my.s_x < my.w_left) {
       DEBUG_DATA   yLOG_note    ("too far left");
    } else if (my.s_x > my.w_left + my.w_wide) {
-      DEBUG_DATA   yLOG_note    ("too far right");
+      DEBUG_DATA   yLOG_note    ("too far right, check ribbon");
+      /*
+       *
+       *
+       *
+       */
    } else {
       DEBUG_DATA   yLOG_note    ("in x-range");
-      switch (my.w_align) {
+      switch (my.m_align) {
       case YGLTEX_TOPLEF : case YGLTEX_MIDLEF : case YGLTEX_BOTLEF :
          DEBUG_DATA   yLOG_note    ("handle lefts");
          wx = my.s_x - my.w_left;
@@ -602,7 +621,7 @@ TOUCH_point             (int x, int y)
       DEBUG_DATA   yLOG_note    ("too far down");
    } else {
       DEBUG_DATA   yLOG_note    ("in y-range");
-      switch (my.w_align) {
+      switch (my.m_align) {
       case YGLTEX_TOPLEF : case YGLTEX_TOPCEN : case YGLTEX_TOPRIG :
          DEBUG_DATA   yLOG_note    ("handle tops");
          wy = my.w_topp - my.s_y;
@@ -634,11 +653,11 @@ TOUCH_point             (int x, int y)
    else {
       DEBUG_DATA   yLOG_note    ("x, y, and r in range");
       DEBUG_DATA   yLOG_note    ("HIT");
-      my.w_x     = wx;
-      my.w_y     = wy;
-      my.w_r     = wr;
-      my.w_valid = 'y';
-      DEBUG_DATA   yLOG_complex ("window"    , "%5dx, %5dy, %5dr", my.w_x, my.w_y, my.w_r);
+      my.m_x     = wx;
+      my.m_y     = wy;
+      my.m_r     = wr;
+      my.m_valid = 'y';
+      DEBUG_DATA   yLOG_complex ("window"    , "%5dx, %5dy, %5dr", my.m_x, my.m_y, my.m_r);
       DEBUG_DATA   yLOG_exit    (__FUNCTION__);
       return 1;
    }
@@ -754,7 +773,7 @@ TOUCH_force_window      (int a_left, int a_topp, int a_wide, int a_tall, char a_
    my.w_topp   = a_topp;
    my.w_wide   = a_wide;
    my.w_tall   = a_tall;
-   my.w_align  = a_align;
+   my.m_align  = a_align;
    return 0;
 }
 
@@ -780,8 +799,8 @@ TOUCH__unit             (char *a_question, int a_num)
       snprintf(unit_answer, LEN_RECD, "TOUCH screen     : %s    %s     ·  %s", t, r, s);
    } else if (strcmp (a_question, "window")         == 0) {
       if (my.w_wide != -6666 && my.w_tall != -6666)  sprintf (t, "%5dx  %5dy  %5dw  %5dt", my.w_left, my.w_topp, my.w_wide, my.w_tall);
-      if (my.w_x    != -6666 && my.w_y    != -6666)  sprintf (s, "%5dx  %5dy", my.w_x, my.w_y);
-      snprintf(unit_answer, LEN_RECD, "TOUCH window     : %s    %s    %2d  %s", t, r, my.w_align, s);
+      if (my.m_x    != -6666 && my.m_y    != -6666)  sprintf (s, "%5dx  %5dy", my.m_x, my.m_y);
+      snprintf(unit_answer, LEN_RECD, "TOUCH window     : %s    %s    %2d  %s", t, r, my.m_align, s);
    }
    return unit_answer;
 }

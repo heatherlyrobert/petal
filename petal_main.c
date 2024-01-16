@@ -24,7 +24,6 @@ main                    (int a_argc, char *a_argv [])
    if (rc <  0) { PROG_shutdown (); return --rce; }
    /*---(main-loop)----------------------*/
    ARTSY_draw ();
-   ARTSY_mask ();
    rc = yVIOPENGL_main  ("10ms", "10ms", TOUCH_read);
    /*> rc = yVIOPENGL_main  ("1us"  , "100us", TOUCH_read);                           <*/
    DEBUG_PROG   yLOG_value    ("main"      , rc);

@@ -175,8 +175,8 @@ DOT_force_point         (int x, int y)
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    DEBUG_DATA   yLOG_complex ("args"      , "%4dx %4dy", x, y);
    /*---(set xpos)-----------------------*/
-   DEBUG_DATA   yLOG_value   ("w_align"   , my.w_align);
-   switch (my.w_align) {
+   DEBUG_DATA   yLOG_value   ("m_align"   , my.m_align);
+   switch (my.m_align) {
    case YGLTEX_TOPLEF : case YGLTEX_MIDLEF : case YGLTEX_BOTLEF :
       DEBUG_DATA   yLOG_note    ("handle lefts");
       sx = my.w_left + x;
@@ -192,7 +192,7 @@ DOT_force_point         (int x, int y)
    }
    DEBUG_DATA   yLOG_value   ("sx"        , sx);
    /*---(set ypos)-----------------------*/
-   switch (my.w_align) {
+   switch (my.m_align) {
    case YGLTEX_TOPLEF : case YGLTEX_TOPCEN : case YGLTEX_TOPRIG :
       DEBUG_DATA   yLOG_note    ("handle tops");
       sy = my.w_topp - y;
@@ -222,7 +222,7 @@ DOT_force_beg           (int a_wx, int a_wy)
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    DOT_reset ();
    rc = DOT_force_point (a_wx, a_wy);
-   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r, 'b');
+   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.m_x, my.m_y, my.m_r, 'b');
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return rc;
 }
@@ -233,7 +233,7 @@ DOT_force_add           (int a_wx, int a_wy)
    char        rc          =    0;
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    rc = DOT_force_point (a_wx, a_wy);
-   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r, '´');
+   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.m_x, my.m_y, my.m_r, '´');
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return rc;
 }
@@ -244,7 +244,7 @@ DOT_force_end           (int a_wx, int a_wy)
    char        rc          =    0;
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    rc = DOT_force_point (a_wx, a_wy);
-   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r, 'e');
+   if (rc >= 0)  rc = DOT__add ('y', __FUNCTION__, my.t_x, my.t_y, my.s_x, my.s_y, my.m_x, my.m_y, my.m_r, 'e');
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return rc;
 }
@@ -262,7 +262,7 @@ DOT__unit               (char *a_question, int a_num)
    }
    else if (strcmp (a_question, "reverse")        == 0) {
       sprintf (unit_answer, "DOT reverse      :   ·   %5dx  %5dy   %5dx  %5dy   %5dx  %5dy  %5dr      ·d",
-            my.t_x, my.t_y, my.s_x, my.s_y, my.w_x, my.w_y, my.w_r);
+            my.t_x, my.t_y, my.s_x, my.s_y, my.m_x, my.m_y, my.m_r);
    }
    return unit_answer;
 }

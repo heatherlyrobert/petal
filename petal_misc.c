@@ -84,6 +84,11 @@ font_load(void)
       fprintf(stderr, "Problem loading %s\n", my.face_sm);
       exit(1);
    }
+   my.icons  = yFONT_iconload ();
+   if (my.icons < 0) {
+      fprintf(stderr, "Problem loading %s\n", ICON_SET);
+      exit(1);
+   }
    return 0;
 }
 

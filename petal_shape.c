@@ -35,13 +35,53 @@ char       displist_back       (void);
 /*============================--------------------============================*/
 static void      o___SIZING__________________o (void) {;}
 
-char       /*---: establish the size -----------------s-----------------------*/
-SHAPE_base         (float a_ratio)
+char
+SHAPE_guides       (char a_option [LEN_LABEL])
 {
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   /*---(header)-------------------------*/
+   DEBUG_CONF   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   --rce;  if (a_option == NULL) {
+      DEBUG_CONF   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_CONF   yLOG_info    ("a_option"  , a_option);
+   /*---(turn on)------------------------*/
+   --rce;  if (strcmp (a_option, "show"  ) == 0)    my.guides = 'y';
+   else if    (strcmp (a_option, "on"    ) == 0)    my.guides = 'y';
+   else if    (strcmp (a_option, "y"     ) == 0)    my.guides = 'y';
+   else if    (strcmp (a_option, "hide"  ) == 0)    my.guides = '-';
+   else if    (strcmp (a_option, "off"   ) == 0)    my.guides = '-';
+   else if    (strcmp (a_option, "-"     ) == 0)    my.guides = '-';
+   else {
+      DEBUG_CONF   yLOG_note    ("option not understood");
+      DEBUG_CONF   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_CONF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+SHAPE_base         (char a_func [LEN_LABEL], float a_ratio)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   float       r_win       =  100;
+   float       r_tex       =  400;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(base sizes)---------------------*/
-   shape.sz_centery    = 100.0 * a_ratio;
-   shape.sz_centerx    = 100.0 * a_ratio;
-   shape.sz_bar        =  20.0 * a_ratio;
+   shape.sz_centery    = r_win * a_ratio;
+   shape.sz_centerx    = r_win * a_ratio;
+   shape.sz_bar        = r_win * 0.25 * a_ratio;
+   /*---(main·petal)---------------------*/
+   my.m_left           =     0;
+   my.m_topp           =     0;
+   my.m_tall           = shape.sz_centery * 2;
+   my.m_wide           = shape.sz_centerx * 2;
    /*---(calc sizes)---------------------*/
    shape.sz_ctl        =     0;
    /*> shape.sz_nav        =   shape.sz_bar;                                          <*/
@@ -49,13 +89,13 @@ SHAPE_base         (float a_ratio)
    my.w_tall           =  (shape.sz_centery * 2) + shape.sz_ctl + shape.sz_nav;
    my.w_wide           =  (shape.sz_centerx * 2);
    /*---(image sizes)--------------------*/
-   shape.r_center      =  25.0 * a_ratio;
-   shape.r_ring        =  28.0 * a_ratio;
-   shape.r_inner       =  50.0 * a_ratio;
-   shape.r_buffer      =  57.0 * a_ratio;
-   shape.r_outer       =  75.0 * a_ratio;
-   shape.r_edge        =  85.0 * a_ratio;
-   shape.r_max         = 100.0 * a_ratio;
+   shape.r_center      = r_win * 0.25 * a_ratio;
+   shape.r_ring        = r_win * 0.28 * a_ratio;
+   shape.r_inner       = r_win * 0.50 * a_ratio;
+   shape.r_buffer      = r_win * 0.57 * a_ratio;
+   shape.r_outer       = r_win * 0.75 * a_ratio;
+   shape.r_edge        = r_win * 0.85 * a_ratio;
+   shape.r_max         = r_win * 1.00 * a_ratio;
    /*---(guides)-------------------------*/
    shape.g_center      =  shape.r_center * 0.50;
    shape.g_ring        =  shape.r_ring   * 0.99;
@@ -74,16 +114,17 @@ SHAPE_base         (float a_ratio)
    displist_free();
    displist_init();
    /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
-char SHAPE_giant         (void) { stroke.small = GIA; SHAPE_base (2.00); return 0; }
-char SHAPE_huge          (void) { stroke.small = HUG; SHAPE_base (1.50); return 0; }
-char SHAPE_large         (void) { stroke.small = LRG; SHAPE_base (1.25); return 0; }
-char SHAPE_normal        (void) { stroke.small = NOR; SHAPE_base (1.00); return 0; }
-char SHAPE_medium        (void) { stroke.small = MED; SHAPE_base (0.85); return 0; }
-char SHAPE_small         (void) { stroke.small = SML; SHAPE_base (0.70); return 0; }
-char SHAPE_tiny          (void) { stroke.small = TNY; SHAPE_base (0.60); return 0; }
+char SHAPE_giant         (void) { stroke.small = GIA; SHAPE_base (__FUNCTION__, 2.00); return 0; }
+char SHAPE_huge          (void) { stroke.small = HUG; SHAPE_base (__FUNCTION__, 1.50); return 0; }
+char SHAPE_large         (void) { stroke.small = LRG; SHAPE_base (__FUNCTION__, 1.25); return 0; }
+char SHAPE_normal        (void) { stroke.small = NOR; SHAPE_base (__FUNCTION__, 1.00); return 0; }
+char SHAPE_medium        (void) { stroke.small = MED; SHAPE_base (__FUNCTION__, 0.85); return 0; }
+char SHAPE_small         (void) { stroke.small = SML; SHAPE_base (__FUNCTION__, 0.70); return 0; }
+char SHAPE_tiny          (void) { stroke.small = TNY; SHAPE_base (__FUNCTION__, 0.60); return 0; }
 
 char
 SHAPE_size              (char *a_size)

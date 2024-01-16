@@ -35,7 +35,7 @@
 #define     P_VERMAJOR  "3.-- third major phase"
 #define     P_VERMINOR  "3.0- ramped the beauty way up ;)"
 #define     P_VERNUM    "3.0d"
-#define     P_VERTXT    "handles layers, configuration, and display"
+#define     P_VERTXT    "ribbon showing with representative icons"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -220,6 +220,7 @@ struct cACCESSOR {
    char        win_title   [LEN_FULL];
    char        n_event     [LEN_FULL];
    FILE       *f_event;
+   char        audit;
    /*---(tablet)---------------*/
    int         t_left;
    int         t_topp;
@@ -241,12 +242,17 @@ struct cACCESSOR {
    int         w_topp;
    int         w_wide;
    int         w_tall;
-   char        w_align;
-   char        w_valid;
-   char        w_touch;
-   int         w_x;
-   int         w_y;
-   int         w_r;
+   /*---(main·petal)-----------*/
+   int         m_left;
+   int         m_topp;
+   int         m_wide;
+   int         m_tall;
+   char        m_align;
+   char        m_valid;
+   char        m_touch;
+   int         m_x;
+   int         m_y;
+   int         m_r;
    /*---(opengl objects)-----------------*/
    uint        g_tex;                    /* task texture                      */
    uint        g_fbo;                    /* task fbo                          */
@@ -273,11 +279,14 @@ struct cACCESSOR {
    char        save_png;
    char        mask;     
    char        guides;
+   int         icons;
    /*---(arguments)-------------*/
    long        loop_msec;              /* wait time in milliseconds           */
    /*---(done)------------------*/
 };
 extern      tACCESSOR   my;
+
+#define     ICON_SET  "/usr/local/share/fonts/outline_icons.png"
 
 #define     RPTG_DOTS           if (my.rptg_dots    == 'y')
 #define     RPTG_EVENTS         if (my.rptg_events  == 'y')
@@ -649,15 +658,16 @@ char        PROG_unit_end           (void);
 char        PROG_event              (void);
 
 
-char       DRAW_done_show           (char *a_flag);
-char       DRAW_debug_set           (char *a_flag);
+/*> char       DRAW_done_show           (char *a_flag);                               <*/
+/*> char       DRAW_debug_set           (char *a_flag);                               <*/
 char       DRAW_help                (char *a_help);
-char       DRAW_color               (char *a_help);
+/*> char       DRAW_color               (char *a_help);                               <*/
 char       DRAW_speed               (char *a_speed);
 char       DRAW_press               (char *a_state);
 char       DRAW_seq                 (char a_mode, char *a_seq);
 char       DRAW_debug               (void);
-char       DRAW_main         (void);
+char       DRAW_ribbon             (void);
+char       DRAW_main              (void);
 char       draw_delete       (void);
 char       DRAW_back          (void);
 char       DRAW__guides            (int r, int z);
@@ -682,7 +692,8 @@ void       mouse_init           (void);
 
 /*===[[ petal_shape.c ]]============================================================*/ 
 /*---rc---- ---name---------------- ---args----------------------------------------*/
-char        SHAPE_base         (float a_ratio);
+char        SHAPE_guides       (char a_option [LEN_LABEL]);
+char        SHAPE_base         (char a_func [LEN_LABEL], float a_ratio);
 char        SHAPE_tiny         (void);
 char        SHAPE_small        (void);
 char        SHAPE_medium       (void);
@@ -781,15 +792,33 @@ char        LETTER_by_mode          (char n);
 
 /*===[[ PETAL_ARTSY.C ]]======================================================*/ 
 /*---rc---- ---name---------------- ---args-----------------------------------*/
+/*---(program)--------------*/
 char        ARTSY_resize            (void);
 char        ARTSY_init              (void);
-char        ARTSY__center           (float a_radius, float a_depth, uint *b_dlist);
+char        ARTSY_clear             (void);
+/*---(leaves)---------------*/
+char        ARTSY__bezier           (char a_type, float r1, float r2, float r3, float d1, float d2, float z, float a_cut);
 char        ARTSY__inner            (float a_radius, float a_depth, uint *b_dlist);
 char        ARTSY__outer            (float a_radius, float a_depth, uint *b_dlist);
 char        ARTSY__edge             (float a_radius, float a_depth, uint *b_dlist);
+/*---(shapes)---------------*/
+char        ARTSY__center           (float a_radius, float a_depth, uint *b_dlist);
 char        ARTSY__ball             (float a_radius, float a_depth, uint *b_dlist);
+char        ARTSY__fast             (float a_radius, float a_depth, uint *b_dlist);
+char        ARTSY__ring             (float a_radius, float a_depth, uint *b_dlist);
+/*---(texture)--------------*/
+char        ARTSY__start            (void);
+char        ARTSY__finish           (void);
+char        ARTSY__draw_fasts       (void);
+char        ARTSY__draw_inners      (void);
+char        ARTSY__draw_outers      (void);
+char        ARTSY__draw_edges       (void);
+char        ARTSY_draw              (void);
+/*---(drawing)--------------*/
 char        ARTSY_draw              (void);
 char        ARTSY_show              (float a_wtop, float a_wlef, float a_wbot, float a_wrig);
+char        ARTSY_mask              (char a_force, char a_ribbon, char a_float, char a_menu, char a_alt);
+/*---(done)-----------------*/
 
 
 
@@ -820,6 +849,7 @@ char        CONF_purge              (void);
 char        CONF_init               (void);
 /*---(parse)----------------*/
 char        CONF__default           (int n, uchar a_verb [LEN_TERSE]);
+char        CONF__load              (char a_dir [LEN_TERSE], char a_desc [LEN_TERSE], char a_seq, char a_field [LEN_LABEL], char a_bases [LEN_TITLE]);
 char        CONF__mapping           (int n, uchar a_verb [LEN_TERSE]);
 char        CONF__handler           (int n, uchar a_verb [LEN_TERSE], char a_exist, void *a_handler);
 char        CONF_pull               (cchar a_file [LEN_PATH]);
