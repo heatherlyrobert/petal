@@ -68,10 +68,12 @@ char
 TOUCH_reset             (void)
 {
    DEBUG_TOUCH  yLOG_enter   (__FUNCTION__);
-   my.t_x    = my.t_y    = -6666;
-   my.s_x    = my.s_y    = -6666;
-   my.m_x    = my.m_y    = my.m_r    = -6666;
+   my.t_x      = my.t_y    = -6666;
+   my.s_x      = my.s_y    = -6666;
+   my.m_x      = my.m_y    = my.m_r    = -6666;
+   my.m_n      =  -1;
    my.m_valid  = '·';
+   my.m_button = -1;
    DEBUG_TOUCH  yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -538,17 +540,97 @@ TOUCH_read         (void)
 }
 
 char
-TOUCH__ribbon           (int a_sx, int a_sy)
+TOUCH__ribbon           (int a_wx, int a_wy)
 {
    /*---(locals)-----------+-----+-----+-*/
-   int         wx          = -6666;
-   int         wy          = -6666;
+   char        rce         =  -10;
+   char        x_name      [LEN_LABEL] = "";
+   short       x_left, x_wide, x_righ;
+   short       x_bott, x_tall, x_topp;
+   int         wr          =    0;
+   static char x_touch     =  '·';
+   static char x_button    =  '·';
+   int         x, y;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    DEBUG_DATA   yLOG_complex ("args"      , "%5dx, %5dy", a_wx, a_wy);
+   /*---(get ribbon coords)--------------*/
+   yVIEW_curses (YVIEW_RIBBON, x_name, NULL, NULL, NULL, NULL, &x_left, &x_wide, &x_bott, &x_tall);
+   x_topp = x_bott - x_tall;
+   x_righ = x_left + x_wide;
+   DEBUG_GRAF   yLOG_complex (x_name, "%4dl  %4dr  %4dx  %4db  %4dt  %4dy", x_left, x_righ, x_wide, x_bott, x_topp, x_tall);
+   /*---(check boundaries)---------------*/
+   --rce;  if (a_wx < x_left || a_wx > x_righ) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (a_wy < x_topp || a_wy > x_bott) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(update touch)-------------------*/
+   DEBUG_DATA   yLOG_char    ("m_touch"   , my.m_touch);
+   if (my.m_touch == 'T')   my.m_touch = 'R';
+   if (my.m_touch == 'h')   my.m_touch = 'r';
+   DEBUG_DATA   yLOG_char    ("m_touch"   , my.m_touch);
+   /*---(save values)--------------------*/
+   wr = sqrt ((a_wx * a_wx) + (a_wy * a_wy));
+   my.m_x      = a_wx;
+   my.m_y      = a_wy;
+   my.m_r      = wr;
+   my.m_valid  = 'y';
+   x           = ((a_wx - x_left) / 40) * 16;
+   y           = (-a_wy - 10) / 40;
+   my.m_button = x + y;
+   DEBUG_DATA   yLOG_complex ("button"    , "%02x %02x %02x", x, y, my.m_touch);
+   /*---(button action)------------------*/
+   DEBUG_DATA   yLOG_complex ("touching"  , "%c %c %d", x_touch, my.m_touch, my.m_button);
+   if (x_touch == 'R' && my.m_touch == 'r') {
+      DEBUG_DATA   yLOG_note    ("touch released");
+      switch (my.m_button) {
+      case 0x00 :
+         DEBUG_DATA   yLOG_note    ("previous workspace");
+         system("fluxbox-remote \"PrevWorkspace\"");
+         break;
+      case 0x10 :
+         DEBUG_DATA   yLOG_note    ("next workspace");
+         system("fluxbox-remote \"NextWorkspace\"");
+         break;
+      case 0x01 :
+         DEBUG_DATA   yLOG_note    ("previous window");
+         system("fluxbox-remote \"PrevWindow (workspace=[current])\"");
+         break;
+      case 0x11 :
+         DEBUG_DATA   yLOG_note    ("next window");
+         system("fluxbox-remote \"NextWindow (workspace=[current])\"");
+         break;
+      case 0x03 :
+         DEBUG_DATA   yLOG_note    ("toggle letter help");
+         if (stroke.help == 0) stroke.help = -1; else stroke.help = 0;
+         break;
+      case 0x13 :
+         DEBUG_DATA   yLOG_note    ("toggle balls");
+         if (my.show_pball == 'y')  SHAPE_pball ("hide");
+         else                       SHAPE_pball ("show");
+         break;
+      case 0x16 :
+         DEBUG_DATA   yLOG_note    ("exit");
+         yCMD_direct (":qa");
+         break;
+      default:
+         DEBUG_DATA   yLOG_note    ("?. unknown button");
+         break;
+      }
+      TOUCH_reset ();
+      DOT_reset   ();
+      PETAL_reset ();
+   }
+   /*---(save local)---------------------*/
+   x_touch  = my.m_touch;
+   x_button = my.m_button;
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
-   return 0;
+   return 2;
 }
 
 char
@@ -556,6 +638,7 @@ TOUCH_point             (int x, int y)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
+   char        rc          =    0;
    int         wx          = -6666;
    int         wy          = -6666;
    int         wr          = -6666;
@@ -591,11 +674,13 @@ TOUCH_point             (int x, int y)
       DEBUG_DATA   yLOG_note    ("too far left");
    } else if (my.s_x > my.w_left + my.w_wide) {
       DEBUG_DATA   yLOG_note    ("too far right, check ribbon");
-      /*
-       *
-       *
-       *
-       */
+      wx = my.s_x - my.w_left;
+      wy = my.w_topp - my.s_y;
+      rc = TOUCH__ribbon (wx, wy);
+      if (rc == 2) {
+         DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+         return 0;
+      }
    } else {
       DEBUG_DATA   yLOG_note    ("in x-range");
       switch (my.m_align) {

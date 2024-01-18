@@ -36,7 +36,7 @@ char       displist_back       (void);
 static void      o___SIZING__________________o (void) {;}
 
 char
-SHAPE_guides       (char a_option [LEN_LABEL])
+SHAPE_pguide       (char a_option [LEN_LABEL])
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -49,17 +49,74 @@ SHAPE_guides       (char a_option [LEN_LABEL])
    }
    DEBUG_CONF   yLOG_info    ("a_option"  , a_option);
    /*---(turn on)------------------------*/
-   --rce;  if (strcmp (a_option, "show"  ) == 0)    my.guides = 'y';
-   else if    (strcmp (a_option, "on"    ) == 0)    my.guides = 'y';
-   else if    (strcmp (a_option, "y"     ) == 0)    my.guides = 'y';
-   else if    (strcmp (a_option, "hide"  ) == 0)    my.guides = '-';
-   else if    (strcmp (a_option, "off"   ) == 0)    my.guides = '-';
-   else if    (strcmp (a_option, "-"     ) == 0)    my.guides = '-';
+   --rce;  if (strcmp (a_option, "show"  ) == 0)    my.show_pguide = 'y';
+   else if    (strcmp (a_option, "on"    ) == 0)    my.show_pguide = 'y';
+   else if    (strcmp (a_option, "y"     ) == 0)    my.show_pguide = 'y';
+   else if    (strcmp (a_option, "hide"  ) == 0)    my.show_pguide = '-';
+   else if    (strcmp (a_option, "off"   ) == 0)    my.show_pguide = '-';
+   else if    (strcmp (a_option, "-"     ) == 0)    my.show_pguide = '-';
    else {
       DEBUG_CONF   yLOG_note    ("option not understood");
       DEBUG_CONF   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   /*---(complete)-----------------------*/
+   DEBUG_CONF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+SHAPE_pball        (char a_option [LEN_LABEL])
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   /*---(header)-------------------------*/
+   DEBUG_CONF   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   --rce;  if (a_option == NULL) {
+      DEBUG_CONF   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_CONF   yLOG_info    ("a_option"  , a_option);
+   /*---(turn on)------------------------*/
+   --rce;  if (strcmp (a_option, "show"  ) == 0)    my.show_pball = 'y';
+   else if    (strcmp (a_option, "on"    ) == 0)    my.show_pball = 'y';
+   else if    (strcmp (a_option, "y"     ) == 0)    my.show_pball = 'y';
+   else if    (strcmp (a_option, "hide"  ) == 0)    my.show_pball = '-';
+   else if    (strcmp (a_option, "off"   ) == 0)    my.show_pball = '-';
+   else if    (strcmp (a_option, "-"     ) == 0)    my.show_pball = '-';
+   else {
+      DEBUG_CONF   yLOG_note    ("option not understood");
+      DEBUG_CONF   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(update texture)-----------------*/
+   ARTSY_draw ();
+   /*---(complete)-----------------------*/
+   DEBUG_CONF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+SHAPE_pletter      (char a_option [LEN_LABEL])
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   /*---(header)-------------------------*/
+   DEBUG_CONF   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   --rce;  if (a_option == NULL) {
+      DEBUG_CONF   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_CONF   yLOG_info    ("a_option"  , a_option);
+   /*---(turn on)------------------------*/
+   if         (strcmp (a_option, "show"  ) == 0)    DRAW_help ("all");
+   else if    (strcmp (a_option, "on"    ) == 0)    DRAW_help ("all");
+   else if    (strcmp (a_option, "y"     ) == 0)    DRAW_help ("all");
+   else if    (strcmp (a_option, "hide"  ) == 0)    DRAW_help ("-");
+   else if    (strcmp (a_option, "off"   ) == 0)    DRAW_help ("-");
+   else                                             DRAW_help (a_option);
    /*---(complete)-----------------------*/
    DEBUG_CONF   yLOG_exit    (__FUNCTION__);
    return 0;

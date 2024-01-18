@@ -233,12 +233,13 @@ PETAL_init              (void)
 static void      o___WORKER_____________o (void) {;}
 
 char
-PETAL__data             (int x, int y, int r, int *d, char *n, char *i, char *o)
+PETAL__data             (int x, int y, int r, int *d, char *n, char *f, char *i, char *o)
 {
    /*---(locals)-----------+-----+-----+-*/
    float        x_rads     =  0.0;
    int          x_deg      =   -1;
    char         x_ring     =   -1;
+   char         x_fast     =   -1;
    char         x_inner    =   -1;
    char         x_outer    =   -1;
    /*---(header)-------------------------*/
@@ -247,6 +248,7 @@ PETAL__data             (int x, int y, int r, int *d, char *n, char *i, char *o)
    /*---(default)------------------------*/
    if (d != NULL)  *d = -1;
    if (n != NULL)  *n = -1;
+   if (f != NULL)  *f = -1;
    if (i != NULL)  *i = -1;
    if (o != NULL)  *o = -1;
    /*---(assign angle)-------------------*/
@@ -269,22 +271,37 @@ PETAL__data             (int x, int y, int r, int *d, char *n, char *i, char *o)
    else if (r <=  shape.g_edge  )  x_ring  =  3;
    else                            x_ring  = 10;
    DEBUG_DATA   yLOG_value   ("x_ring"    , x_ring);
+   /*---(fast petal)---------------------*/
+   x_fast  = (int) ((x_deg + 45) / 90);
+   if (x_fast  >  3)  x_fast  -=  4;
+   if (x_fast  <  0)  x_fast  +=  4;
+   DEBUG_DATA   yLOG_value   ("x_fast"    , x_fast);
    /*---(inner petal)--------------------*/
-   x_inner = (int) ((x_deg + 22.5) / 45);
-   if (x_inner >  7)  x_inner -=  8;
-   if (x_inner <  0)  x_inner +=  8;
-   x_inner *= 2;
+   x_inner = (int) ((x_deg + 15.0) / (360.0 / 24.0));
+   DEBUG_DATA   yLOG_value   ("x_inner"   , x_inner);
+   DEBUG_DATA   yLOG_value   ("% 3"       , x_inner % 3);
+   switch (x_inner % 3) {
+   case 2  : x_inner = -1;                      break;
+   default : x_inner = trunc (x_inner / 3);     break;
+   }
+   if (x_inner >= 0)  x_inner *= 2;
+   if (x_inner > 14)  x_inner -= 16;
    DEBUG_DATA   yLOG_value   ("x_inner"   , x_inner);
    /*---(outer petal)--------------------*/
-   x_outer = (int) ((x_deg      ) / 45);
-   if (x_outer >  7)  x_outer -=  8;
-   if (x_outer <  0)  x_outer +=  8;
-   x_outer *= 2;
-   ++x_outer;
+   x_outer = (int) ((x_deg -  7.5) / (360.0 / 24.0));
+   DEBUG_DATA   yLOG_value   ("x_outer"   , x_outer);
+   DEBUG_DATA   yLOG_value   ("% 3"       , x_outer % 3);
+   switch (x_outer % 3) {
+   case 2  : x_outer = -1;                      break;
+   default : x_outer = trunc (x_outer / 3);     break;
+   }
+   if (x_outer >= 0) { x_outer *= 2; ++x_outer; }
+   if (x_outer > 15)  x_outer -= 16;
    DEBUG_DATA   yLOG_value   ("x_outer"   , x_outer);
    /*---(save-back)----------------------*/
    if (d != NULL)  *d = x_deg;
    if (n != NULL)  *n = x_ring;
+   if (f != NULL)  *f = x_fast;
    if (i != NULL)  *i = x_inner;
    if (o != NULL)  *o = x_outer;
    /*---(complete)-----------------------*/
@@ -295,21 +312,22 @@ PETAL__data             (int x, int y, int r, int *d, char *n, char *i, char *o)
 char
 PETAL__check            (int x, int y, int r)
 {
-   /*---(locals)-----------+-----------+-*/
-   char        rc          = 0;
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =    0;
+   char        rc          =    0;
    int         d;
-   char        n, i, o;
+   char        n, f, i, o;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    /*---(add dot)------------------------*/
-   PETAL__data (x, y, r, &d, &n, &i, &o);
-   DEBUG_DATA   yLOG_complex ("data"      , "%3dd, %2dn, %2di, %2do", d, n, i, o);
+   PETAL__data (x, y, r, &d, &n, &f, &i, &o);
+   DEBUG_DATA   yLOG_complex ("data"      , "%3dd, %2dn, %2df, %2di, %2do", d, n, f, i, o);
+   --rce;  if (x == -6666 || y == -6666 || r == -6666) {
+      DEBUG_DATA   yLOG_note    ("x, y, and/or r not set");
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(quick-out)-----------------------------*/
-   /*> if (n ==  9) {                                                                 <* 
-    *>    DEBUG_DATA   yLOG_note    ("buffer area, nothing to do");                   <* 
-    *>    DEBUG_DATA   yLOG_exit    (__FUNCTION__);                                   <* 
-    *>    return 0;                                                                   <* 
-    *> }                                                                              <*/
    if (n == 10) {
       DEBUG_DATA   yLOG_note    ("outside maximum area, nothing to do");
       DEBUG_DATA   yLOG_exit    (__FUNCTION__);
@@ -329,16 +347,39 @@ PETAL__check            (int x, int y, int r)
    /*---(save-back)-----------------------------*/
    switch (n) {
    case 0  :  g_petals [n].p = 0;  break;
+   case 9  :  g_petals [n].p = f;  break;
    case 1  :  g_petals [n].p = i;  break;
    case 2  :  g_petals [n].p = o;  break;
    case 3  :  g_petals [n].p = i;  break;
-   case 9  :  g_petals [n].p = i;  break;
    }
-   /*---(if 1, clear fast)----------------------*/
-   /*> if (n == 1) {                                                                  <* 
-    *>    DEBUG_DATA   yLOG_note    ("reset petal 9");                                <* 
-    *>    PETAL__reset_one (9);                                                       <* 
-    *> }                                                                              <*/
+   /*---(inner clears fast)---------------------*/
+   if (n == 1) {
+      DEBUG_DATA   yLOG_note    ("inner, clear nine");
+      PETAL__reset_one (9);
+   }
+   /*---(check for inner troubles)--------------*/
+   if (n == 1) {
+      if (g_petals [n].p == -1) {
+         DEBUG_DATA   yLOG_note    ("inner is in gapped area");
+         g_petals [n].p = -2;
+         my.boom = 'Y';
+      }
+   }
+   /*---(check for outer troubles)--------------*/
+   if (n == 2) {
+      if (g_petals [n].p == -1) {
+         DEBUG_DATA   yLOG_note    ("outer is in gapped area");
+         g_petals [n].p = -2;
+      }
+   }
+   /*---(check for edge troubles)---------------*/
+   if (n == 3) {
+      if (g_petals [n].p == -1) {
+         DEBUG_DATA   yLOG_note    ("edge is in gapped area");
+         g_petals [n].p = -2;
+         my.boom = 'Y';
+      }
+   }
    /*---(if 1 matches 3, clear 2)---------------*/
    if (n == 3) {
       DEBUG_DATA   yLOG_complex ("line"      , "%2d ? %2d", g_petals [1].p, g_petals [3].p);
@@ -347,6 +388,8 @@ PETAL__check            (int x, int y, int r)
          PETAL__reset_one (2);
       }
    }
+   /*---(global)-------------------------*/
+   my.m_n = n;
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 1;

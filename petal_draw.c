@@ -235,7 +235,7 @@ DRAW_seq           (char a_mode, char *a_text)
       case 'Û'    :  strlcat (shape.r_seq, "H", LEN_RECD);  continue;  break;
       }
       /*---(get letter)------------------*/
-      rc = LETTER_to_stroke ('y', c, &m, NULL, NULL, NULL);
+      /*> rc = LETTER_to_stroke ('y', c, &m, NULL, NULL, NULL);                       <*/
       DEBUG_GRAF   yLOG_complex ("to_stroke" , "%c/%3dc, %4drc, %dm", c, rc, m);
       if (rc < 0)  c = '¢';
       /*---(handle modes)----------------*/
@@ -299,7 +299,7 @@ DRAW_stroke        (char a_type, char a_letter)
    }
    /*---(get stroke)------------------------*/
    DEBUG_GRAF   yLOG_value   ("r_pos"     , shape.r_pos);
-   rc = LETTER_to_stroke ('-', a_letter, &m, &i, &o, &e);
+   /*> rc = LETTER_to_stroke ('-', a_letter, &m, &i, &o, &e);                         <*/
    DEBUG_GRAF   yLOG_value   ("to_stroke" , rc);
    --rce;  if (rc < 0) {
       DEBUG_GRAF   yLOG_exitr   (__FUNCTION__, rce);
@@ -596,59 +596,204 @@ DRAW_done               (void)
 static void      o___LOOP____________________o (void) {;}
 
 char
-DRAW_ribbon             (void)
+DRAW__button_color      (int a_mx, int a_my, int a_grid, char *c)
 {
-   short       x_left, x_righ, x_wide, x_bott, x_topp, x_tall;
+   /*---(locals)-----------+-----+-----+-*/
+   int         x           = a_grid / 16;
+   int         y           = a_grid % 16;
+   int         x_min       = x * 40;
+   int         x_max       = x_min + 40;
+   int         y_max       = (-y * 40) - 10;
+   int         y_min       = y_max - 40;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   /*---(default)------------------------*/
+   *c =  YF_ORA_FULL;
+   /*---(quick out)----------------------*/
+   if (my.m_valid != 'y') {
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   if (strchr ("Rr", my.m_touch) == NULL) {
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   /*---(test location)------------------*/
+   if (a_mx <  x_min || a_mx >= x_max) {
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   if (a_my <  y_min || a_my >= y_max) {
+      DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   /*---(return color)-------------------*/
+   switch (my.m_touch) {
+   case 'r' : *c = YF_BLU_FULL;  break;
+   case 'R' : *c = YF_CRI_FULL;  break;
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 1;
+}
+
+char
+DRAW_ribbon             (void)
+{
+   char        x_name      [LEN_LABEL] = "";
+   short       x_left, x_righ, x_wide, x_bott, x_topp, x_tall;
+   char        c           =  YF_BRN_TINT;
+   int         y           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   DEBUG_GRAF   yLOG_char    ("m_touch"   , my.m_touch);
    /*---(get main window data)-----------*/
-   yVIEW_bounds (YVIEW_RIBBON, NULL, NULL, &x_left, &x_righ, &x_wide, &x_bott, &x_topp, &x_tall);
-   DEBUG_GRAF   yLOG_complex ("main"   ,"%4dl  %4dr  %4dx    %4db  %4dt  %4dy", x_left, x_righ, x_wide, x_bott, x_topp, x_tall);
+   yVIEW_curses (YVIEW_RIBBON, x_name, NULL, NULL, NULL, NULL, &x_left, &x_wide, &x_bott, &x_tall);
+   x_topp = 0;
+   x_righ = x_left + x_wide;
+   DEBUG_GRAF   yLOG_complex (x_name      ,"%4dl  %4dr  %4dx    %4db  %4dt  %4dy", x_left, x_righ, x_wide, x_bott, x_topp, x_tall);
    glColor4f   (0.00, 0.00, 0.00, 1.00);
    glBegin    (GL_POLYGON); {
-      glVertex3f ( 0.0   , 0.0   , -500);
-      glVertex3f ( x_righ, 0.0   , -500);
-      glVertex3f ( x_righ, x_bott, -500);
-      glVertex3f ( 0.0   , x_bott, -500);
+      glVertex3f ( 0     , 0.0   , -50);
+      glVertex3f ( x_wide, 0.0   , -50);
+      glVertex3f ( x_wide, -x_tall, -50);
+      glVertex3f ( 0     , -x_tall, -50);
    } glEnd();
+   glColor4f   (0.60, 0.30, 0.20, 1.00);
+   glBegin    (GL_POLYGON); {
+      glVertex3f ( 1         ,   -1.0   , -45);
+      glVertex3f ( x_wide - 1,   -1.0   , -45);
+      glVertex3f ( x_wide - 1,   -9.0   , -45);
+      glVertex3f ( 1         ,   -9.0   , -45);
+   } glEnd();
+   glBegin    (GL_POLYGON); {
+      glVertex3f ( 1         , -x_tall + 9, -45);
+      glVertex3f ( x_wide - 1, -x_tall + 9, -45);
+      glVertex3f ( x_wide - 1, -x_tall + 1, -45);
+      glVertex3f ( 1         , -x_tall + 1, -45);
+   } glEnd();
+   DEBUG_GRAF   yLOG_complex ("current"   ,"%c  %4dx  %4dy  %c", my.m_valid, my.m_x, my.m_y, my.m_touch);
+   /*---(workspaces)---------------------*/
+   y =  -30;
    glPushMatrix(); {
-      glTranslatef  ( 20.0    ,  -30.0       ,  0.0);
+      glTranslatef  ( 20.0, y,  0.0);
       glRotatef     (-90.0, 0.0f, 0.0f, 1.0f);
-      yFONT_icon    ("map"     , "warning"   , 38.0    , 15);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x00,  &c);
+      yFONT_icon    ("map"     , "warning"    , 38.0    , c);
    } glPopMatrix();
    glPushMatrix(); {
-      glTranslatef  ( 20.0    ,  -70.0       ,  0.0);
+      glTranslatef  ( 60.0, y,  0.0);
+      glRotatef     ( 90.0, 0.0f, 0.0f, 1.0f);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x10,  &c);
+      yFONT_icon    ("map"     , "warning"   , 38.0     , c);
+   } glPopMatrix();
+   /*---(windows)------------------------*/
+   y =  -70;
+   glPushMatrix(); {
+      glTranslatef  ( 20.0, y,  0.0);
       glRotatef     (180.0, 0.0f, 0.0f, 1.0f);
-      yFONT_icon    ("play"    , "play"      , 38.0    , 9);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x01,  &c);
+      yFONT_icon    ("play"    , "play"       , 38.0    , c);
    } glPopMatrix();
    glPushMatrix(); {
-      glTranslatef  ( 20.0    , -110.0       ,  0.0);
+      glTranslatef  ( 60.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x11,  &c);
+      yFONT_icon    ("play"    , "play"       , 38.0    , c);
+   } glPopMatrix();
+   /*---(alt/control)--------------------*/
+   y = -110;
+   glPushMatrix(); {
+      glTranslatef  ( 20.0, y,  0.0);
       glRotatef     ( 90.0, 0.0f, 0.0f, 1.0f);
-      yFONT_icon    ("play"    , "play"      , 38.0    , 10);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x02,  &c);
+      yFONT_icon    ("play"    , "play"       , 38.0    , c);
    } glPopMatrix();
    glPushMatrix(); {
-      glTranslatef  ( 20.0    , -150.0       ,  0.0);
-      yFONT_icon    ("tech"    , "final_state", 38.0    , 11);
-      /*> yFONT_icon    ("play"    , "record"    , 30.0    , 0);                      <*/
-   } glPopMatrix();
-   glPushMatrix(); {
-      glTranslatef  ( 20.0    , -190.0       ,  0.0);
+      glTranslatef  ( 60.0, y,  0.0);
       glRotatef     (-90.0, 0.0f, 0.0f, 1.0f);
-      yFONT_icon    ("play"    , "play"      , 38.0    , 12);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x12,  &c);
+      yFONT_icon    ("play"    , "play"       , 38.0    , c);
+   } glPopMatrix();
+   /*---(overall)------------------------*/
+   y = -150;
+   glPushMatrix(); {
+      glTranslatef  ( 20.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x03,  &c);
+      yFONT_icon    ("draw"    , "type"       , 38.0    , c);
    } glPopMatrix();
    glPushMatrix(); {
-      glTranslatef  ( 20.0    , -230.0       ,  0.0);
-      yFONT_icon    ("play"    , "play"      , 38.0    , 13);
+      glTranslatef  ( 60.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x13,  &c);
+      yFONT_icon    ("tech"    , "final_state", 38.0    , c);
+   } glPopMatrix();
+   /*---(clipboard)----------------------*/
+   y = -190;
+   glPushMatrix(); {
+      glTranslatef  ( 20.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x04,  &c);
+      yFONT_icon    ("draw"    , "copy"       , 38.0    , c);
    } glPopMatrix();
    glPushMatrix(); {
-      glTranslatef  ( 20.0    , -270.0       ,  0.0);
-      glRotatef     ( 90.0, 0.0f, 0.0f, 1.0f);
-      yFONT_icon    ("map"     , "warning"   , 38.0    , 14);
+      glTranslatef  ( 60.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x14,  &c);
+      yFONT_icon    ("draw"    , "paste"      , 38.0    , c);
    } glPopMatrix();
+   /*---(clipboard)----------------------*/
+   y = -230;
+   glPushMatrix(); {
+      glTranslatef  ( 20.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x05,  &c);
+      yFONT_icon    ("draw"    , "quill"      , 38.0    , c);
+   } glPopMatrix();
+   glPushMatrix(); {
+      glTranslatef  ( 60.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x15,  &c);
+      yFONT_icon    ("draw"    , "fill"       , 38.0    , c);
+   } glPopMatrix();
+   /*---(overall)------------------------*/
+   y = -270;
+   glPushMatrix(); {
+      glTranslatef  ( 20.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x06,  &c);
+      yFONT_icon    ("sec"     , "login"      , 38.0    , c);
+   } glPopMatrix();
+   glPushMatrix(); {
+      glTranslatef  ( 60.0, y,  0.0);
+      DRAW__button_color (my.m_x - x_left, my.m_y, 0x16,  &c);
+      yFONT_icon    ("sec"     , "logout"     , 38.0    , c);
+   } glPopMatrix();
+
+
+
    /*> glPushMatrix(); {                                                              <* 
-    *>    glTranslatef  ( 25.0    , -270.0       ,  0.0);                             <* 
-    *>    yFONT_icon    ("play"    , "play"      , 40.0    ,  0);                     <* 
+    *>    glTranslatef  ( 20.0    ,  -70.0       ,  0.0);                             <* 
+    *>    glRotatef     (180.0, 0.0f, 0.0f, 1.0f);                                    <* 
+    *>    DRAW__button_color (my.m_x,  my.m_y,  -90,  -50,  &c);                      <* 
+    *>    yFONT_icon    ("play"    , "play"       , 38.0    , c);                     <* 
     *> } glPopMatrix();                                                               <*/
+   /*> glPushMatrix(); {                                                              <* 
+    *>    glTranslatef  ( 20.0    , -150.0       ,  0.0);                             <* 
+    *>    DRAW__button_color (my.m_y, -170, -130,  &c);                               <* 
+    *>    yFONT_icon    ("tech"    , "final_state", 38.0    , c);                     <* 
+    *> } glPopMatrix();                                                               <*/
+   /*> glPushMatrix(); {                                                              <* 
+    *>    glTranslatef  ( 20.0    , -190.0       ,  0.0);                             <* 
+    *>    glRotatef     (-90.0, 0.0f, 0.0f, 1.0f);                                    <* 
+    *>    DRAW__button_color (my.m_y, -210, -170,  &c);                               <* 
+    *>    yFONT_icon    ("play"    , "play"       , 38.0    , c);                     <* 
+    *> } glPopMatrix();                                                               <*/
+   /*---(draw point)---------------------*/
+   /*> if (my.m_valid == 'y' && strchr ("Rr", my.m_touch) != NULL) {                  <* 
+    *>    glPointSize (10.0);                                                         <* 
+    *>    switch (my.m_touch) {                                                       <* 
+    *>    case 'r' : glColor4f  (0.0f, 0.0f, 1.0f, 1.0f);  break;                     <* 
+    *>    case 'R' : glColor4f  (0.0f, 1.0f, 0.0f, 1.0f);  break;                     <* 
+    *>    }                                                                           <* 
+    *>    glBegin    (GL_POINTS); {                                                   <* 
+    *>       glVertex3f (my.m_x - x_left, my.m_y, 50.0);                              <* 
+    *>    } glEnd();                                                                  <* 
+    *> }                                                                              <*/
+   glColor4f   (0.00, 0.00, 0.00, 1.00);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -666,13 +811,14 @@ DRAW_main               (void)
    char        d;
    int         x, y, w, t;
    char        x_help      =    0;
+   char        x_name      [LEN_LABEL] = "";
    short       x_left, x_righ, x_wide, x_bott, x_topp, x_tall;
    char        x_ribbon, x_float, x_menu, x_alt;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(get main window data)-----------*/
-   yVIEW_bounds (YVIEW_MAIN  , NULL, NULL, &x_left, &x_righ, &x_wide, &x_bott, &x_topp, &x_tall);
-   DEBUG_GRAF   yLOG_complex ("main"   ,"%4dl  %4dr  %4dx    %4db  %4dt  %4dy", x_left, x_righ, x_wide, x_bott, x_topp, x_tall);
+   yVIEW_bounds (YVIEW_MAIN  , x_name, NULL, &x_left, &x_righ, &x_wide, &x_topp, &x_bott, &x_tall);
+   DEBUG_GRAF   yLOG_complex (x_name   ,"%4dl  %4dr  %4dx    %4db  %4dt  %4dy", x_left, x_righ, x_wide, x_bott, x_topp, x_tall);
    /*---(check mask)---------------------*/
    if (yVIEW_showing (YVIEW_RIBBON))   x_ribbon = 'y';
    else                                x_ribbon = '-';
@@ -696,16 +842,23 @@ DRAW_main               (void)
    /*---(save help)-------------------------*/
    x_help = stroke.help;
    /*---(clear on lift)---------------------*/
-   if (my.m_touch == '·' || my.m_r > shape.r_max) {
+   if (my.boom == 'Y')     PETAL_reset ();
+   if (strchr ("·h", my.m_touch) != NULL)  my.boom = '-';
+   /*---(clear on lift)---------------------*/
+   if (my.m_valid != 'y' || my.m_touch == '·' || my.m_r > shape.r_max) {
       DOT_reset ();
       PETAL_reset ();
    }
    /*---(show texture)----------------------*/
-   if (my.m_valid == 'y' && my.m_touch != '·') {
-      switch (my.m_touch) {
-      case 'h' : glColor4f  (0.0f, 0.0f, 1.0f, 1.0f);  break;
-      case '·' : glColor4f  (1.0f, 0.0f, 0.0f, 1.0f);  break;
-      case 'T' : glColor4f  (0.0f, 1.0f, 0.0f, 1.0f);  break;
+   glColor4f   (1.00, 0.00, 0.00, 1.00);
+   if (my.m_valid == 'y' && strchr ("hT", my.m_touch) != NULL) {
+      if (my.boom == 'Y') {
+         glColor4f   (0.25, 0.25, 0.25, 1.00);
+      } else {
+         switch (my.m_touch) {
+         case 'h' : glColor4f  (0.0f, 0.0f, 1.0f, 1.0f);  break;
+         case 'T' : glColor4f  (0.0f, 1.0f, 0.0f, 1.0f);  break;
+         }
       }
    }
    glBegin(GL_POLYGON); {
@@ -734,20 +887,27 @@ DRAW_main               (void)
       DRAW__guides (shape.g_edge  ,  50);
    } glPopMatrix();
 
-   if (my.m_valid == 'y' && my.m_touch != '·') {
+   /*---(draw point)---------------------*/
+   if (my.m_valid == 'y' && strchr ("hT", my.m_touch) != NULL) {
       glPointSize (10.0);
       switch (my.m_touch) {
       case 'h' : glColor4f  (0.0f, 0.0f, 1.0f, 1.0f);  break;
-      case '·' : glColor4f  (1.0f, 0.0f, 0.0f, 1.0f);  break;
       case 'T' : glColor4f  (0.0f, 1.0f, 0.0f, 1.0f);  break;
       }
       glBegin    (GL_POINTS); {
          glVertex3f (my.m_x, my.m_y, 50.0);
       } glEnd();
-   } else {
-      glColor4f  (1.0f, 0.0f, 0.0f, 1.0f);
    }
 
+   if (my.boom == 'Y') {
+      glColor4f  (0.0f, 0.0f, 0.0f, 1.0f);
+      glBegin(GL_POLYGON); {
+         glVertex3f ( -20,   0,  500.0);
+         glVertex3f (   0,  20,  500.0);
+         glVertex3f (  20,   0,  500.0);
+         glVertex3f (   0, -20,  500.0);
+      } glEnd();
+   }
 
    /*---(return help)-----------------------*/
    stroke.help = x_help;
@@ -813,7 +973,7 @@ DRAW__guides            (int r, int z)
 {
    int         x, y, d;
    float       rad;
-   if (my.guides != 'y')  return 0;
+   if (my.show_pguide != 'y')  return 0;
    glEnable      (GL_LINE_STIPPLE);
    glLineStipple (1, 0x3333);
    glColor4f  (0.0f, 0.0f, 0.0f, 1.0f);
@@ -838,6 +998,7 @@ DRAW__petals            (int n, int z)
    char        p           =    0;
    if (g_petals [n].n < 0)  return 0;
    p = g_petals [n].p;
+   if (p < 0)               return 0;
    if (n == 0) {
       glCallList (shape.dl_center);
    }
@@ -852,15 +1013,17 @@ DRAW__petals            (int n, int z)
          glColor4f (1.00, 0.00, 0.00, 0.30);
          glCallList   (shape.dl_balls);
       } glPopMatrix();
-      switch (i) {
-      case  0 :  DRAW_help ("EE");  break;
-      case  1 :  DRAW_help ("NE");  break;
-      case  2 :  DRAW_help ("NN");  break;
-      case  3 :  DRAW_help ("NW");  break;
-      case  4 :  DRAW_help ("WW");  break;
-      case  5 :  DRAW_help ("SW");  break;
-      case  6 :  DRAW_help ("SS");  break;
-      case  7 :  DRAW_help ("SE");  break;
+      if (stroke.help >= 0) {
+         switch (i) {
+         case  0 :  DRAW_help ("EE");  break;
+         case  1 :  DRAW_help ("NE");  break;
+         case  2 :  DRAW_help ("NN");  break;
+         case  3 :  DRAW_help ("NW");  break;
+         case  4 :  DRAW_help ("WW");  break;
+         case  5 :  DRAW_help ("SW");  break;
+         case  6 :  DRAW_help ("SS");  break;
+         case  7 :  DRAW_help ("SE");  break;
+         }
       }
    }
    else if (n == 2) {
@@ -889,13 +1052,11 @@ DRAW__petals            (int n, int z)
    }
    /*> else if (n == 9 && g_petals [1].n < 0) {                                       <*/
    else if (n == 9) {
-      i = p / 2;
+      i = p;
       glPushMatrix(); {
-         glRotatef    (i * 45, 0.0f, 0.0f, 1.0f);
+         glRotatef    (i * 90, 0.0f, 0.0f, 1.0f);
          glTranslatef (shape.g_ring * 0.75, 0.0f, 0.0f);
-         glColor4f (1.00, 1.00, 1.00, 1.00);
-         glCallList   (shape.dl_balls);
-         glColor4f (0.00, 0.00, 0.50, 0.50);
+         glColor4f (0.00, 0.00, 0.00, 1.00);
          glCallList   (shape.dl_balls);
       } glPopMatrix();
    }
@@ -1022,7 +1183,7 @@ DRAW_dots          (void)
  *>             break;                                                                                <* 
  *>          }                                                                                        <* 
  *>       }                                                                                           <* 
- *>       if (my.show_balls == 'y') {                                                                 <* 
+ *>       if (my.show_pball == 'y') {                                                                 <* 
  *>          glPushMatrix(); {                                                                        <* 
  *>             glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);                                       <* 
  *>             glTranslatef (shape.r_edge * 0.85, 0.0f, 0.0f);                                       <* 
@@ -1063,7 +1224,7 @@ DRAW_dots          (void)
                   *>        *>       break;                                                                <*          <* 
                   *>        *>    }                                                                        <*          <* 
                   *>        *> }                                                                           <+/         <* 
-                  *>       if (my.show_balls == 'y') {                                                                 <* 
+                  *>       if (my.show_pball == 'y') {                                                                 <* 
                      *>          glPushMatrix(); {                                                                        <* 
                         *>             glRotatef    (45 - (i * 45), 0.0f, 0.0f, 1.0f);                                       <* 
                            *>             glRotatef    (22.5, 0.0f, 0.0f, 1.0f);                                                <* 
@@ -1092,7 +1253,7 @@ DRAW_dots          (void)
                                     *>       if (stroke.help > 0 && stroke.help < 10) {                                                  <* 
                                        *>          if (stroke.help != i + 1)  continue;                                                     <* 
                                           *>       }                                                                                           <* 
-                                          *>       if (my.show_balls == 'y') {                                                                 <* 
+                                          *>       if (my.show_pball == 'y') {                                                                 <* 
                                              *>          glPushMatrix(); {                                                                        <* 
                                                 *>             glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);                                       <* 
                                                    *>             glTranslatef (shape.r_inner * 0.65, 0.0f, 0.0f);                                      <* 

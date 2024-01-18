@@ -473,6 +473,7 @@ LETTER__layer           (char f, char i, char o, char e)
    }
    /*---(prepare)------------------------*/
    n = i / 2;
+   /*> printf ("layer     %2d %2d %2d %2d\n", f, i, o, e);                            <*/
    /*---(set)----------------------------*/
    switch (n) {
    case  0 : g_shown = g_arith;  g_bases = g_ariths;  break;
@@ -493,6 +494,234 @@ LETTER__layer           (char f, char i, char o, char e)
 }
 
 char
+LETTER__by_fast         (char a_test, char f, char i, char o, char e, char *r)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   char        c           =  '·';
+   char        t           [LEN_TERSE] = "";
+   /*---(default)------------------------*/
+   if (r != NULL) *r = '¢';
+   /*---(quick-out)----------------------*/
+   if (f == -1)  return 0;
+   if (i >=  0)  return 0;
+   if (o >=  0)  return 0;
+   if (e >=  0)  return 0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   DEBUG_GRAF   yLOG_complex ("args"      , "%2df  %2di  %2do  %2de", f, i, o, e);
+   /*---(identify)-----------------------*/
+   --rce;  switch (f) {
+   case  0 :  c = '²';    break;
+   case  1 :  c = '\e';   break;
+   case  2 :  c = '\b';   break;
+   case  3 :  c = '\n';   break;
+   default :
+              DEBUG_INPT   yLOG_note    ("fast petal can only be 0-4");
+              DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+              return rce;
+   }
+   /*---(debugging)----------------------*/
+   /*> printf ("fast      %2d %2d %2d %2d\n", f, i, o, e);                            <*/
+   /*---(send·keys)----------------------*/
+   if (a_test != 'y') {
+      sprintf (t, "%c", c);
+      rc = yX11_keys_send_current (t);
+   }
+   /*---(save·back)----------------------*/
+   if (r != NULL) *r = c;
+   /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return 1;
+}
+
+char
+LETTER__by_normal       (char a_test, char f, char i, char o, char e, char *r)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   char        n           =    0;
+   char        c           =  '·';
+   char        t           [LEN_TERSE] = "";
+   /*---(default)------------------------*/
+   if (r != NULL) *r = '¢';
+   /*---(quick-out)----------------------*/
+   if (f != -1)  return 0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   DEBUG_GRAF   yLOG_complex ("args"      , "%2df  %2di  %2do  %2de", f, i, o, e);
+   /*---(inner)--------------------------*/
+   --rce;  if (i < 0) {
+      DEBUG_INPT   yLOG_note    ("no inner petal selected");
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (i % 2 != 0 || i > 14) {
+      DEBUG_INPT   yLOG_note    ("illegal inner petal (odd numbered) selected");
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   n = (i / 2) * 5;
+   DEBUG_GRAF   yLOG_value   ("inner n"   , n);
+   /*---(outer)--------------------------*/
+   --rce;  if (o != -1)  {
+      --rce;  if (o < -1 || o > 15) {
+         DEBUG_INPT   yLOG_note    ("outer petal outside range 0-15");
+         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+      if (o % 2 != 1) {
+         DEBUG_INPT   yLOG_note    ("illegal inner petal (even numbered) selected");
+         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+      if (i ==  0) {
+         if      (o ==  1)  n += 3;
+         else if (o == 15)  n += 1;
+         else {
+            DEBUG_INPT   yLOG_note    ("illegal inner to outer connection");
+            DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+            return rce;
+         }
+      }
+      else {
+         if      (o == i + 1)  n += 3;
+         else if (o == i - 1)  n += 1;
+         else {
+            DEBUG_INPT   yLOG_note    ("illegal inner to outer connection");
+            DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+            return rce;
+         }
+      }
+      DEBUG_GRAF   yLOG_value   ("outer n"   , n);
+   }
+   /*---(edge)---------------------------*/
+   --rce;  if (e != -1)  {
+      --rce;  if (e < -1 || e > 14) {
+         DEBUG_INPT   yLOG_note    ("edge petal outside range 0-14");
+         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+      if (e % 2 != 0) {
+         DEBUG_INPT   yLOG_note    ("illegal edge petal (odd numbered) selected");
+         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+      if      (i == 14 && o == 15) {
+         if (e ==  0)  n += 1;
+         else {
+            DEBUG_INPT   yLOG_note    ("illegal inner to outer connection");
+            DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+            return rce;
+         }
+      }
+      else if (i ==  0 && o == 15) {
+         if (e == 14)  n += 1;
+         else {
+            DEBUG_INPT   yLOG_note    ("illegal inner to outer connection");
+            DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+            return rce;
+         }
+      }
+      else if (o == i + 1 && e == o + 1)  n += 1;
+      else if (o == i - 1 && e == o - 1)  n += 1;
+      else {
+         DEBUG_INPT   yLOG_note    ("illegal inner to outer connection");
+         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+      DEBUG_GRAF   yLOG_value   ("edge n"    , n);
+   }
+   /*---(debugging)----------------------*/
+   /*> printf ("normal    %2d %2d %2d %2d   %2d  %c\n", f, i, o, e, n, c);            <*/
+   /*---(feedback)-----------------------*/
+   --rce;  if (n <  0 && n >  39) {
+      DEBUG_INPT   yLOG_note    ("result out of range");
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   c = g_shown [n];
+   if (a_test != 'y') {
+      sprintf (t, "%c", c);
+      rc = yX11_keys_send_current (t);
+   }
+   /*---(save·back)----------------------*/
+   if (r != NULL) *r = c;
+   /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return 1;
+}
+
+
+char
+LETTER__normal          (char f, char i, char o, char e)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   char        n           =    0;
+   char        c           =  '·';
+   char        t           [LEN_LABEL] = "";
+   /*---(quick-out)----------------------*/
+   if (f != -1)  return 0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   DEBUG_GRAF   yLOG_complex ("args"      , "%2df  %2di  %2do  %2de", f, i, o, e);
+   /*---(inner)--------------------------*/
+   --rce;  if (i < 0) {
+      DEBUG_INPT   yLOG_note    ("no inner petal selected");
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   n = (i / 2) * 5;
+   /*---(outer)--------------------------*/
+   --rce;
+   if (i ==  0) {
+      if      (o == -1)  ;
+      else if (o ==  1)  n += 3;
+      else if (o == 15)  n += 1;
+      else {
+         DEBUG_INPT   yLOG_note    ("illegal inner to outer connection");
+         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+   }
+   else {
+      if      (o == -1)  ;
+      else if (o == i + 1)  n += 3;
+      else if (o == i - 1)  n += 1;
+      else {
+         DEBUG_INPT   yLOG_note    ("illegal inner to outer connection");
+         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+   }
+   /*---(edge)---------------------------*/
+   --rce;
+   if      (e == -1)  ;
+   else if (o == 15 && e == 0)  n += 1;
+   else if (e == o + 1)         n += 1;
+   else if (e == o - 1)         n += 1;
+   else {
+      DEBUG_INPT   yLOG_note    ("illegal inner to outer connection");
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(feedback)-----------------------*/
+   if (n >= 0 && n <= 39) {
+      c = g_shown [n];
+      sprintf (t, "%c", c);
+      rc = yX11_keys_send_current (t);
+   }
+   /*> printf ("normal    %2d %2d %2d %2d   %2d  %c\n", f, i, o, e, n, c);            <*/
+   /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return 1;
+}
+
+char
 LETTER_by_stroke        (char f, char i, char o, char e)
 {
    /*---(locals)-----------+-----+-----+-*/
@@ -500,15 +729,56 @@ LETTER_by_stroke        (char f, char i, char o, char e)
    char        rc          =    0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   DEBUG_GRAF   yLOG_complex ("args"      , "%2df  %2di  %2do  %2de", f, i, o, e);
+   /*> printf ("stroke    %2d %2d %2d %2d\n", f, i, o, e);                            <*/
+   /*---(defenses)-----------------------*/
+   --rce;  if (i == -2 || o == -2 || e == -2) {
+      my.boom = 'Y';
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(defenses)-----------------------*/
+   --rce;  if (f < -1 || f >  3) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (i < -1 || i > 15) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (i != -1 && i % 2 != 0) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (o < -1 || o > 15) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (o != -1 && o % 2 != 1) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (e < -1 || e > 15) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (e != -1 && e % 2 != 0) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(handle)-------------------------*/
-   rc = LETTER__layer (f, i, o, e);
+   if (rc == 0)  rc = LETTER__by_fast   ('-', f, i, o, e, NULL);
+   if (rc == 0)  rc = LETTER__layer  (f, i, o, e);
+   if (rc == 0)  rc = LETTER__by_normal ('-', f, i, o, e, NULL);
+   if (rc == 0)  my.boom = 'Y';
+   /*> if (rc == 0)  printf ("WHAT???   %2d %2d %2d %2d\n", f, i, o, e);              <*/
    /*---(complete)-----------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
-LETTER_to_stroke        (char a_all, char c, char *m, char *i, char *o, char *e)
+LETTER_to_stroke_OLD    (char a_all, char c, char *m, char *i, char *o, char *e)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -605,6 +875,59 @@ LETTER_to_stroke        (char a_all, char c, char *m, char *i, char *o, char *e)
    if (i != NULL)  *i = xi;
    if (o != NULL)  *o = xo;
    if (e != NULL)  *e = xe;
+   /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_sexit   (__FUNCTION__);
+   return n;
+}
+
+char
+LETTER__to_fast         (char a_all, char c, char *n, char *f, char *i, char *o, char *e)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        p           =   -1;
+   /*---(quick-out)----------------------*/
+   if (c == 0)  return 0;
+   if (strchr (" \n\b\e", c) == NULL)  return 0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
+   /*---(handle)-------------------------*/
+   switch (c) {
+   case ' '  :  p = 0;  break;
+   case '\e' :  p = 1;  break;
+   case '\b' :  p = 2;  break;
+   case '\n' :  p = 3;  break;
+   }
+   /*---(save-back)----------------------*/
+   if (n != NULL)  *n =  9;
+   if (f != NULL)  *n =  p;
+   if (i != NULL)  *n = -1;
+   if (o != NULL)  *n = -1;
+   if (e != NULL)  *n = -1;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 1;
+}
+
+char
+LETTER_to_stroke        (char a_all, char c, char *n, char *f, char *i, char *o, char *e)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   int         j           =    0;
+   char        xn          =   -1;          /* remaining outer/edge index     */
+   char        xi          =   -1;          /* inner stroke                   */
+   char        xo          =   -1;          /* outer stroke                   */
+   char        xe          =   -1;          /* edge stroke                    */
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_senter  (__FUNCTION__);
+   /*---(initialize)---------------------*/
+   if (n != NULL)  *n = -1;
+   if (f != NULL)  *f = -1;
+   if (i != NULL)  *i = -1;
+   if (o != NULL)  *o = -1;
+   if (e != NULL)  *e = -1;
+   /*---(special)------------------------*/
+   if (c == '¶')    c = '"';
    /*---(complete)-----------------------*/
    DEBUG_INPT   yLOG_sexit   (__FUNCTION__);
    return n;

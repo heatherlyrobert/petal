@@ -260,11 +260,11 @@ CONF__mapping           (int n, uchar a_verb [LEN_TERSE])
       return 0;
    }
    /*---(save)---------------------------*/
-   printf ("%-10.10s  %-2.2s  å%-10.10sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%sæ\n",
-         x_name, x_dir, x_fast, x_1st,
-         x_CW2nd , x_CW3rd ,
-         x_CCW2nd, x_CCW3rd,
-         x_layers, x_bases);
+   /*> printf ("%-10.10s  %-2.2s  å%-10.10sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%-16.16sæ  å%sæ\n",   <* 
+    *>       x_name, x_dir, x_fast, x_1st,                                                                                       <* 
+    *>       x_CW2nd , x_CW3rd ,                                                                                                 <* 
+    *>       x_CCW2nd, x_CCW3rd,                                                                                                 <* 
+    *>       x_layers, x_bases);                                                                                                 <*/
    rc = CONF__load (x_dir, "inner"    , 0, x_1st    , NULL);
    rc = CONF__load (x_dir, "outer·cw" , 1, x_CW2nd  , NULL);
    rc = CONF__load (x_dir, "edge·cw"  , 2, x_CW3rd  , NULL);

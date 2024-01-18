@@ -775,7 +775,7 @@ ARTSY__draw_fasts       (void)
    int       i;
    glPushMatrix();
    for (i = 0; i < 8; i += 1) {
-      if (my.show_balls == 'y') {
+      if (my.show_pball == 'y') {
          glPushMatrix(); {
             glRotatef    (90 - (i * 45) - 22.5, 0.0f, 0.0f, 1.0f);
             /*> glTranslatef (r_fast, 0.0f, 0.0f);                                    <*/
@@ -802,7 +802,7 @@ ARTSY__draw_inners      (void)
          glColor4f    (0.7f, 0.7f, 0.7f, 1.0f);
          glCallList   (dl_inner);
       } glPopMatrix();
-      if (my.show_balls == 'y') {
+      if (my.show_pball == 'y') {
          glPushMatrix(); {
             glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
             glTranslatef (r_inner * 0.65, 0.0f, 0.0f);
@@ -829,7 +829,7 @@ ARTSY__draw_outers      (void)
          glRotatef    ( 22.5 - (i * 45), 0.0f, 0.0f, 1.0f);
          glCallList   (dl_outer);
       } glPopMatrix();
-      if (my.show_balls == 'y') {
+      if (my.show_pball == 'y') {
          glPushMatrix(); {
             glRotatef    (45 - (i * 45), 0.0f, 0.0f, 1.0f);
             glRotatef    (22.5, 0.0f, 0.0f, 1.0f);
@@ -856,7 +856,7 @@ ARTSY__draw_edges       (void)
             glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
             glCallList  (dl_edge);
          } glPopMatrix();
-         if (my.show_balls == 'y') {
+         if (my.show_pball == 'y') {
             glPushMatrix(); {
                glRotatef    (90 - (i * 45), 0.0f, 0.0f, 1.0f);
                glTranslatef (r_edge * 0.85, 0.0f, 0.0f);
@@ -923,8 +923,8 @@ ARTSY_draw               (void)
       glVertex3f (   -400.0,     -400.0,  -60.0);
    } glEnd();
    for (i = 0; i < 24; i += 1) {
-      if (i % 2 == 0)  glColor4f   (1.00, 1.00, 0.00, 0.10);
-      else             glColor4f   (1.00, 1.00, 0.00, 0.30);
+      if (i % 2 == 0)  glColor4f   (0.00, 0.00, 0.00, 0.10);
+      else             glColor4f   (0.00, 0.00, 0.00, 0.30);
       glPushMatrix(); {
          glRotatef    ( - (i * 15), 0.0f, 0.0f, 1.0f);
          glCallList   (dl_ring);
@@ -1006,11 +1006,13 @@ ARTSY_mask              (char a_force, char a_ribbon, char a_float, char a_menu,
    static char x_float     =  '-';
    static char x_menu      =  '-';
    static char x_alt       =  '-';
+   static char x_force     =  'y';
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    DEBUG_GRAF   yLOG_complex  ("a_args"    , "%cf %cr %cf %cm %ca", a_force, a_ribbon, a_float, a_menu, a_alt);
    DEBUG_GRAF   yLOG_complex  ("current"   , "·f %cr %cf %cm %ca", x_ribbon, x_float, x_menu, x_alt);
    /*---(quick-out)----------------------*/
+   if (x_force   == 'y'     )  x_remask = 'y';
    if (a_force   == 'y'     )  x_remask = 'y';
    if (a_ribbon  != x_ribbon)  x_remask = 'y';
    if (a_float   != x_float )  x_remask = 'y';
@@ -1022,6 +1024,7 @@ ARTSY_mask              (char a_force, char a_ribbon, char a_float, char a_menu,
       DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
       return 0;
    }
+   x_force = '-';
    /*---(update statuses)----------------*/
    x_ribbon  = a_ribbon;
    x_float   = a_float;

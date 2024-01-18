@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "3.-- third major phase"
 #define     P_VERMINOR  "3.0- ramped the beauty way up ;)"
-#define     P_VERNUM    "3.0d"
-#define     P_VERTXT    "ribbon showing with representative icons"
+#define     P_VERNUM    "3.0e"
+#define     P_VERTXT    "ribbon nice, but internal; letters are checked tighter"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -253,6 +253,8 @@ struct cACCESSOR {
    int         m_x;
    int         m_y;
    int         m_r;
+   char        m_n;
+   char        m_button;
    /*---(opengl objects)-----------------*/
    uint        g_tex;                    /* task texture                      */
    uint        g_fbo;                    /* task fbo                          */
@@ -275,11 +277,13 @@ struct cACCESSOR {
    int         ev_minor;               /* which ev_code to show               */
    char        rptg_dots;              /* request to dump dots to screen      */
    char        rptg_recog;             /* request to dump regcognition        */
-   char        show_balls;
    char        save_png;
    char        mask;     
-   char        guides;
+   char        show_pball;
+   char        show_pguide;
+   char        show_ribbon;
    int         icons;
+   char        boom;
    /*---(arguments)-------------*/
    long        loop_msec;              /* wait time in milliseconds           */
    /*---(done)------------------*/
@@ -666,6 +670,7 @@ char       DRAW_speed               (char *a_speed);
 char       DRAW_press               (char *a_state);
 char       DRAW_seq                 (char a_mode, char *a_seq);
 char       DRAW_debug               (void);
+char       DRAW__button_color      (int mx, int my, int a_grid, char *c);
 char       DRAW_ribbon             (void);
 char       DRAW_main              (void);
 char       draw_delete       (void);
@@ -692,7 +697,9 @@ void       mouse_init           (void);
 
 /*===[[ petal_shape.c ]]============================================================*/ 
 /*---rc---- ---name---------------- ---args----------------------------------------*/
-char        SHAPE_guides       (char a_option [LEN_LABEL]);
+char        SHAPE_pguide       (char a_option [LEN_LABEL]);
+char        SHAPE_pball        (char a_option [LEN_LABEL]);
+char        SHAPE_pletter      (char a_option [LEN_LABEL]);
 char        SHAPE_base         (char a_func [LEN_LABEL], float a_ratio);
 char        SHAPE_tiny         (void);
 char        SHAPE_small        (void);
@@ -733,7 +740,7 @@ char*       TOUCH__unit             (char *a_question, int a_num);
 char        PETAL_reset             (void);
 char        PETAL_init              (void);
 /*---(worker)---------------*/
-char        PETAL__data             (int x, int y, int r, int *d, char *n, char *i, char *o);
+char        PETAL__data             (int x, int y, int r, int *d, char *n, char *f, char *i, char *o);
 char        PETAL__check            (int x, int y, int r);
 /*---(simplifier)-----------*/
 char        PETAL_beg               (int x, int y, int r);
@@ -784,8 +791,13 @@ char        api_ymap_done           (void);
 
 
 char        LETTER_by_index         (char n);
+
+
+char        LETTER__by_fast         (char a_test, char f, char i, char o, char e, char *r);
+char        LETTER__by_normal       (char a_test, char f, char i, char o, char e, char *r);
 char        LETTER_by_stroke        (char f, char i, char o, char e);
-char        LETTER_to_stroke        (char a_all, char c, char *m, char *i, char *o, char *e);
+
+char        LETTER_to_stroke        (char a_all, char c, char *n, char *f, char *i, char *o, char *e);
 char        LETTER_by_mode          (char n);
 
 
