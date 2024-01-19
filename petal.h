@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "3.-- third major phase"
 #define     P_VERMINOR  "3.0- ramped the beauty way up ;)"
-#define     P_VERNUM    "3.0e"
-#define     P_VERTXT    "ribbon nice, but internal; letters are checked tighter"
+#define     P_VERNUM    "3.0f"
+#define     P_VERTXT    "ribbon code exported to yVIOPENGL and working"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -671,7 +671,12 @@ char       DRAW_press               (char *a_state);
 char       DRAW_seq                 (char a_mode, char *a_seq);
 char       DRAW_debug               (void);
 char       DRAW__button_color      (int mx, int my, int a_grid, char *c);
+
+
+char       DRAW__status            (char *r_valid, short *r_x, short *r_y, char *r_touch);
 char       DRAW_ribbon             (void);
+
+
 char       DRAW_main              (void);
 char       draw_delete       (void);
 char       DRAW_back          (void);
@@ -868,6 +873,20 @@ char        CONF_pull               (cchar a_file [LEN_PATH]);
 /*---(unittest)-------------*/
 char*       CONF__unit              (char *a_question, int a_num);
 /*---(done)-----------------*/
+
+
+
+char       RIBBON_prev_workspace   (void);
+char       RIBBON_next_workspace   (void);
+char       RIBBON_prev_window      (void);
+char       RIBBON_next_window      (void);
+char       RIBBON_letter_help      (void);
+char       RIBBON_show_balls       (void);
+char       RIBBON_exit             (void);
+char       RIBBON_init             (void);
+
+
+
 
 
 #endif

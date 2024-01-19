@@ -403,6 +403,8 @@ PROG_dawn          (void)
    /*---(yPARSE)-------------------------*/
    CONF_init   ();
    rc = CONF_pull (FILE_CONF);
+   DEBUG_PROG   yLOG_value   ("pull"      , rc);
+   RIBBON_init ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;

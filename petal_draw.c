@@ -648,6 +648,14 @@ DRAW_ribbon             (void)
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    DEBUG_GRAF   yLOG_char    ("m_touch"   , my.m_touch);
    /*---(get main window data)-----------*/
+   yVIOPENGL_ribbon_draw   ();
+
+
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 0;
+
+
+
    yVIEW_curses (YVIEW_RIBBON, x_name, NULL, NULL, NULL, NULL, &x_left, &x_wide, &x_bott, &x_tall);
    x_topp = 0;
    x_righ = x_left + x_wide;

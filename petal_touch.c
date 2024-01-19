@@ -544,6 +544,7 @@ TOUCH__ribbon           (int a_wx, int a_wy)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
+   char        rc          =    0;
    char        x_name      [LEN_LABEL] = "";
    short       x_left, x_wide, x_righ;
    short       x_bott, x_tall, x_topp;
@@ -579,48 +580,54 @@ TOUCH__ribbon           (int a_wx, int a_wy)
    my.m_y      = a_wy;
    my.m_r      = wr;
    my.m_valid  = 'y';
-   x           = ((a_wx - x_left) / 40) * 16;
-   y           = (-a_wy - 10) / 40;
-   my.m_button = x + y;
-   DEBUG_DATA   yLOG_complex ("button"    , "%02x %02x %02x", x, y, my.m_touch);
+   /*> x           = ((a_wx - x_left) / 40) * 16;                                     <*/
+   /*> y           = (-a_wy - 10) / 40;                                               <*/
+   /*> my.m_button = x + y;                                                           <*/
+   /*> DEBUG_DATA   yLOG_complex ("button"    , "%02x %02x %02x", x, y, my.m_touch);   <*/
    /*---(button action)------------------*/
-   DEBUG_DATA   yLOG_complex ("touching"  , "%c %c %d", x_touch, my.m_touch, my.m_button);
-   if (x_touch == 'R' && my.m_touch == 'r') {
-      DEBUG_DATA   yLOG_note    ("touch released");
-      switch (my.m_button) {
-      case 0x00 :
-         DEBUG_DATA   yLOG_note    ("previous workspace");
-         system("fluxbox-remote \"PrevWorkspace\"");
-         break;
-      case 0x10 :
-         DEBUG_DATA   yLOG_note    ("next workspace");
-         system("fluxbox-remote \"NextWorkspace\"");
-         break;
-      case 0x01 :
-         DEBUG_DATA   yLOG_note    ("previous window");
-         system("fluxbox-remote \"PrevWindow (workspace=[current])\"");
-         break;
-      case 0x11 :
-         DEBUG_DATA   yLOG_note    ("next window");
-         system("fluxbox-remote \"NextWindow (workspace=[current])\"");
-         break;
-      case 0x03 :
-         DEBUG_DATA   yLOG_note    ("toggle letter help");
-         if (stroke.help == 0) stroke.help = -1; else stroke.help = 0;
-         break;
-      case 0x13 :
-         DEBUG_DATA   yLOG_note    ("toggle balls");
-         if (my.show_pball == 'y')  SHAPE_pball ("hide");
-         else                       SHAPE_pball ("show");
-         break;
-      case 0x16 :
-         DEBUG_DATA   yLOG_note    ("exit");
-         yCMD_direct (":qa");
-         break;
-      default:
-         DEBUG_DATA   yLOG_note    ("?. unknown button");
-         break;
-      }
+   /*> DEBUG_DATA   yLOG_complex ("touching"  , "%c %c %d", x_touch, my.m_touch, my.m_button);   <*/
+   rc = yVIOPENGL_ribbon_act (my.m_valid, my.m_touch, a_wx, a_wy);
+   /*> if (x_touch == 'R' && my.m_touch == 'r') {                                               <* 
+    *>    DEBUG_DATA   yLOG_note    ("touch released");                                         <* 
+    *>    /+> switch (my.m_button) {                                                      <*    <* 
+    *>     *> case 0x00 :                                                                 <*    <* 
+    *>     *>    DEBUG_DATA   yLOG_note    ("previous workspace");                        <*    <* 
+    *>     *>    system("fluxbox-remote \"PrevWorkspace\"");                              <*    <* 
+    *>     *>    break;                                                                   <*    <* 
+    *>     *> case 0x10 :                                                                 <*    <* 
+    *>     *>    DEBUG_DATA   yLOG_note    ("next workspace");                            <*    <* 
+    *>     *>    system("fluxbox-remote \"NextWorkspace\"");                              <*    <* 
+    *>     *>    break;                                                                   <*    <* 
+    *>     *> case 0x01 :                                                                 <*    <* 
+    *>     *>    DEBUG_DATA   yLOG_note    ("previous window");                           <*    <* 
+    *>     *>    system("fluxbox-remote \"PrevWindow (workspace=[current])\"");           <*    <* 
+    *>     *>    break;                                                                   <*    <* 
+    *>     *> case 0x11 :                                                                 <*    <* 
+    *>     *>    DEBUG_DATA   yLOG_note    ("next window");                               <*    <* 
+    *>     *>    system("fluxbox-remote \"NextWindow (workspace=[current])\"");           <*    <* 
+    *>     *>    break;                                                                   <*    <* 
+    *>     *> case 0x03 :                                                                 <*    <* 
+    *>     *>    DEBUG_DATA   yLOG_note    ("toggle letter help");                        <*    <* 
+    *>     *>    if (stroke.help == 0) stroke.help = -1; else stroke.help = 0;            <*    <* 
+    *>     *>    break;                                                                   <*    <* 
+    *>     *> case 0x13 :                                                                 <*    <* 
+    *>     *>    DEBUG_DATA   yLOG_note    ("toggle balls");                              <*    <* 
+    *>     *>    if (my.show_pball == 'y')  SHAPE_pball ("hide");                         <*    <* 
+    *>     *>    else                       SHAPE_pball ("show");                         <*    <* 
+    *>     *>    break;                                                                   <*    <* 
+    *>     *> case 0x16 :                                                                 <*    <* 
+    *>     *>    DEBUG_DATA   yLOG_note    ("exit");                                      <*    <* 
+    *>     *>    yCMD_direct (":qa");                                                     <*    <* 
+    *>     *>    break;                                                                   <*    <* 
+    *>     *> default:                                                                    <*    <* 
+    *>     *>    DEBUG_DATA   yLOG_note    ("?. unknown button");                         <*    <* 
+    *>     *>    break;                                                                   <*    <* 
+    *>     *> }                                                                           <+/   <* 
+    *>    TOUCH_reset ();                                                                       <* 
+    *>    DOT_reset   ();                                                                       <* 
+    *>    PETAL_reset ();                                                                       <* 
+    *> }                                                                                        <*/
+   if (rc == 1) {
       TOUCH_reset ();
       DOT_reset   ();
       PETAL_reset ();
